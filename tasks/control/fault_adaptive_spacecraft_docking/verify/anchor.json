@@ -1,9 +1,9 @@
 {
   "metric": "mean_docking_quality",
   "direction": "higher",
-  "value": 0.92528,
-  "full_at": 0.95,
-  "source": "dry-run oracle measurement on 2026-09-05; re-measured by the maintainers with the engine before merge",
+  "value": 0.843773956566174,
+  "full_at": 0.90,
+  "source": "ALE Engine 90a7c1c validation run validate-face3f83 on 2026-09-23 UTC",
   "reference_commit": "sha256:cf19924ed8211fd0ce8ad3cb48c05d000b10036233f7364d41aee9764d620cc3",
-  "note": "V8 48-episode anchor. Five fresh oracle runs measured 0.8852-0.9648 (43-47 docks); full_at 0.95 is the dry-run suggestion rounded below the worst observed honest ratio."
+  "note": "The bootstrap run measured 0.843773956566174. Forty subsequent real-engine oracle runs measured 0.80432-0.96533 (39-47 docks), ratios 0.953246-1.144065 against this anchor; full_at 0.90 leaves a conservative margin below the observed tail while the uncapped ratio remains the leaderboard metric. The final calibration passed 10/10 fresh validations."
 }
