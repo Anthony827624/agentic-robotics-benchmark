@@ -28,7 +28,7 @@ robotics 问题里（开发控制器、规划操作序列、设计零件或机�
 模板的逐文件说明见 [`templates/README.md`](templates/README.md)。
 
 ```
-tasks/<direction>/<slug>/
+tasks/<platform>/<slug>/
 ├── task.yaml         manifest（严格 core/v1）；agent 不可见
 ├── instruction.md    提示词——被测 agent 唯一被告知的东西
 ├── image/Dockerfile  环境；最后一个 stage FROM 官方 ALE base
@@ -62,8 +62,8 @@ leaderboard 上的数字；`reward` 是引擎的闸门信号。指标永远是�
 ## 贡献一个任务
 
 两条路，同一个结果：一个向本仓库提交的 pull request，把你的任务文件夹加在
-`tasks/<direction>/<slug>/`，其中 `<slug>` 是 manifest 的 `name`，`<direction>` 是它的
-`metadata.direction`。
+`tasks/<platform>/<slug>/`，其中 `<slug>` 是 manifest 的 `name`，`<platform>` 是它的
+`metadata.platform`。
 
 1. **自己开 pull request。** fork 本仓库，把文件夹拷到该路径，push 一个分支，开 PR。
 2. **在网站上传。** 从 <https://agentic-robotics-benchmark.org/contribute> 下载模板 zip，
@@ -78,7 +78,7 @@ merge、导出注册表。短版见 [`CONTRIBUTING.md`](CONTRIBUTING.md)；从�
 
 ```
 vendor/ale/                     上游引擎（submodule，钉 commit）——不要重新实现它
-tasks/<direction>/<slug>/       任务本身（目前：control/drone_hover）
+tasks/<platform>/<slug>/       任务本身（目前：uav/uav_hover）
 tasks/README.md                 任务契约（任务形态的事实源）
 templates/task/                 唯一模板，出厂即闸门全绿（anchor 为 null 是设计）
 templates/README.md             模板的逐文件说明
@@ -108,11 +108,11 @@ uv sync                                                    # 宿主侧工具（p
 # 引擎自己的闸门，从钉住的 submodule 里跑（清掉 VIRTUAL_ENV，钉住 docker socket）
 cd vendor/ale && VIRTUAL_ENV= uv run ale lint ../../tasks && VIRTUAL_ENV= uv run ale lint ../../templates
 cd vendor/ale && VIRTUAL_ENV= DOCKER_HOST=unix:///var/run/docker.sock \
-    uv run ale validate ../../tasks/<direction>/<slug> --runs-dir /tmp/ale-runs
+    uv run ale validate ../../tasks/<platform>/<slug> --runs-dir /tmp/ale-runs
 
 # 作者闸门：lint -> validate（untouched 全零 / oracle 全一）-> 诚实的结论
 uv run ale-onboard <spec>.yaml --json                                      # 实例化 + 闸门
-uv run ale-onboard --gate-only tasks/<direction>/<slug> --json
+uv run ale-onboard --gate-only tasks/<platform>/<slug> --json
 #   built | needs_anchor（报出实测值）| needs_input | gave_up | error
 
 # 领域 lint（落地路径、指标纪律、anchor 出处、可见面、镜像卫生）+ 共享 kit 自测（不需要 docker）
@@ -121,7 +121,7 @@ cd shared && python3 -m robotics_grader.selftest
 
 # 用真 agent 跑一个任务，然后把这次运行打包成 leaderboard bundle
 cd vendor/ale && VIRTUAL_ENV= DOCKER_HOST=unix:///var/run/docker.sock \
-    uv run ale run ../../tasks/<direction>/<slug> --agent claude-code --runs-dir <runs>
+    uv run ale run ../../tasks/<platform>/<slug> --agent claude-code --runs-dir <runs>
 uv run ale-export <runs>/<run_id> --out <name>.ale-engine-run.tar.zst.age --public-key age1...
 
 # 给网站的任务 registry（任务身份来自引擎 loader；工作树不干净则拒绝）。
@@ -139,7 +139,7 @@ uv run python scripts/build_template_zip.py --out agentic-robotics-task-template
 uv run pytest -q
 ```
 
-不要随手对 `drone_hover` 跑 `ale validate`：它的 oracle 真训 PPO，一次要数小时。模板几秒
+不要随手对 `uav_hover` 跑 `ale validate`：它的 oracle 真训 PPO，一次要数小时。模板几秒
 就能 validate 完。
 
 ## 访问

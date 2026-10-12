@@ -113,7 +113,7 @@ That timing *is* the hiding mechanism; there is no assertion to write.
    `episodes_aborted`), or the gate cannot tell it apart from its own.
 7. **The gate.**
    ```bash
-   uv run python -m harness.ale_onboard --gate-only tasks/<direction>/<task> --json
+   uv run python -m harness.ale_onboard --gate-only tasks/<platform>/<task> --json
    uv run python scripts/lint_domain.py
    ```
    `needs_anchor` on the first pass is expected and carries the measurement (the engine

@@ -34,7 +34,7 @@ probe wire) is in [`tasks/README.md`](tasks/README.md); the file-by-file tour of
 template is [`templates/README.md`](templates/README.md).
 
 ```
-tasks/<direction>/<slug>/
+tasks/<platform>/<slug>/
 ├── task.yaml         the manifest (strict core/v1); invisible to the agent
 ├── instruction.md    the prompt — the only thing the tested agent is told
 ├── image/Dockerfile  the environment; final stage FROM an official ALE base
@@ -71,8 +71,8 @@ way by design; `harness/ale_onboard.py` reads the run records and reports it as
 ## Contributing a task
 
 Two ways, one result: a pull request into this repository that adds your task folder at
-`tasks/<direction>/<slug>/`, where `<slug>` is the manifest's `name` and `<direction>` its
-`metadata.direction`.
+`tasks/<platform>/<slug>/`, where `<slug>` is the manifest's `name` and `<platform>` its
+`metadata.platform`.
 
 1. **Open the pull request yourself.** Fork the repository, copy your folder to that path,
    push a branch and open the pull request.
@@ -90,7 +90,7 @@ is [`docs/contributing-a-task.md`](docs/contributing-a-task.md).
 
 ```
 vendor/ale/                     upstream engine (submodule, pinned commit) — do not reimplement it
-tasks/<direction>/<slug>/       the tasks (today: control/drone_hover)
+tasks/<platform>/<slug>/       the tasks (today: uav/uav_hover)
 tasks/README.md                 the task contract (source of truth for the task form)
 templates/task/                 ONE template, gates green as shipped (null anchor by design)
 templates/README.md             the template, file by file
@@ -120,11 +120,11 @@ uv sync                                                    # host-side tooling (
 # the engine's own gates, from the pinned submodule (clear VIRTUAL_ENV, pin the docker socket)
 cd vendor/ale && VIRTUAL_ENV= uv run ale lint ../../tasks && VIRTUAL_ENV= uv run ale lint ../../templates
 cd vendor/ale && VIRTUAL_ENV= DOCKER_HOST=unix:///var/run/docker.sock \
-    uv run ale validate ../../tasks/<direction>/<slug> --runs-dir /tmp/ale-runs
+    uv run ale validate ../../tasks/<platform>/<slug> --runs-dir /tmp/ale-runs
 
 # authoring gate: lint -> validate (untouched-zero / oracle-one) -> honest outcome
 uv run ale-onboard <spec>.yaml --json                                      # instantiate + gate
-uv run ale-onboard --gate-only tasks/<direction>/<slug> --json
+uv run ale-onboard --gate-only tasks/<platform>/<slug> --json
 #   built | needs_anchor (measured value reported) | needs_input | gave_up | error
 
 # domain lint (placement, metric discipline, anchor provenance, visible surface, image hygiene)
@@ -134,7 +134,7 @@ cd shared && python3 -m robotics_grader.selftest
 
 # run a task with a real agent, then pack the run into a leaderboard bundle
 cd vendor/ale && VIRTUAL_ENV= DOCKER_HOST=unix:///var/run/docker.sock \
-    uv run ale run ../../tasks/<direction>/<slug> --agent claude-code --runs-dir <runs>
+    uv run ale run ../../tasks/<platform>/<slug> --agent claude-code --runs-dir <runs>
 uv run ale-export <runs>/<run_id> --out <name>.ale-engine-run.tar.zst.age --public-key age1...
 
 # task registry for the website (task identity from the engine loader; refuses a dirty tree).
@@ -152,7 +152,7 @@ uv run python scripts/build_template_zip.py --out agentic-robotics-task-template
 uv run pytest -q
 ```
 
-Never run `ale validate` on `drone_hover` casually: its oracle trains PPO and the run takes
+Never run `ale validate` on `uav_hover` casually: its oracle trains PPO and the run takes
 hours. The template validates in seconds.
 
 ## Access

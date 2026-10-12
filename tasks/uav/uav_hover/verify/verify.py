@@ -1,4 +1,4 @@
-"""Closed-loop grader for drone_hover — runs as ROOT in the verify stage.
+"""Closed-loop grader for uav_hover — runs as ROOT in the verify stage.
 
 The eval protocol our benchmark calls `closed_loop`, expressed entirely inside a
 standard ALE verify stage (no custom Environment):

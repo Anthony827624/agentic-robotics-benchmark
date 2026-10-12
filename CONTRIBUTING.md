@@ -1,7 +1,7 @@
 # Contributing a task
 
 A task is one self-contained folder. Contributing one means getting a pull request merged
-that adds it at `tasks/<direction>/<slug>/`. There are two ways to get that pull request open;
+that adds it at `tasks/<platform>/<slug>/`. There are two ways to get that pull request open;
 both are reviewed the same way and land in the same place.
 
 ## Before you start
@@ -34,7 +34,7 @@ uv run ale validate <task_dir> --runs-dir <runs>     # untouched all-zero, oracl
 ## Way one: open the pull request yourself
 
 1. Fork this repository and create a branch.
-2. Copy your folder to `tasks/<direction>/<slug>/`. `<direction>` is `metadata.direction`
+2. Copy your folder to `tasks/<platform>/<slug>/`. `<platform>` is `metadata.platform`
    from your `task.yaml`; `<slug>` is its `name`. Nothing else goes in the pull request.
 3. Push and open the pull request. The template asks you for the `ok` line of your
    `ale validate` run and a few confirmations.
@@ -59,7 +59,7 @@ uv run ale validate <task_dir> --runs-dir <runs>     # untouched all-zero, oracl
 - the domain lint (`scripts/lint_domain.py`): a hardware-invariant metric on a positive scale,
   an anchor with a positive `value`, a `full_at` inside the scoring cap and a real `source`,
   nothing under `setup/payload/` that reaches the grader, image hygiene, and the placement of
-  the folder at `tasks/<metadata.direction>/<name>/`;
+  the folder at `tasks/<metadata.platform>/<name>/`;
 - `verify/robotics_grader/` byte-identical to `shared/robotics_grader/` (copy the canonical
   kit over yours and re-validate if this fails);
 - the registry identity cross-check for tasks the registry already knows (a new slug is a
@@ -76,10 +76,10 @@ and with a maintainer before the merge.
 2. Check out the branch and re-run the gate from `vendor/ale`:
 
    ```bash
-   VIRTUAL_ENV= uv run ale lint ../../tasks/<direction>/<slug>
+   VIRTUAL_ENV= uv run ale lint ../../tasks/<platform>/<slug>
    VIRTUAL_ENV= DOCKER_HOST=unix:///var/run/docker.sock \
-       uv run ale validate ../../tasks/<direction>/<slug> --runs-dir <runs>
-   cd ../.. && uv run python scripts/lint_domain.py tasks/<direction>/<slug>
+       uv run ale validate ../../tasks/<platform>/<slug> --runs-dir <runs>
+   cd ../.. && uv run python scripts/lint_domain.py tasks/<platform>/<slug>
    ```
 
    If the measured anchor differs from `verify/anchor.json`, push a correction to the branch

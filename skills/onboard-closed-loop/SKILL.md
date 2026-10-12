@@ -20,7 +20,7 @@ the solver directly would hand the agent the grader's privileges. `robotics_grad
 the drop through `runuser`; from there `/opt/ale`, the verdict file and the grader's memory are
 all out of reach (see `docs/evidence/isolation-audit.md` for the audited proof).
 
-Worked example: `tasks/control/drone_hover` — a real closed_loop task (develop a
+Worked example: `tasks/uav/uav_hover` — a real closed_loop task (develop a
 hovering policy for a Crazyflie in gym-pybullet-drones) that validates green (its grader
 predates the shared package and inlines the same machinery). Template:
 `templates/task/`, whose `verify/verify.py` is already this pattern.
@@ -43,7 +43,7 @@ predates the shared package and inlines the same machinery). Template:
    components, move the goal, nudge the obstacle) and set `dims` in `ProbeLock` to cover exactly
    those leading components. A constant, a replay and an obs-blind policy must all fail it.
 5. **How long does the oracle need to train?** That is `timeouts.agent`, and `ale validate`
-   really pays it — drone_hover's oracle trains PPO for eleven minutes.
+   really pays it — uav_hover's oracle trains PPO for eleven minutes.
 
 ## The solver contract (what the agent must build)
 
@@ -99,7 +99,7 @@ under the agent's own budget — that separation is why a scoring run is cheap a
    own measured value.
 7. **The gate.**
    ```bash
-   uv run python -m harness.ale_onboard --gate-only tasks/<direction>/<task> --json
+   uv run python -m harness.ale_onboard --gate-only tasks/<platform>/<task> --json
    uv run python scripts/lint_domain.py
    ```
    `needs_anchor` on the first pass is expected (the engine reports it as `oracle_not_full`;

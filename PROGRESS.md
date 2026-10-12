@@ -7,8 +7,9 @@
 > before every hand-off. Where it disagrees with the code or `git log`, the code wins: fix
 > this file.
 >
-> Last updated: 2026-09-08 (website live on agentic-robotics-benchmark.org; both contribution
-> channels rehearsed end to end; the leftover paper-onboarding skill link removed).
+> Last updated: 2026-10-12 (`drone_hover` renamed to `tasks/uav/uav_hover`, a dummy task kept to
+> show the file structure; tasks placed by `metadata.platform`; `tasks/README.md` reduced to
+> one paragraph).
 
 ## 0. 2026-09-07 — created by the rebrand from "ALE Robotics"
 
@@ -103,19 +104,51 @@ and `verify/` included.
   `skills/onboard-task/SKILL.md`. `docs/research/agentic-robotics-survey.md` pointed at
   the old `skills/SKILL.md`; it now points at the router.
 
+## 4. 2026-10-12 — `drone_hover` is now `tasks/uav/uav_hover`; tasks are placed by platform
+
+- Owner decisions: `tasks/control/drone_hover` becomes `tasks/uav/uav_hover`
+  (`name: uav_hover`), a dummy task that frontier models complete easily, kept only to show
+  what a task's file structure looks like. This replaces "delete it with the first merged
+  community task". `tasks/README.md` is now one paragraph saying so: there is no open-loop /
+  closed-loop distinction any more.
+- A landed task sits at `tasks/<metadata.platform>/<name>/` (was
+  `tasks/<metadata.direction>/<name>/`). Changed with it: `scripts/lint_domain.py` battery 7,
+  the instantiate target of `harness/ale_onboard.py`, the template download's getting-started
+  text (`scripts/build_template_zip.py`), the comment in `templates/task/task.yaml`, the pull
+  request template, the comments in `pr-checks.yml`, README, README.zh-CN, CONTRIBUTING,
+  CLAUDE.md, docs and skills. The tests now refuse a direction-named folder.
+- Identity: the new `name` gives the task a new `spec_hash` and `content_digest`, so the
+  registry identity cross-check reports `uav_hover` as a new task; `identity-history.json`
+  keeps the `drone_hover` record. `image/` is untouched, so the image identity (and an image
+  already built from it) carries over; its Dockerfile still says `drone-hover` in two log
+  lines and one comment.
+- Verified locally (the `pr-checks.yml` steps): `ale lint ../../tasks` and
+  `../../templates` ok; registry export + identity cross-check ok (`uav_hover` new);
+  `robotics_grader` selftest and the vendored-kit diff ok; `uv run pytest -q` all passed with
+  the engine venv present (the template-zip test, which refuses a dirty tree, passed on a
+  clean throwaway commit); `scripts/lint_domain.py .` ok; ruff reports the same nine
+  pre-existing notes.
+
 ## Open items
 
-- Merge or reject the re-opened contribution after `ale validate`; on merge, export the
-  registry, install it in the website, commit `identity-history.json`, and delete
-  `drone_hover` (owner decision: with the first community task; the registry must not be
-  empty and the website's tests reference the slug).
+- Website: the upload bot (`apps/api/app/services/github_app.py`) still lands an upload at
+  `tasks/<metadata.direction>/<slug>/`; switch it to `metadata.platform` before the next
+  upload, or battery 7 refuses the pull request. The website's registry and tests still name
+  `drone_hover`; they follow the next registry export. Rebuild the template download (its
+  getting-started text and the `task.yaml` comment changed).
+- `ale validate` `uav_hover` (the oracle trains PPO for hours), then export the registry,
+  commit `identity-history.json` and install the registry in the website.
+- The re-opened contribution (pull request #1) sits at
+  `tasks/control/fault_adaptive_spacecraft_docking/`; its `metadata.platform` is
+  `spacecraft`, so it moves to `tasks/spacecraft/fault_adaptive_spacecraft_docking/` before
+  it can pass battery 7. Merge or reject it after `ale validate`.
 
 ## Gotchas
 
 - `export_registry.py` refuses a dirty tree on purpose: `content_digest` covers every
   regular file, ignored `__pycache__/` included. Export from a clean commit; `--allow-dirty`
   is for throwaway exports and never writes the canonical `identity-history.json`.
-- Never run `ale validate` on `drone_hover` casually: its oracle trains PPO for hours. The
+- Never run `ale validate` on `uav_hover` casually: its oracle trains PPO for hours. The
   template validates in seconds.
 - Engine commands run from `vendor/ale` with `VIRTUAL_ENV=` cleared and
   `DOCKER_HOST=unix:///var/run/docker.sock` pinned (two docker contexts on the dev machine).

@@ -1,7 +1,7 @@
 # Contributing a task
 
 The path: get the engine, start from the template, build the task locally, validate it, then
-get a pull request open that adds your folder at `tasks/<direction>/<slug>/`. Two ways to
+get a pull request open that adds your folder at `tasks/<platform>/<slug>/`. Two ways to
 open that pull request, one result: open it yourself, or upload the zipped folder on the
 website and let its bot open it for you. A maintainer reviews it the same way either way.
 The short version is the repository's [`CONTRIBUTING.md`](../CONTRIBUTING.md); the design
@@ -171,7 +171,7 @@ printed elsewhere. You cannot know it until you run, so:
 ## 7. Submit
 
 Both ways end as a pull request into this repository that adds exactly one folder,
-`tasks/<direction>/<slug>/`, where `<direction>` is `metadata.direction` from your `task.yaml`.
+`tasks/<platform>/<slug>/`, where `<platform>` is `metadata.platform` from your `task.yaml`.
 
 **Open the pull request yourself.** Fork the repository, copy your folder to that path on a
 branch, push, and open the pull request. The pull request template asks for the `ok` line of
@@ -197,7 +197,7 @@ one folder is rejected on layout. Upload it on the Contribute page with a title.
    flag, or a `COPY`/`ADD` of `verify/`, `oracle/` or anchor material; or the slug is already
    taken. A failure comes back as a list and nothing is stored; fix and upload again. "Check
    only" runs the same checks without uploading.
-2. It commits the folder to `tasks/<direction>/<slug>/` on a branch `contrib/<id>` of this
+2. It commits the folder to `tasks/<platform>/<slug>/` on a branch `contrib/<id>` of this
    repository and opens the pull request, the same shape as one opened by hand, and shows
    you the link. When the server holds no repository credential the zip is kept for a
    maintainer instead ("Queued for a maintainer").
@@ -233,5 +233,5 @@ A pull request you open yourself collects what GitHub collects.
   is a lint error. Grader knobs go in `verify/grader_config.json`, not `params`.
 - `ale validate` does not print a stage's stderr. It is in `trace.execution.jsonl`.
 - Do not edit run outputs to make a task pass. Author the inputs; the verdict is computed.
-- The folder name, `name` in `task.yaml` and the `tasks/<direction>/` parent must agree; the
+- The folder name, `name` in `task.yaml` and the `tasks/<platform>/` parent must agree; the
   domain lint refuses a pull request where they do not.

@@ -22,8 +22,8 @@ Seven batteries:
 6. **core/v1 completeness.** The manifest carries `spec_type: core/v1`, a valid slug `name`,
    and a mapping `image:` — cheap static forms of what the engine would reject anyway,
    caught before a container is ever started.
-7. **Placement.** A landed task sits exactly at `tasks/<direction>/<slug>/`: the folder name
-   is the manifest's `name`, the parent folder is `metadata.direction`. Both contribution
+7. **Placement.** A landed task sits exactly at `tasks/<platform>/<slug>/`: the folder name
+   is the manifest's `name`, the parent folder is `metadata.platform`. Both contribution
    channels (a pull request opened by hand, a pull request opened by the website's bot) put
    the folder there directly, so this is the check that keeps the tree and the registry in
    agreement.
@@ -47,7 +47,7 @@ DEFAULT_DOMAIN = REPO_ROOT
 #: The collections the lint walks. Never the repository root itself: a bare rglob would
 #: descend into vendor/ale and the venvs.
 COLLECTION_DIRS = ("tasks", "templates")
-#: The slug alphabet a folder name and `metadata.direction` must share (they are path
+#: The slug alphabet a folder name and `metadata.platform` must share (they are path
 #: segments of the landing directory).
 _SEGMENT = re.compile(r"^[a-z0-9][a-z0-9_-]*$")
 
@@ -313,15 +313,15 @@ def tasks_root_of(task_dir: Path) -> Path | None:
 
 
 def lint_placement(task_dir: Path, tasks_root: Path) -> list[str]:
-    """Battery 7: ``tasks/<direction>/<slug>/`` with slug == ``name`` and direction ==
-    ``metadata.direction``. Returns the problems; an unreadable manifest is battery 6's."""
+    """Battery 7: ``tasks/<platform>/<slug>/`` with slug == ``name`` and platform ==
+    ``metadata.platform``. Returns the problems; an unreadable manifest is battery 6's."""
     task_dir = task_dir.resolve()
     rel = task_dir.relative_to(tasks_root.resolve())
     shown = f"tasks/{rel.as_posix()}/"
     problems: list[str] = []
     if len(rel.parts) != 2:
         problems.append(f"{task_dir.name}: task folder must sit exactly at "
-                        f"tasks/<direction>/<slug>/ (found {shown})")
+                        f"tasks/<platform>/<slug>/ (found {shown})")
     try:
         manifest = yaml.safe_load((task_dir / "task.yaml").read_text()) or {}
     except (OSError, yaml.YAMLError):
@@ -332,11 +332,11 @@ def lint_placement(task_dir: Path, tasks_root: Path) -> list[str]:
                         f"{name!r} — the engine keys the task by `name`, the tree by folder; "
                         f"rename one so they agree")
     meta = manifest.get("metadata") or {}
-    direction = meta.get("direction")
-    if len(rel.parts) == 2 and isinstance(direction, str) and _SEGMENT.match(direction) \
-            and direction != rel.parts[0]:
-        problems.append(f"{task_dir.name}: folder {shown} does not match metadata.direction "
-                        f"{direction!r} — move the folder to tasks/{direction}/{task_dir.name}/ "
+    platform = meta.get("platform")
+    if len(rel.parts) == 2 and isinstance(platform, str) and _SEGMENT.match(platform) \
+            and platform != rel.parts[0]:
+        problems.append(f"{task_dir.name}: folder {shown} does not match metadata.platform "
+                        f"{platform!r} — move the folder to tasks/{platform}/{task_dir.name}/ "
                         f"or fix the manifest")
     return problems
 
@@ -408,7 +408,7 @@ def lint_paths(paths: list[Path]) -> list[str]:
     task folders.
 
     The single-task form is what a maintainer runs on one contribution
-    (`tasks/<direction>/<slug>/`) before merging; placement is checked whenever the folder
+    (`tasks/<platform>/<slug>/`) before merging; placement is checked whenever the folder
     lives under a `tasks/` root.
     """
     problems: list[str] = []

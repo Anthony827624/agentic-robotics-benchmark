@@ -45,7 +45,7 @@
 ## The task form (there is exactly one)
 
 ```
-tasks/<direction>/<slug>/
+tasks/<platform>/<slug>/
 ├── task.yaml         strict core/v1: spec_type, stable `name` slug, image, resources,
 │                     timeouts, artifacts, metadata{platform, direction, metric}
 ├── instruction.md    the prompt — the only thing the tested agent is told
@@ -60,7 +60,7 @@ tasks/<direction>/<slug>/
 ```
 
 - Identity = `task.yaml`'s `name` slug; `platform` lives in `metadata`. A landed task sits at
-  exactly `tasks/<metadata.direction>/<name>/` (`scripts/lint_domain.py` battery 7 checks the
+  exactly `tasks/<metadata.platform>/<name>/` (`scripts/lint_domain.py` battery 7 checks the
   placement; both contribution channels put the folder there directly). There is no
   task-kind field and no evaluation-mode field: the three verify patterns (open_loop /
   closed_loop / artifact_rollout) are **authoring choices inside `verify/verify.py`**, not
@@ -99,8 +99,8 @@ tasks/<direction>/<slug>/
 - `scripts/lint_domain.py`: hardware-invariant metric, positive metric scale, `full_at`
   present, visible-surface isolation (`setup/payload/` never reads the anchor or grader; the
   practice grader prints the raw metric only), image hygiene, anchor provenance (never a
-  published figure), core/v1 completeness, placement at `tasks/<direction>/<slug>/`.
-- **Never run `ale validate` on `drone_hover` casually** — its oracle trains PPO for hours.
+  published figure), core/v1 completeness, placement at `tasks/<platform>/<slug>/`.
+- **Never run `ale validate` on `uav_hover` casually** — its oracle trains PPO for hours.
   The template validates in seconds.
 
 ## Scoring (the kit owns it; do not re-derive)
@@ -130,7 +130,7 @@ task after it lands, so the copy a maintainer validated is the copy that scores.
 
 ## Contributing: two channels, one pull request
 
-- **Channel A**: the contributor forks, puts the folder at `tasks/<direction>/<slug>/` and
+- **Channel A**: the contributor forks, puts the folder at `tasks/<platform>/<slug>/` and
   opens the pull request. **Channel B**: the contributor uploads the zipped folder on the
   website's Contribute page; the server prechecks it (the engine's real `ale lint` plus the
   domain checks) and a bot opens a pull request of the same shape on a `contrib/<id>` branch,
@@ -179,7 +179,7 @@ cd vendor/ale && VIRTUAL_ENV= uv run ale lint ../../tasks && VIRTUAL_ENV= uv run
 cd vendor/ale && VIRTUAL_ENV= DOCKER_HOST=unix:///var/run/docker.sock \
     uv run ale validate <task_dir> --runs-dir /tmp/ale-runs
 uv run ale-onboard <spec>.yaml --json
-uv run ale-onboard --gate-only tasks/<direction>/<slug> --json
+uv run ale-onboard --gate-only tasks/<platform>/<slug> --json
 uv run python scripts/lint_domain.py .
 cd shared && python3 -m robotics_grader.selftest
 uv run ale-export <runs>/<run_id> --out <name>.ale-engine-run.tar.zst.age --public-key age1...
@@ -206,9 +206,11 @@ uv run pytest -q
   re-simulation (open_loop) sit on top of that; they do not replace it.
 - No secrets in the repo (`.env`, tokens, keys). No hardware-dependent scored metric. No
   100 MB+ blobs in git.
-- `tasks/control/drone_hover` is frozen until it is deleted (owner decision: with the first
-  merged community task). Its files still carry three comments from the old name; editing
-  them would change the task's `content_digest`, so leave them.
+- `tasks/uav/uav_hover` (renamed from `tasks/control/drone_hover` on 2026-10-12) is a dummy
+  task that frontier models complete easily. It stays only to show what a task's file
+  structure looks like (owner decision 2026-10-12; it replaces "delete it with the first
+  merged community task"). Its `task.yaml` and `verify/verify.py` still carry three comments
+  from the old brand name ("ALE Robotics domain policy").
 
 ## Gotchas (details in PROGRESS.md)
 

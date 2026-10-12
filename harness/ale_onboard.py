@@ -8,7 +8,7 @@ What it does:
 
 1. checks feasibility from the spec alone, and gives up honestly if the task cannot be
    scored fairly (a hardware-dependent metric, an unknown metric direction);
-2. instantiates `templates/task/` into `tasks/<direction>/<task>/`, filling in
+2. instantiates `templates/task/` into `tasks/<platform>/<task>/`, filling in
    what the spec knows and leaving TODOs where a human or an agent must still write physics;
 3. runs the REAL gates — `ale lint` on the task collections, then `ale validate` on the task (its
    untouched-zero / oracle-one double pass), both from the pinned engine in `vendor/ale`;
@@ -210,7 +210,7 @@ def _manifests(repo: Path) -> list[Path]:
 
 
 def instantiate(spec: dict[str, Any], *, repo: Path, force: bool = False) -> Path:
-    """Copy the template into `<repo>/tasks/<direction>/<task>/` and fill its metadata.
+    """Copy the template into `<repo>/tasks/<platform>/<task>/` and fill its metadata.
 
     The spec's `task` becomes the manifest's stable `name`, so it must be a valid slug
     and unique across every task.yaml in the repo — checked here, because the engine's
@@ -221,8 +221,8 @@ def instantiate(spec: dict[str, Any], *, repo: Path, force: bool = False) -> Pat
         raise ValueError(
             f"task name {task!r} is not a valid slug (^[a-z0-9][a-z0-9_-]*$)"
         )
-    direction = str(spec.get("direction") or "misc")
-    target = repo / "tasks" / direction / task
+    platform = str(spec.get("platform") or "misc")
+    target = repo / "tasks" / platform / task
     if (claimed := _name_collision(repo, task, target)) is not None:
         raise ValueError(f"task name {task!r} is already claimed by {claimed}")
     if target.exists():

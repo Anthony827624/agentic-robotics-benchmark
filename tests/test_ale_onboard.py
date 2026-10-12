@@ -69,7 +69,7 @@ SPEC = {
 
 def test_instantiate_writes_the_core_v1_shape(tmp_path):
     task_dir = ob.instantiate(SPEC, repo=tmp_path)
-    assert task_dir == tmp_path / "tasks" / "control" / "probe_task"
+    assert task_dir == tmp_path / "tasks" / "manipulation" / "probe_task"
     for required in ("task.yaml", "instruction.md", "image/Dockerfile", "setup/run.sh",
                      "verify/run.sh", "verify/verify.py", "oracle/run.sh"):
         assert (task_dir / required).is_file(), required
@@ -138,7 +138,7 @@ def test_instantiate_rejects_a_bad_slug(tmp_path):
 
 def test_instantiate_rejects_a_claimed_name(tmp_path):
     ob.instantiate(SPEC, repo=tmp_path)
-    other = dict(SPEC, direction="planning")         # different folder, same name
+    other = dict(SPEC, platform="uav")               # different folder, same name
     with pytest.raises(ValueError, match="already claimed"):
         ob.instantiate(other, repo=tmp_path)
     # force-overwriting the SAME folder is not a collision

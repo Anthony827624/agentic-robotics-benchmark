@@ -5,7 +5,8 @@ asks for: `metadata.genre` and the paper block are gone (one kind of task, desig
 task without them must lint clean. The batteries that stay — hardware-invariant metric,
 positive anchor, `full_at`, anchor provenance, visible-surface isolation — are pinned so the
 genre removal cannot be mistaken for a general loosening. The placement battery (2026-09-07,
-flat layout: `tasks/<direction>/<slug>/`) replaces the retired staging-area promote check.
+flat layout; the parent folder is `metadata.platform` since 2026-10-12:
+`tasks/<platform>/<slug>/`) replaces the retired staging-area promote check.
 """
 
 from __future__ import annotations
@@ -48,7 +49,7 @@ _ANCHOR = {"metric": "mean_episode_reward", "value": 472.07, "full_at": 0.825,
 def _task(tmp_path: Path, *, name: str = "probe", metric: str = "mean_episode_reward",
           extra_metadata: str = "", anchor: dict | None = None) -> Path:
     """A minimal core/v1 task folder that the lint accepts as shipped."""
-    task = tmp_path / "tasks" / "control" / name
+    task = tmp_path / "tasks" / "uav" / name
     (task / "image").mkdir(parents=True)
     (task / "verify").mkdir()
     (task / "setup" / "payload" / "practice_grader").mkdir(parents=True)
@@ -77,7 +78,7 @@ def test_a_task_still_carrying_genre_is_not_flagged(tmp_path):
 
 
 def test_the_shipped_domain_lints_clean():
-    """The real tree — template excluded from task batteries, drone_hover included, and the
+    """The real tree — template excluded from task batteries, uav_hover included, and the
     repository root as the default target (only tasks/ and templates/ are walked)."""
     assert lint_domain.lint_domain(REPO_ROOT) == []
     assert lint_domain.lint_paths([REPO_ROOT]) == []
@@ -85,10 +86,10 @@ def test_the_shipped_domain_lints_clean():
 
 
 # --------------------------------------------------------------------------- #
-# battery 7: placement at tasks/<direction>/<slug>/
+# battery 7: placement at tasks/<platform>/<slug>/
 # --------------------------------------------------------------------------- #
 def test_placement_accepts_the_landing_path(tmp_path):
-    task = _task(tmp_path)                       # tasks/control/probe, direction control
+    task = _task(tmp_path)                       # tasks/uav/probe, platform uav
     assert lint_domain.tasks_root_of(task) == (tmp_path / "tasks").resolve()
     assert lint_domain.lint_paths([task]) == []
     assert lint_domain.lint_paths([tmp_path]) == []            # a root holding tasks/
@@ -103,22 +104,22 @@ def test_placement_refuses_a_folder_named_unlike_its_manifest(tmp_path):
     assert "folder name 'probe_v2' != task.yaml `name` 'probe'" in problems[0]
 
 
-def test_placement_refuses_the_wrong_direction_folder(tmp_path):
-    task = _task(tmp_path)                       # manifest says direction: control
-    (tmp_path / "tasks" / "planning").mkdir()
-    moved = task.rename(tmp_path / "tasks" / "planning" / "probe")
+def test_placement_refuses_the_wrong_platform_folder(tmp_path):
+    task = _task(tmp_path)                       # manifest says platform: uav
+    (tmp_path / "tasks" / "control").mkdir()     # its direction, not its platform
+    moved = task.rename(tmp_path / "tasks" / "control" / "probe")
     problems = lint_domain.lint_paths([moved])
     assert len(problems) == 1, problems
-    assert "tasks/planning/probe/" in problems[0] and "metadata.direction 'control'" in problems[0]
-    assert "tasks/control/probe/" in problems[0]   # the fix is spelled out
+    assert "tasks/control/probe/" in problems[0] and "metadata.platform 'uav'" in problems[0]
+    assert "tasks/uav/probe/" in problems[0]   # the fix is spelled out
 
 
 def test_placement_refuses_a_task_nested_too_deep(tmp_path):
     task = _task(tmp_path)
-    (tmp_path / "tasks" / "control" / "extra").mkdir()
-    moved = task.rename(tmp_path / "tasks" / "control" / "extra" / "probe")
+    (tmp_path / "tasks" / "uav" / "extra").mkdir()
+    moved = task.rename(tmp_path / "tasks" / "uav" / "extra" / "probe")
     problems = lint_domain.lint_paths([moved])
-    assert any("exactly at tasks/<direction>/<slug>/" in p for p in problems), problems
+    assert any("exactly at tasks/<platform>/<slug>/" in p for p in problems), problems
 
 
 def test_placement_is_not_checked_outside_a_tasks_root(tmp_path):
@@ -177,7 +178,7 @@ def test_an_anchor_quoting_a_published_figure_is_still_refused(tmp_path):
 
 
 @pytest.mark.parametrize("source", [
-    # drone_hover's exact wording
+    # uav_hover's exact wording
     "oracle implementation (oracle/run.sh, PPO on HoverAviary at the pinned gym-pybullet-drones "
     "commit): real graded run over hidden per-run seeds, never a published figure",
     "oracle/run.sh real graded run — NOT the paper's printed figure",

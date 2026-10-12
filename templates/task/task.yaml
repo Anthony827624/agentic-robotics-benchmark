@@ -39,11 +39,12 @@ metadata:
   # repository's content/tasks/registry.json):
   #   humanoid | manipulation | multirobot | quadruped | soft | spacecraft | surgical |
   #   uav | underwater | vehicle
+  # It also names the tasks/<platform>/ folder the task lands in, so it must match
+  # ^[a-z0-9][a-z0-9_-]*$.
   # direction: one of the registry's `directions[]` keys (control, planning, navigation,
-  # learning, locomotion, motion-planning, ... — read the registry for the full list). It
-  # also names the tasks/<direction>/ folder the task lands in, so it must match
-  # ^[a-z0-9][a-z0-9_-]*$. A key that is not in the registry needs a maintainer to add it
-  # before the task can be listed — say so in your upload title.
+  # learning, locomotion, motion-planning, ... — read the registry for the full list).
+  # A key that is not in the registry needs a maintainer to add it before the task can be
+  # listed — say so in your upload title.
   platform: TODO
   direction: TODO
   metric:

@@ -33,7 +33,7 @@ rollback mode; readers cannot tell the difference and the fixture stays a single
 
 ## `scored/template_reach-claude-code-5c0ded00/` — SYNTHETIC scored episode
 
-There is **no real scored episode** to copy: the only registered task (`drone_hover`) takes hours
+There is **no real scored episode** to copy: the only registered task (`uav_hover`, formerly `drone_hover`) takes hours
 per run. This directory is the oracle episode above with the following hand edits, so tests can
 exercise the "a model harness completed a task and was scored" shape end to end:
 

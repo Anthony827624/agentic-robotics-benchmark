@@ -20,12 +20,12 @@ manifest are upstream's, and the pinned engine lives at `vendor/ale`.
 
 Read first: `tasks/README.md` (the task contract — the source of truth for the layout),
 `templates/README.md` (what each template file is for), and the worked example
-`tasks/control/drone_hover` — a real closed_loop task that validates green.
+`tasks/uav/uav_hover` — a real closed_loop task that validates green.
 
 ## What you are producing
 
 ```
-tasks/<direction>/<task>/
+tasks/<platform>/<task>/
 ├── task.yaml         the manifest (core/v1) — invisible to the agent
 ├── instruction.md    the prompt — the only thing the agent is told
 ├── image/Dockerfile  the environment; sole build context, final stage FROM an official ALE base
@@ -109,7 +109,7 @@ this pipeline exists to prevent.
 ### Step 4 — the gate
 
 ```bash
-uv run python -m harness.ale_onboard --gate-only tasks/<direction>/<task> --json
+uv run python -m harness.ale_onboard --gate-only tasks/<platform>/<task> --json
 ```
 
 That runs `ale lint`, then `ale validate` from the pinned engine. Validate runs the task

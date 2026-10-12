@@ -27,7 +27,7 @@ run records into leaderboard submissions.
 ## 2. The task folder
 
 ```
-tasks/<direction>/<slug>/
+tasks/<platform>/<slug>/
 ├── task.yaml         strict core/v1 manifest — spec_type, stable `name`, image, resources,
 │                     timeouts, artifacts, metadata{platform, direction, metric}
 ├── instruction.md    the prompt — the only thing the tested agent is told
@@ -142,7 +142,7 @@ byte-identical copy under `verify/robotics_grader/` because the engine stages ex
 ## 6. The bridge: from tasks and runs to the leaderboard
 
 ```
- tasks/<direction>/<slug>/                      (this repo, committed, clean tree)
+ tasks/<platform>/<slug>/                      (this repo, committed, clean tree)
      │
      ├─ ale lint / ale validate  ──►  harness/ale_onboard.py  ──►  built | needs_anchor | …
      │
@@ -204,5 +204,5 @@ tests/                       pytest; fixtures from a real `ale validate` run (se
   baked into the image.
 - `ale validate` does not keep a stage's stderr; write what the grader says into a collected
   artifact if you need to read it afterwards.
-- `drone_hover`'s oracle trains PPO: a validate takes hours. The template validates in
+- `uav_hover`'s oracle trains PPO: a validate takes hours. The template validates in
   seconds and is the place to test machinery.

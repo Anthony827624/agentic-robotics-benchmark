@@ -2,13 +2,13 @@
 
 ## What this pull request adds
 
-One task folder at `tasks/<direction>/<slug>/`. One or two sentences on the robotics problem
+One task folder at `tasks/<platform>/<slug>/`. One or two sentences on the robotics problem
 and the artifact the agent has to leave in `/home/user/submission/`.
 
 ## Checklist
 
-- [ ] The folder sits at `tasks/<direction>/<slug>/`. `<slug>` equals `name` in `task.yaml`
-      and `<direction>` equals `metadata.direction`.
+- [ ] The folder sits at `tasks/<platform>/<slug>/`. `<slug>` equals `name` in `task.yaml`
+      and `<platform>` equals `metadata.platform`.
 - [ ] `ale lint <folder>` passes on the engine commit pinned at `vendor/ale`.
 - [ ] `ale validate <folder>` passes. The `ok` line from my run:
 

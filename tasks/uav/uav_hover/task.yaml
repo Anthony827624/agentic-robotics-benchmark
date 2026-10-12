@@ -1,4 +1,4 @@
-# drone_hover — develop a hovering policy for a Crazyflie in gym-pybullet-drones'
+# uav_hover — develop a hovering policy for a Crazyflie in gym-pybullet-drones'
 # HoverAviary (closed_loop).
 #
 # ALE-shaped port of the original drone_hover task (M1 alignment spike). The eval
@@ -10,7 +10,7 @@
 # the grader's memory, env, or /opt/ale (iron law #1's "different container OR UID").
 
 spec_type: core/v1
-name: drone_hover
+name: uav_hover
 image: {kind: container}
 resources: {cpus: 4, memory_mb: 8192}
 network: {mode: block}

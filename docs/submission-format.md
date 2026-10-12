@@ -40,15 +40,15 @@ episodes/<episode_id>/artifacts/snapshot.json  # optional, OPAQUE
   "created_at": "2026-09-02T…Z",
   "episodes": [
     {
-      "episode_id": "drone_hover-1a2b3c4d",
-      "task_name": "drone_hover", "variant": "base",
+      "episode_id": "uav_hover-1a2b3c4d",
+      "task_name": "uav_hover", "variant": "base",
       "spec_hash": "sha256:…", "content_digest": "sha256:…",
       "status": "completed",
       "rewards": {"reward": 0.83},
       "metrics": {"ratio": 0.91, "mean_episode_reward": 430.1, "match_lock_ok": 1.0, "anchor_recorded": 1.0},
       "members": {"lock.json": "sha256:…", "result.json": "sha256:…", "verification.json": "sha256:…", "trajectory.json": "sha256:…"}
     },
-    {"episode_id": "drone_hover-9f8e7d6c", "task_name": "drone_hover", "variant": "base", "status": "interrupted", "members": {}}
+    {"episode_id": "uav_hover-9f8e7d6c", "task_name": "uav_hover", "variant": "base", "status": "interrupted", "members": {}}
   ]
 }
 ```
@@ -144,7 +144,7 @@ token exists, uploads and transitions go through the browser.
 1. **Run the task from the pinned engine** (so `framework.commit` matches the registry):
    ```bash
    cd vendor/ale && VIRTUAL_ENV= DOCKER_HOST=unix:///var/run/docker.sock \
-       uv run ale run ../../tasks/<direction>/<slug> --agent claude-code --runs-dir <runs>
+       uv run ale run ../../tasks/<platform>/<slug> --agent claude-code --runs-dir <runs>
    ```
    The agent's API key comes from the engine's `.env`; `harness/ale_onboard.py` uses the same
    environment. Never commit or print it.
@@ -169,4 +169,4 @@ maintainer may verify them after an organisation re-run.
 `tests/fixtures/engine_run/` holds a real `ale validate` run of the task template (the
 untouched `zero_verdict` episode and the anchorless oracle episode, copied verbatim) plus one
 **synthetic** scored episode derived from the oracle one; its README says exactly what was
-edited. There is no real scored `drone_hover` episode in the tree because one run takes hours.
+edited. There is no real scored `uav_hover` episode in the tree because one run takes hours.
