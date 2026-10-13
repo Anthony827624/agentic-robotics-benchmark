@@ -2,11 +2,12 @@
 
 The grader owns this copy. An identical development copy is staged for the agent.
 Each episode randomizes the wiring and continuous effectiveness of six coupled
-unidirectional thrusters. A silent in-flight ring event advances every action slot
-by an action-dependent stride and degrades two physical nozzles asymmetrically. A hysteretic protection relay
-reverses the ring on each armed high command to that nozzle, while high aggregate duty
-advances the ring an extra slot. Pose is delayed and can disappear in bursts;
-the ambiguously mounted IMU remains current.
+unidirectional thrusters. Two silent in-flight bus events install independent hidden
+six-nozzle rotor orders, advance them by an action-dependent stride, and degrade two
+physical nozzles asymmetrically. A hysteretic protection relay reverses the rotor on
+each armed high command to that nozzle, while high aggregate duty advances it an extra
+slot. The second re-key also reverses the target's slew. Pose is delayed and can
+disappear in bursts; the ambiguously mounted IMU remains current.
 """
 
 import math
@@ -101,6 +102,12 @@ class FaultAdaptiveDocking(object):
                 efficiency * bt * self.rng.uniform(0.82, 1.18),
             ))
         self.columns = columns
+        self.routing_order = list(range(6))
+        self.rng.shuffle(self.routing_order)
+        self.rekey_order = list(range(6))
+        self.rng.shuffle(self.rekey_order)
+        if self.rekey_order == self.routing_order:
+            self.rekey_order = self.rekey_order[1:] + self.rekey_order[:1]
         self.routing_initial_shift = self.rng.integer(1, 6)
         self.routing_direction = -1 if self.rng.random() < 0.5 else 1
         self.routing_phase = 0
@@ -118,6 +125,21 @@ class FaultAdaptiveDocking(object):
         self.failure_step = self.rng.integer(58, 104)
         self.failure_scale = self.rng.uniform(0.14, 0.28)
         self.secondary_failure_scale = self.rng.uniform(0.38, 0.58)
+        self.rekey_step = max(
+            self.failure_step + 25,
+            self.rng.integer(108, 126),
+        )
+        self.rekey_initial_shift = self.rng.integer(1, 6)
+        self.rekey_direction = -1 if self.rng.random() < 0.5 else 1
+        self.rekey_failure_nozzle = self.rng.integer(0, 6)
+        self.rekey_secondary_failure_nozzle = self.rng.integer(0, 5)
+        if self.rekey_secondary_failure_nozzle >= self.rekey_failure_nozzle:
+            self.rekey_secondary_failure_nozzle += 1
+        self.rekey_failure_scale = self.rng.uniform(0.25, 0.35)
+        self.rekey_secondary_failure_scale = self.rng.uniform(0.50, 0.65)
+        next_speed = self.rng.uniform(0.020, 0.045)
+        self.rekey_phase_rate = -next_speed if self.phase_rate > 0.0 else next_speed
+        self.rekey_active = False
 
         # The IMU wiring is not the physical body frame. Its two linear axes have
         # an unknown orthogonal mounting (rotation plus optional reflection), and
@@ -220,6 +242,19 @@ class FaultAdaptiveDocking(object):
             command = [0.0] * 6
 
         body_ax, body_ay, alpha = self.bias
+        if self.routing_active and not self.rekey_active and self.steps >= self.rekey_step:
+            self.rekey_active = True
+            self.routing_order = list(self.rekey_order)
+            self.routing_direction = self.rekey_direction
+            self.routing_phase = (
+                self.routing_direction * self.rekey_initial_shift
+            ) % 6
+            self.routing_relay_armed = True
+            self.failure_nozzle = self.rekey_failure_nozzle
+            self.secondary_failure_nozzle = self.rekey_secondary_failure_nozzle
+            self.failure_scale = self.rekey_failure_scale
+            self.secondary_failure_scale = self.rekey_secondary_failure_scale
+            self.phase_rate = self.rekey_phase_rate
         if not self.routing_active and self.steps >= self.failure_step:
             self.routing_active = True
             self.routing_phase = (
@@ -229,15 +264,25 @@ class FaultAdaptiveDocking(object):
         routing_shift = self.routing_phase if event_active else 0
         reverse_after_step = False
         if event_active:
-            trigger_slot = (self.failure_nozzle - routing_shift) % 6
-            arm_slot = (self.secondary_failure_nozzle - routing_shift) % 6
+            trigger_slot = next(
+                i for i in range(6)
+                if self.routing_order[(i + routing_shift) % 6] == self.failure_nozzle
+            )
+            arm_slot = next(
+                i for i in range(6)
+                if self.routing_order[(i + routing_shift) % 6]
+                == self.secondary_failure_nozzle
+            )
             if command[arm_slot] < 0.12:
                 self.routing_relay_armed = True
             if command[trigger_slot] > 0.38 and self.routing_relay_armed:
                 reverse_after_step = True
                 self.routing_relay_armed = False
         for i, duty in enumerate(command):
-            nozzle = (i + routing_shift) % 6
+            nozzle = (
+                self.routing_order[(i + routing_shift) % 6]
+                if event_active else i
+            )
             relay_nozzle = event_active and nozzle == self.failure_nozzle
             secondary_degraded = (
                 event_active and nozzle == self.secondary_failure_nozzle
@@ -282,7 +327,8 @@ class FaultAdaptiveDocking(object):
         rate_error = abs(self.omega - self.phase_rate)
         self.best_error = min(self.best_error, pos_error)
         docked = (
-            pos_error < 0.105 and vel_error < 0.075
+            self.rekey_active
+            and pos_error < 0.105 and vel_error < 0.075
             and angle_error < 0.075 and rate_error < 0.060
         )
         self.hold_steps = self.hold_steps + 1 if docked else 0

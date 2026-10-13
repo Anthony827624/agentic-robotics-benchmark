@@ -71,15 +71,19 @@ class Controller:
         self.bad_residuals = 0
         self.ring_probe_start = None
         self.ring_probe_phases = []
-        self.ring_direction = None
+        self.ring_cycle = None
+        self.ring_orientation = None
+        self.ring_move = 1
         self.ring_phase = None
         self.ring_phase_time = None
+        self.ring_orient_probe = False
         self.ring_relay_armed = True
         self.ring_bad_nozzle = None
         self.ring_secondary_nozzle = None
         self.ring_scan_start = None
         self.ring_scan_samples = {}
         self.ring_scales = np.ones(6)
+        self.ring_identifications = 0
         self.pending_score = float("inf")
         self.pending_action = np.zeros(6)
         self.pending_close = False
@@ -233,77 +237,124 @@ class Controller:
                 best = (error, nozzle, scale)
         return best[1], best[2], best[0]
 
+    def _reset_ring_tracker(self, probe_start):
+        if self.ring_identifications >= 1:
+            # A later re-key can arrive during final approach. Clear the stale
+            # allocator state, but preserve approach mode: the identification
+            # pulses already consume a recovery window and retreating to the
+            # outer waypoint can strand an otherwise safe vehicle.
+            self.last_alloc = np.zeros(6)
+        self.ring_probe_start = int(probe_start)
+        self.ring_probe_phases = []
+        self.ring_cycle = None
+        self.ring_orientation = None
+        self.ring_move = 1
+        self.ring_phase = None
+        self.ring_phase_time = None
+        self.ring_orient_probe = False
+        self.ring_relay_armed = True
+        self.ring_bad_nozzle = None
+        self.ring_secondary_nozzle = None
+        self.ring_scan_start = None
+        self.ring_scan_samples = {}
+        self.ring_scales = np.ones(6)
+        self.bad_residuals = 0
+
+    def _ring_nozzle(self, slot, phase=None):
+        phase = self.ring_phase if phase is None else phase
+        index = (int(phase) + self.ring_orientation * int(slot)) % 6
+        return int(self.ring_cycle[index])
+
+    def _ring_slot(self, nozzle):
+        for slot in range(6):
+            if self._ring_nozzle(slot) == nozzle:
+                return slot
+        raise ValueError("no logical slot maps to physical nozzle")
+
+    def _advance_ring(self, action, t):
+        u = np.asarray(action, dtype=float)
+        if (self.ring_bad_nozzle is not None
+                and self.ring_secondary_nozzle is not None):
+            trigger_slot = self._ring_slot(self.ring_bad_nozzle)
+            arm_slot = self._ring_slot(self.ring_secondary_nozzle)
+            if float(u[arm_slot]) < 0.12:
+                self.ring_relay_armed = True
+            if float(u[trigger_slot]) > 0.38 and self.ring_relay_armed:
+                self.ring_move *= -1
+                self.ring_relay_armed = False
+        stride = 2 if float(np.sum(u)) > 1.35 else 1
+        self.ring_phase = int(
+            (self.ring_phase + stride * self.ring_move) % 6
+        )
+        self.ring_phase_time = int(t)
+
     def _update_fault(self, t, action, measured):
         if self.base_B is None:
             return
         u = np.asarray(action, dtype=float)
         y = np.asarray(measured, dtype=float)
 
-        # Once the degraded physical nozzle is known, replay the public relay
-        # state machine for the preceding command before advancing the phase.
-        if self.ring_direction is not None and self.ring_phase_time is not None:
-            elapsed = t - self.ring_phase_time
-            if elapsed > 0:
-                if (self.ring_bad_nozzle is not None
-                        and self.ring_secondary_nozzle is not None):
-                    trigger_slot = int(
-                        (self.ring_bad_nozzle - self.ring_phase) % 6
-                    )
-                    arm_slot = int(
-                        (self.ring_secondary_nozzle - self.ring_phase) % 6
-                    )
-                    if float(u[arm_slot]) < 0.12:
-                        self.ring_relay_armed = True
-                    if float(u[trigger_slot]) > 0.38 and self.ring_relay_armed:
-                        self.ring_direction *= -1
-                        self.ring_relay_armed = False
-                stride = 2 if float(np.sum(u)) > 1.35 else 1
-                self.ring_phase = int(
-                    (self.ring_phase + stride * self.ring_direction * elapsed) % 6
-                )
-                self.ring_phase_time = t
-
-        # Two slot-zero pulses identify consecutive physical nozzles. Their
-        # modulo-six difference is the hidden ring direction.
-        if self.ring_probe_start is not None and self.ring_direction is None:
+        # Seven low slot-zero pulses reveal one complete hidden rotor cycle
+        # without relying on numerical adjacency of physical nozzle indices.
+        if self.ring_probe_start is not None and self.ring_cycle is None:
             command_t = t - 1
             if (self.ring_probe_start <= command_t < self.ring_probe_start + 7
-                    and u[0] > 0.30 and float(np.max(u[1:])) < 0.05):
+                    and u[0] > 0.20 and float(np.max(u[1:])) < 0.05):
                 estimate = (y - self.base_bias) / u[0]
                 nozzle, scale, _ = self._match_ring_column(estimate)
                 self.ring_probe_phases.append((command_t, nozzle, scale))
             if len(self.ring_probe_phases) >= 7:
-                previous = self.ring_probe_phases[-2][1]
-                latest = self.ring_probe_phases[-1][1]
-                delta = (latest - previous) % 6
-                if delta in (1, 5):
-                    # Probes stay below the relay's high threshold, so consecutive
-                    # matched physical nozzles reveal the current direction.
-                    direction = 1 if delta == 1 else -1
-                    self.ring_direction = direction
-                    self.ring_phase = int((latest + direction) % 6)
-                    self.ring_phase_time = t
-                    self.ring_scan_start = t
-                    self.ring_scan_samples = {}
+                sequence = [item[1] for item in self.ring_probe_phases[-7:]]
+                if len(set(sequence[:6])) == 6 and sequence[6] == sequence[0]:
+                    self.ring_cycle = list(sequence[:6])
+                    self.ring_phase = 0
+                    self.ring_phase_time = t - 1
+                    self.ring_move = 1
+                    self.ring_orient_probe = True
+                    self._advance_ring(u, t)
+                else:
+                    self.ring_probe_start = t
+                    self.ring_probe_phases = []
             return
 
-        # With phase and direction known, address each physical nozzle once even
-        # though its logical action slot changes every step, and estimate the
-        # two degraded nozzles together with all nominal scale corrections.
+        # A single slot-one pulse disambiguates whether increasing logical slot
+        # number runs forward or backward through the observed rotor cycle.
+        if self.ring_cycle is not None and self.ring_orientation is None:
+            active = int(np.argmax(u))
+            ordered = np.sort(u)
+            if active == 1 and u[active] > 0.20 and ordered[-2] < 0.05:
+                estimate = (y - self.base_bias) / u[active]
+                nozzle, scale, _ = self._match_ring_column(estimate)
+                plus = self.ring_cycle[(self.ring_phase + 1) % 6]
+                minus = self.ring_cycle[(self.ring_phase - 1) % 6]
+                self.ring_orientation = 1 if nozzle == plus else -1
+                if nozzle not in (plus, minus):
+                    self._reset_ring_tracker(t)
+                    return
+                self.ring_scan_start = t
+                self.ring_orient_probe = False
+                self._advance_ring(u, t)
+            return
+
+        # With the cycle and orientation known, address each physical nozzle
+        # once and estimate both degraded scales.
         if self.ring_scan_start is not None:
             command_t = t - 1
             if command_t >= self.ring_scan_start:
                 active = int(np.argmax(u))
                 ordered = np.sort(u)
-                if u[active] > 0.30 and ordered[-2] < 0.05:
+                if u[active] > 0.20 and ordered[-2] < 0.05:
                     estimate = (y - self.base_bias) / u[active]
-                    nozzle, scale, _ = self._match_ring_column(estimate)
-                    observed_phase = int((nozzle - active) % 6)
-                    self.ring_phase = int(
-                        (observed_phase + self.ring_direction) % 6
+                    nozzle = self._ring_nozzle(active)
+                    column = self.base_B[:, nozzle]
+                    scale = clip(
+                        float(column.dot(estimate))
+                        / max(float(column.dot(column)), 1e-9),
+                        0.05,
+                        1.45,
                     )
-                    self.ring_phase_time = t
                     self.ring_scan_samples[nozzle] = scale
+                    self._advance_ring(u, t)
             if len(self.ring_scan_samples) == 6:
                 self.ring_scales = np.array([
                     self.ring_scan_samples[j] for j in range(6)
@@ -312,10 +363,26 @@ class Controller:
                 self.ring_bad_nozzle = int(order[0])
                 self.ring_secondary_nozzle = int(order[1])
                 self.ring_scan_start = None
+                self.ring_identifications += 1
                 self.bad_residuals = 0
             return
 
-        if self.ring_direction is not None:
+        # Once identified, a large informative residual means the second
+        # independent re-key has happened. Discard the stale rotor immediately
+        # and actively identify the new one.
+        if (self.ring_cycle is not None and self.ring_orientation is not None
+                and self.ring_phase is not None):
+            B, bias = self._plant()
+            residual = y - (B.dot(u) + bias)
+            informative = float(np.max(u)) > 0.12
+            if informative and float(np.linalg.norm(residual)) > 0.110:
+                self.bad_residuals += 1
+            else:
+                self.bad_residuals = max(0, self.bad_residuals - 1)
+            if self.bad_residuals >= 2:
+                self._reset_ring_tracker(t)
+                return
+            self._advance_ring(u, t)
             return
 
         residual = y - (self.base_B.dot(u) + self.base_bias)
@@ -325,16 +392,16 @@ class Controller:
         else:
             self.bad_residuals = max(0, self.bad_residuals - 1)
         if self.bad_residuals >= 1:
-            self.ring_probe_start = t
-            self.ring_probe_phases = []
+            self._reset_ring_tracker(t)
 
     def _plant(self):
         if self.base_B is None:
             return self.model.plant()
-        if self.ring_direction is not None and self.ring_phase is not None:
+        if (self.ring_cycle is not None and self.ring_orientation is not None
+                and self.ring_phase is not None):
             columns = []
             for slot in range(6):
-                nozzle = (slot + self.ring_phase) % 6
+                nozzle = self._ring_nozzle(slot)
                 columns.append(self.base_B[:, nozzle] * self.ring_scales[nozzle])
             return np.column_stack(columns), self.base_bias.copy()
         return self.base_B.copy(), self.base_bias.copy()
@@ -483,14 +550,21 @@ class Controller:
         port_c, port_s = math.cos(phase), math.sin(phase)
         if not self.close_mode:
             wx, wy = 1.58 * port_c, 1.58 * port_s
-            if math.hypot(x - wx, y - wy) < 0.18 and abs(phase_error) < 0.18:
+            port_distance = math.hypot(
+                x - PORT_RADIUS * port_c, y - PORT_RADIUS * port_s
+            )
+            if ((math.hypot(x - wx, y - wy) < 0.18
+                 and abs(phase_error) < 0.18)
+                    or (radius < 1.52 and port_distance < 0.85)):
                 self.close_mode = True
         target_radius = PORT_RADIUS if self.close_mode else 1.58
 
         # When the craft and port are on different sides, rotate on a safe outer arc.
         if radius > 1.48 and abs(phase_error) > 0.28:
             waypoint_angle = bearing + clip(phase_error, -0.34, 0.34)
-            target_radius = max(1.62, min(radius, 2.25))
+            # Rotate and recover radius at once. Following the current radius
+            # can create an outward spiral after the target reverses.
+            target_radius = 1.62
             tx = target_radius * math.cos(waypoint_angle)
             ty = target_radius * math.sin(waypoint_angle)
         else:
@@ -557,18 +631,21 @@ class Controller:
         if calibration is not None:
             action = calibration
         elif (self.ring_probe_start is not None
-              and self.ring_direction is None
+              and self.ring_cycle is None
               and t < self.ring_probe_start + 7):
             action = np.zeros(6)
-            action[0] = 0.34
+            action[0] = 0.24
+        elif self.ring_orient_probe and self.ring_orientation is None:
+            action = np.zeros(6)
+            action[1] = 0.24
         elif (self.ring_scan_start is not None
               and len(self.ring_scan_samples) < 6):
             nozzle = next(
                 j for j in range(6) if j not in self.ring_scan_samples
             )
-            slot = int((nozzle - self.ring_phase) % 6)
+            slot = self._ring_slot(nozzle)
             action = np.zeros(6)
-            action[slot] = 0.34
+            action[slot] = 0.24
         else:
             action = self._guidance(t, obs)
         candidate_close = self.close_mode

@@ -7,17 +7,22 @@ This is not a direct three-axis control problem. The spacecraft has six unidirec
 body-frame thrusters. Each action slot is wired to a different nozzle in every episode;
 the initial wiring is an unknown permutation. Nozzle direction, moment arm, and
 effectiveness also have continuous installation error. Every nozzle couples translation
-and yaw. During flight, a fault-tolerant ring bus silently applies a nonzero cyclic
-remapping of all six action slots to the installed nozzles. On every subsequent simulator
-step the routing advances in a hidden direction, with an action-dependent one- or two-slot
-stride, and two physical nozzles retain different fractions of their authority. The two degraded nozzles form a hysteretic protection interlock. Duty below 0.12 on
+and yaw. During flight, a fault-tolerant rotor bus silently installs an unknown cyclic
+ordering of the six learned nozzle columns, plus a nonzero phase and hidden direction.
+The ordering is an arbitrary permutation, not numerical nozzle order. On every subsequent
+simulator step the rotor advances with an action-dependent one- or two-slot stride, and
+two physical nozzles retain different fractions of their authority. The two degraded
+nozzles form a hysteretic protection interlock. Duty below 0.12 on
 the moderately degraded nozzle arms the relay; the next duty above 0.38 on the more
 severely degraded nozzle reverses the ring direction after that command and disarms it. This arm/reverse cycle can occur
 repeatedly. After applying every post-event command, the ring normally advances one slot
 in its current direction, but advances two slots when the sum of all six duties exceeds
-1.35. You must identify the plant from motion, allocate a desired wrench under
-nonnegative duty-cycle constraints, detect both change points, infer routing phase, and
-track the action-dependent post-fault plant online.
+1.35. Later in the same episode, the bus silently re-keys: it installs an independent
+cyclic ordering, phase, direction, degraded pair, and degradation scales. At that same
+instant the target reverses its slew with a new angular speed. You must identify the
+plant from motion, allocate a desired wrench under nonnegative duty-cycle constraints,
+detect both change points, reject the stale model, infer each rotor online, and track the
+action-dependent plant.
 
 The target body slowly tumbles, so the desired position, velocity, yaw, and yaw rate move.
 The only pose measurements are delayed and can be absent for bursts. Direct spacecraft
@@ -27,21 +32,27 @@ fault isolation, constrained control allocation, and collision-aware guidance.
 
 Episode randomization is fixed to these ranges:
 
-- target angular speed: 0.060 to 0.125 rad/s in either direction;
+- initial target angular speed: 0.060 to 0.125 rad/s in either direction;
+- at the second bus event the target reverses direction with a fresh speed of
+  0.020 to 0.045 rad/s;
 - fixed pose latency: 1 to 3 simulator steps, reported in each observation;
 - nominal per-nozzle effectiveness multiplier: 0.70 to 1.28;
 - nozzle installation angle error: at most 0.18 rad;
-- the post-fault ring starts at a nonzero cyclic shift, in either direction;
+- each of the two post-fault rotors uses an independently shuffled cyclic ordering,
+  a nonzero phase, and either direction;
 - after the event its routing advances one nozzle per step, or two when total duty
   exceeds 1.35, in its current direction;
-- one physical nozzle retains 14% to 28% authority and a distinct second nozzle
-  retains 38% to 58% authority;
+- after the first event one physical nozzle retains 14% to 28% authority and a
+  distinct second nozzle retains 38% to 58% authority;
+- after the second event a newly selected pair retains 25% to 35% and 50% to 65%;
 - duty below 0.12 on the moderately degraded nozzle arms the relay; the next duty
   above 0.38 on the more severely degraded nozzle reverses direction after that
   command and disarms it; the cross-nozzle hysteresis cycle repeats;
 - IMU linear axes have an unknown rotation in [-pi, pi] and may be mirrored;
 - the IMU yaw-acceleration channel has unknown polarity;
-- the bus remapping and degradation event occurs between steps 58 and 103;
+- the first bus remapping and degradation event occurs between steps 58 and 103;
+- the independent re-key occurs between steps 108 and 128, and at least 25 steps
+  after the first event;
 - two pose blackout bursts last 7 to 18 steps, plus sparse single-frame dropouts.
 
 The episode lasts at most 300 steps at 0.12 simulated seconds per step. This shortened
@@ -77,7 +88,8 @@ The circular target body has radius 0.82 and the docking port is at radius 1.14.
 the body or leaving the radius-6.2 operating region terminates the episode with zero
 quality. Successful docking requires position error < 0.105, translational velocity
 error < 0.075, yaw error < 0.075 rad, and yaw-rate error < 0.060 rad/s for seven
-consecutive steps.
+consecutive steps after the second re-key has occurred. Reaching the port earlier
+does not terminate the episode; the controller must survive the re-key and recover.
 
 ## Metric
 
