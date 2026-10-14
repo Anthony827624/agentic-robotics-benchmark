@@ -1,9 +1,9 @@
 {
   "metric": "mean_docking_quality",
   "direction": "higher",
-  "value": 0.9456978848231711,
-  "full_at": 0.96,
-  "source": "Six ALE Engine oracle runs b90f1136, 9861a417, 7e233adc, 88787684, d80c6977, and 4a0335da on 2026-10-13 UTC",
-  "reference_commit": "sha256:fd3e933784375076c37ea822e5c21ea75db1632c06f2cc2ef32136c714845a7b",
-  "note": "The six fresh 48-episode runs measured 0.9222346677154186-0.9822981098170126 (45-48 docks), with mean 0.9456978848231711 and ratios 0.975190-1.038705 against that mean. full_at 0.96 sits below the observed reference tail while retaining substantially more score resolution than the superseded 0.90 calibration."
+  "value": 0.8298163387207139,
+  "full_at": 0.9,
+  "source": "Six ALE Engine oracle runs 013f65b0, 449338ca, bf0eceeb, d5c69e9b, d5eaf588, and fe742231 in run 0cf6d0d4 on 2026-10-14 UTC",
+  "reference_commit": "sha256:8c1847a85029d6874af798beb3f2a7a592f89874845d953efd8b4fc0f336cf36",
+  "note": "The six fresh 48-episode runs measured 0.7608633822053013-0.8999582909848516 (37-44 docks), with mean 0.8298163387207139 and ratios 0.916906-1.084527 against that mean. full_at 0.90 is below the observed reference tail while retaining score resolution for weaker controllers."
 }

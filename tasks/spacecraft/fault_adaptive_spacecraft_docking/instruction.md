@@ -12,14 +12,21 @@ ordering of the six learned nozzle columns, plus a nonzero phase and hidden dire
 The ordering is an arbitrary permutation, not numerical nozzle order. On every subsequent
 simulator step the rotor advances with an action-dependent one- or two-slot stride, and
 two physical nozzles retain different fractions of their authority. The two degraded
-nozzles form a hysteretic protection interlock. Duty below 0.12 on
-the moderately degraded nozzle arms the relay; the next duty above 0.38 on the more
+nozzles are not the only nonlinear effect: after each bus event every physical nozzle
+also receives an independent hidden duty exponent. Its realized thrust fraction is
+`duty ** exponent`, with exponent between 0.65 and 1.60. The exponent set is replaced
+independently at the second re-key. A single-amplitude probe therefore cannot separate
+degradation scale from duty curvature. The two degraded nozzles form a hysteretic
+protection interlock. Duty below 0.12 on
+the moderately degraded nozzle arms the relay; the next duty above 0.78 on the more
 severely degraded nozzle reverses the ring direction after that command and disarms it. This arm/reverse cycle can occur
 repeatedly. After applying every post-event command, the ring normally advances one slot
 in its current direction, but advances two slots when the sum of all six duties exceeds
 1.35. Later in the same episode, the bus silently re-keys: it installs an independent
 cyclic ordering, phase, direction, degraded pair, and degradation scales. At that same
-instant the target reverses its slew with a new angular speed. You must identify the
+instant the target reverses its slew with a new angular speed and the redundant IMU mux
+silently selects a new orthogonal mounting of its linear channels plus an independent
+yaw-channel polarity. You must identify the
 plant from motion, allocate a desired wrench under nonnegative duty-cycle constraints,
 detect both change points, reject the stale model, infer each rotor online, and track the
 action-dependent plant.
@@ -42,17 +49,26 @@ Episode randomization is fixed to these ranges:
   a nonzero phase, and either direction;
 - after the event its routing advances one nozzle per step, or two when total duty
   exceeds 1.35, in its current direction;
-- after the first event one physical nozzle retains 14% to 28% authority and a
-  distinct second nozzle retains 38% to 58% authority;
-- after the second event a newly selected pair retains 25% to 35% and 50% to 65%;
+- after the first event one physical nozzle retains 35% to 50% authority and a
+  distinct second nozzle retains 55% to 70% authority;
+- after the second event a newly selected pair retains 45% to 60% and 65% to 80%;
+- after each event every physical nozzle has an independent duty exponent from
+  0.65 to 1.60; commanded duty still controls fuel use, stride, and relay logic,
+  while realized thrust uses the nonlinear exponent;
 - duty below 0.12 on the moderately degraded nozzle arms the relay; the next duty
-  above 0.38 on the more severely degraded nozzle reverses direction after that
+  above 0.78 on the more severely degraded nozzle reverses direction after that
   command and disarms it; the cross-nozzle hysteresis cycle repeats;
 - IMU linear axes have an unknown rotation in [-pi, pi] and may be mirrored;
 - the IMU yaw-acceleration channel has unknown polarity;
+- at the second re-key, the already hidden IMU frame is further rotated by a
+  nonzero 0.43 or 0.79 rad in either direction and may be mirrored, while yaw
+  polarity independently stays or flips;
 - the first bus remapping and degradation event occurs between steps 58 and 103;
-- the independent re-key occurs between steps 108 and 128, and at least 25 steps
-  after the first event;
+- the independent re-key arms between steps 108 and 125, at least 25 steps after
+  the first event. Once armed, it fires on the first simulator step whose true
+  port-position error is within a hidden 0.88 to 0.98 m threshold; a hidden
+  deadline between steps 148 and 165 forces it if the approach has not entered
+  that region. The observation carries no explicit arm, proximity, or event flag;
 - two pose blackout bursts last 7 to 18 steps, plus sparse single-frame dropouts.
 
 The episode lasts at most 300 steps at 0.12 simulated seconds per step. This shortened
@@ -87,8 +103,11 @@ event flag.
 The circular target body has radius 0.82 and the docking port is at radius 1.14. Entering
 the body or leaving the radius-6.2 operating region terminates the episode with zero
 quality. Successful docking requires position error < 0.105, translational velocity
-error < 0.075, yaw error < 0.075 rad, and yaw-rate error < 0.060 rad/s for seven
-consecutive steps after the second re-key has occurred. Reaching the port earlier
+error < 0.075, yaw error < 0.025 rad, and yaw-rate error < 0.020 rad/s for twenty
+consecutive steps after the second re-key has occurred. In addition, at least one
+complete arm/trigger direction-reversal cycle must have occurred after each bus event;
+merely capping duty below the trigger and bypassing the documented fault mode does not
+qualify. Reaching the port earlier
 does not terminate the episode; the controller must survive the re-key and recover.
 
 ## Metric

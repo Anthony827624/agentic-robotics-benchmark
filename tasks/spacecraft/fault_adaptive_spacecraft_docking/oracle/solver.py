@@ -83,7 +83,9 @@ class Controller:
         self.ring_scan_start = None
         self.ring_scan_samples = {}
         self.ring_scales = np.ones(6)
+        self.ring_exponents = np.ones(6)
         self.ring_identifications = 0
+        self.ring_commission_pending = False
         self.pending_score = float("inf")
         self.pending_action = np.zeros(6)
         self.pending_close = False
@@ -91,6 +93,8 @@ class Controller:
         self.imu_angle = 0.0
         self.imu_mirror = 1.0
         self.imu_yaw_sign = 1.0
+        self.frame_matrix = np.eye(3)
+        self.frame_candidates = [np.eye(3)]
     def _trajectory_frame_cost(self, angle, mirror, yaw_sign):
         samples = sorted(self.all_measurements, key=lambda v: v[0])[1:]
         if len(samples) < 8:
@@ -209,7 +213,9 @@ class Controller:
         self.imu_angle = refined[1]
 
     def _imu_to_body(self, measured):
-        sx, sy, sa = [float(v) for v in measured]
+        sx, sy, sa = np.linalg.solve(
+            self.frame_matrix, np.asarray(measured, dtype=float)
+        )
         c, s = math.cos(self.imu_angle), math.sin(self.imu_angle)
         tx, ty = c * sx + s * sy, -s * sx + c * sy
         return tx, self.imu_mirror * ty, self.imu_yaw_sign * sa
@@ -217,11 +223,29 @@ class Controller:
     def _body_to_imu(self, bx, by, alpha):
         by = self.imu_mirror * by
         c, s = math.cos(self.imu_angle), math.sin(self.imu_angle)
-        return np.array([
+        baseline = np.array([
             c * bx - s * by,
             s * bx + c * by,
             self.imu_yaw_sign * alpha,
         ])
+        return self.frame_matrix.dot(baseline)
+
+    @staticmethod
+    def _signed_frame_candidates():
+        result = []
+        for delta in (-0.79, -0.43, 0.43, 0.79):
+            c, s = math.cos(delta), math.sin(delta)
+            for mirror in (-1.0, 1.0):
+                linear = np.array([[c, -s * mirror], [s, c * mirror]])
+                for yaw_sign in (-1.0, 1.0):
+                    matrix = np.zeros((3, 3))
+                    matrix[:2, :2] = linear
+                    matrix[2, 2] = yaw_sign
+                    result.append(matrix)
+        return result
+
+    def _to_baseline(self, measured):
+        return np.linalg.solve(self.frame_matrix, np.asarray(measured, dtype=float))
 
     def _match_ring_column(self, estimate):
         best = None
@@ -244,6 +268,9 @@ class Controller:
             # pulses already consume a recovery window and retreating to the
             # outer waypoint can strand an otherwise safe vehicle.
             self.last_alloc = np.zeros(6)
+            self.frame_candidates = self._signed_frame_candidates()
+        else:
+            self.frame_candidates = [self.frame_matrix.copy()]
         self.ring_probe_start = int(probe_start)
         self.ring_probe_phases = []
         self.ring_cycle = None
@@ -258,6 +285,7 @@ class Controller:
         self.ring_scan_start = None
         self.ring_scan_samples = {}
         self.ring_scales = np.ones(6)
+        self.ring_exponents = np.ones(6)
         self.bad_residuals = 0
 
     def _ring_nozzle(self, slot, phase=None):
@@ -279,9 +307,10 @@ class Controller:
             arm_slot = self._ring_slot(self.ring_secondary_nozzle)
             if float(u[arm_slot]) < 0.12:
                 self.ring_relay_armed = True
-            if float(u[trigger_slot]) > 0.38 and self.ring_relay_armed:
+            if float(u[trigger_slot]) > 0.78 and self.ring_relay_armed:
                 self.ring_move *= -1
                 self.ring_relay_armed = False
+                self.ring_commission_pending = False
         stride = 2 if float(np.sum(u)) > 1.35 else 1
         self.ring_phase = int(
             (self.ring_phase + stride * self.ring_move) % 6
@@ -300,13 +329,26 @@ class Controller:
             command_t = t - 1
             if (self.ring_probe_start <= command_t < self.ring_probe_start + 7
                     and u[0] > 0.20 and float(np.max(u[1:])) < 0.05):
-                estimate = (y - self.base_bias) / u[0]
-                nozzle, scale, _ = self._match_ring_column(estimate)
-                self.ring_probe_phases.append((command_t, nozzle, scale))
+                self.ring_probe_phases.append((command_t, y.copy(), float(u[0])))
             if len(self.ring_probe_phases) >= 7:
-                sequence = [item[1] for item in self.ring_probe_phases[-7:]]
-                if len(set(sequence[:6])) == 6 and sequence[6] == sequence[0]:
-                    self.ring_cycle = list(sequence[:6])
+                best = None
+                samples = self.ring_probe_phases[-7:]
+                for matrix in self.frame_candidates:
+                    sequence, total_error = [], 0.0
+                    for _, raw, duty in samples:
+                        baseline = np.linalg.solve(matrix, raw)
+                        estimate = (baseline - self.base_bias) / duty
+                        nozzle, _, error = self._match_ring_column(estimate)
+                        sequence.append(nozzle)
+                        total_error += error
+                    valid = len(set(sequence[:6])) == 6 and sequence[6] == sequence[0]
+                    score = total_error + (0.0 if valid else 100.0)
+                    if best is None or score < best[0]:
+                        best = (score, valid, matrix, sequence)
+                if best[1]:
+                    self.frame_matrix = best[2].copy()
+                    self.frame_candidates = [self.frame_matrix.copy()]
+                    self.ring_cycle = list(best[3][:6])
                     self.ring_phase = 0
                     self.ring_phase_time = t - 1
                     self.ring_move = 1
@@ -323,7 +365,7 @@ class Controller:
             active = int(np.argmax(u))
             ordered = np.sort(u)
             if active == 1 and u[active] > 0.20 and ordered[-2] < 0.05:
-                estimate = (y - self.base_bias) / u[active]
+                estimate = (self._to_baseline(y) - self.base_bias) / u[active]
                 nozzle, scale, _ = self._match_ring_column(estimate)
                 plus = self.ring_cycle[(self.ring_phase + 1) % 6]
                 minus = self.ring_cycle[(self.ring_phase - 1) % 6]
@@ -344,26 +386,41 @@ class Controller:
                 active = int(np.argmax(u))
                 ordered = np.sort(u)
                 if u[active] > 0.20 and ordered[-2] < 0.05:
-                    estimate = (y - self.base_bias) / u[active]
+                    estimate = self._to_baseline(y) - self.base_bias
                     nozzle = self._ring_nozzle(active)
                     column = self.base_B[:, nozzle]
-                    scale = clip(
+                    response = clip(
                         float(column.dot(estimate))
                         / max(float(column.dot(column)), 1e-9),
-                        0.05,
+                        0.002,
                         1.45,
                     )
-                    self.ring_scan_samples[nozzle] = scale
+                    self.ring_scan_samples.setdefault(nozzle, []).append(
+                        (float(u[active]), response)
+                    )
                     self._advance_ring(u, t)
-            if len(self.ring_scan_samples) == 6:
-                self.ring_scales = np.array([
-                    self.ring_scan_samples[j] for j in range(6)
-                ])
+            if (len(self.ring_scan_samples) == 6
+                    and all(len(self.ring_scan_samples[j]) >= 2 for j in range(6))):
+                scales, exponents = [], []
+                for nozzle in range(6):
+                    (d1, r1), (d2, r2) = self.ring_scan_samples[nozzle][:2]
+                    exponent = clip(
+                        math.log(max(r2, 1e-6) / max(r1, 1e-6))
+                        / math.log(d2 / d1),
+                        0.40,
+                        2.10,
+                    )
+                    scale = clip(r1 / (d1 ** exponent), 0.05, 1.45)
+                    scales.append(scale)
+                    exponents.append(exponent)
+                self.ring_scales = np.asarray(scales)
+                self.ring_exponents = np.asarray(exponents)
                 order = np.argsort(self.ring_scales)
                 self.ring_bad_nozzle = int(order[0])
                 self.ring_secondary_nozzle = int(order[1])
                 self.ring_scan_start = None
                 self.ring_identifications += 1
+                self.ring_commission_pending = True
                 self.bad_residuals = 0
             return
 
@@ -403,8 +460,11 @@ class Controller:
             for slot in range(6):
                 nozzle = self._ring_nozzle(slot)
                 columns.append(self.base_B[:, nozzle] * self.ring_scales[nozzle])
-            return np.column_stack(columns), self.base_bias.copy()
-        return self.base_B.copy(), self.base_bias.copy()
+            baseline_B = np.column_stack(columns)
+            return (self.frame_matrix.dot(baseline_B),
+                    self.frame_matrix.dot(self.base_bias))
+        return (self.frame_matrix.dot(self.base_B),
+                self.frame_matrix.dot(self.base_bias))
 
     def _query_offset(self, t, obs):
         if obs[13] <= 0.5 or not self.measurements:
@@ -594,14 +654,22 @@ class Controller:
         body_x, body_y = clip(body_x, -0.28, 0.28), clip(body_y, -0.28, 0.28)
         desired = self._body_to_imu(body_x, body_y, clip(alpha, -0.22, 0.22))
         B, bias = self._plant()
-        action = self._allocate(B, bias, desired, self.last_alloc)
+        virtual_action = self._allocate(B, bias, desired, self.last_alloc)
 
         # Persistent, tiny probing keeps every column observable after the hidden loss.
         goal_distance = math.hypot(x - PORT_RADIUS * port_c, y - PORT_RADIUS * port_s)
         if t > 24 and goal_distance > 0.28:
             slot = (t // 2) % 6
-            action[slot] = min(1.0, action[slot] + 0.060)
-        self.last_alloc = action.copy()
+            virtual_action[slot] = min(1.0, virtual_action[slot] + 0.060)
+        self.last_alloc = virtual_action.copy()
+        action = virtual_action.copy()
+        if (self.ring_cycle is not None and self.ring_orientation is not None
+                and self.ring_phase is not None and self.ring_identifications > 0):
+            for slot in range(6):
+                nozzle = self._ring_nozzle(slot)
+                action[slot] = virtual_action[slot] ** (
+                    1.0 / max(float(self.ring_exponents[nozzle]), 0.20)
+                )
         return action
 
     def act(self, t, obs):
@@ -634,18 +702,25 @@ class Controller:
               and self.ring_cycle is None
               and t < self.ring_probe_start + 7):
             action = np.zeros(6)
-            action[0] = 0.24
+            action[0] = 0.45
         elif self.ring_orient_probe and self.ring_orientation is None:
             action = np.zeros(6)
-            action[1] = 0.24
+            action[1] = 0.45
         elif (self.ring_scan_start is not None
-              and len(self.ring_scan_samples) < 6):
+              and (len(self.ring_scan_samples) < 6
+                   or any(len(self.ring_scan_samples.get(j, [])) < 2
+                          for j in range(6)))):
             nozzle = next(
-                j for j in range(6) if j not in self.ring_scan_samples
+                j for j in range(6)
+                if len(self.ring_scan_samples.get(j, [])) < 2
             )
             slot = self._ring_slot(nozzle)
             action = np.zeros(6)
-            action[slot] = 0.24
+            action[slot] = (0.35 if nozzle not in self.ring_scan_samples else 0.70)
+        elif (self.ring_commission_pending
+              and self.ring_bad_nozzle is not None):
+            action = np.zeros(6)
+            action[self._ring_slot(self.ring_bad_nozzle)] = 0.82
         else:
             action = self._guidance(t, obs)
         candidate_close = self.close_mode

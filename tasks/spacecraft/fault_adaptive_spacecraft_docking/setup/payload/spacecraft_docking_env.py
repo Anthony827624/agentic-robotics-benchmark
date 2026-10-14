@@ -113,6 +113,8 @@ class FaultAdaptiveDocking(object):
         self.routing_phase = 0
         self.routing_active = False
         self.routing_relay_armed = True
+        self.first_relay_reversals = 0
+        self.rekey_relay_reversals = 0
         self.bias = [
             self.rng.uniform(-0.010, 0.010),
             self.rng.uniform(-0.010, 0.010),
@@ -123,20 +125,31 @@ class FaultAdaptiveDocking(object):
         if self.secondary_failure_nozzle >= self.failure_nozzle:
             self.secondary_failure_nozzle += 1
         self.failure_step = self.rng.integer(58, 104)
-        self.failure_scale = self.rng.uniform(0.14, 0.28)
-        self.secondary_failure_scale = self.rng.uniform(0.38, 0.58)
-        self.rekey_step = max(
+        self.failure_scale = self.rng.uniform(0.35, 0.50)
+        self.secondary_failure_scale = self.rng.uniform(0.55, 0.70)
+        self.failure_exponents = [self.rng.uniform(0.65, 1.60) for _ in range(6)]
+        self.rekey_earliest = max(
             self.failure_step + 25,
             self.rng.integer(108, 126),
         )
+        self.rekey_deadline = max(
+            self.rekey_earliest + 18,
+            self.rng.integer(148, 166),
+        )
+        self.rekey_proximity = self.rng.uniform(0.88, 0.98)
+        # Until the event fires this exposes the conservative latest time only
+        # to verifier-side diagnostics. It is never part of the observation.
+        self.rekey_step = self.rekey_deadline
         self.rekey_initial_shift = self.rng.integer(1, 6)
         self.rekey_direction = -1 if self.rng.random() < 0.5 else 1
         self.rekey_failure_nozzle = self.rng.integer(0, 6)
         self.rekey_secondary_failure_nozzle = self.rng.integer(0, 5)
         if self.rekey_secondary_failure_nozzle >= self.rekey_failure_nozzle:
             self.rekey_secondary_failure_nozzle += 1
-        self.rekey_failure_scale = self.rng.uniform(0.25, 0.35)
-        self.rekey_secondary_failure_scale = self.rng.uniform(0.50, 0.65)
+        self.rekey_failure_scale = self.rng.uniform(0.45, 0.60)
+        self.rekey_secondary_failure_scale = self.rng.uniform(0.65, 0.80)
+        self.rekey_exponents = [self.rng.uniform(0.65, 1.60) for _ in range(6)]
+        self.nozzle_exponents = [1.0] * 6
         next_speed = self.rng.uniform(0.020, 0.045)
         self.rekey_phase_rate = -next_speed if self.phase_rate > 0.0 else next_speed
         self.rekey_active = False
@@ -147,6 +160,17 @@ class FaultAdaptiveDocking(object):
         self.imu_angle = self.rng.uniform(-math.pi, math.pi)
         self.imu_mirror = -1.0 if self.rng.random() < 0.5 else 1.0
         self.imu_yaw_sign = -1.0 if self.rng.random() < 0.5 else 1.0
+        # At the terminal re-key the redundant IMU mux also changes mounting.
+        # Non-symmetric offsets avoid an unobservable equivalence with the
+        # roughly hexagonal nozzle layout; reflection and yaw polarity remain
+        # independent hidden choices.
+        remounts = []
+        for delta in (-0.79, -0.43, 0.43, 0.79):
+            c, s = math.cos(delta), math.sin(delta)
+            for mirror in (-1.0, 1.0):
+                remounts.append(((c, -s * mirror), (s, c * mirror)))
+        self.rekey_imu_linear = remounts[self.rng.integer(0, len(remounts))]
+        self.rekey_imu_yaw_sign = -1.0 if self.rng.random() < 0.5 else 1.0
 
         self.pose_delay = self.rng.integer(1, 4)
         first = self.rng.integer(48, 82)
@@ -221,6 +245,12 @@ class FaultAdaptiveDocking(object):
             s * bx + c * by + self.rng.uniform(-0.006, 0.006),
             self.imu_yaw_sign * ba + self.rng.uniform(-0.004, 0.004),
         ]
+        if self.rekey_active:
+            matrix = self.rekey_imu_linear
+            ix, iy = imu[0], imu[1]
+            imu[0] = matrix[0][0] * ix + matrix[0][1] * iy
+            imu[1] = matrix[1][0] * ix + matrix[1][1] * iy
+            imu[2] *= self.rekey_imu_yaw_sign
         return pose + imu + [
             self.fuel,
             float(age),
@@ -242,7 +272,14 @@ class FaultAdaptiveDocking(object):
             command = [0.0] * 6
 
         body_ax, body_ay, alpha = self.bias
-        if self.routing_active and not self.rekey_active and self.steps >= self.rekey_step:
+        gx, gy, _, _, _ = self.goal_state()
+        rekey_close = math.hypot(self.x - gx, self.y - gy) <= self.rekey_proximity
+        rekey_due = (
+            self.steps >= self.rekey_earliest
+            and (rekey_close or self.steps >= self.rekey_deadline)
+        )
+        if self.routing_active and not self.rekey_active and rekey_due:
+            self.rekey_step = self.steps
             self.rekey_active = True
             self.routing_order = list(self.rekey_order)
             self.routing_direction = self.rekey_direction
@@ -254,9 +291,11 @@ class FaultAdaptiveDocking(object):
             self.secondary_failure_nozzle = self.rekey_secondary_failure_nozzle
             self.failure_scale = self.rekey_failure_scale
             self.secondary_failure_scale = self.rekey_secondary_failure_scale
+            self.nozzle_exponents = list(self.rekey_exponents)
             self.phase_rate = self.rekey_phase_rate
         if not self.routing_active and self.steps >= self.failure_step:
             self.routing_active = True
+            self.nozzle_exponents = list(self.failure_exponents)
             self.routing_phase = (
                 self.routing_direction * self.routing_initial_shift
             ) % 6
@@ -275,7 +314,7 @@ class FaultAdaptiveDocking(object):
             )
             if command[arm_slot] < 0.12:
                 self.routing_relay_armed = True
-            if command[trigger_slot] > 0.38 and self.routing_relay_armed:
+            if command[trigger_slot] > 0.78 and self.routing_relay_armed:
                 reverse_after_step = True
                 self.routing_relay_armed = False
         for i, duty in enumerate(command):
@@ -293,10 +332,11 @@ class FaultAdaptiveDocking(object):
                 scale = self.secondary_failure_scale
             else:
                 scale = 1.0
+            realized_duty = duty ** self.nozzle_exponents[nozzle]
             column = self.columns[nozzle]
-            body_ax += column[0] * scale * duty
-            body_ay += column[1] * scale * duty
-            alpha += column[2] * scale * duty
+            body_ax += column[0] * scale * realized_duty
+            body_ay += column[1] * scale * realized_duty
+            alpha += column[2] * scale * realized_duty
         self.last_accel_body = [body_ax, body_ay, alpha]
 
         c, s = math.cos(self.theta), math.sin(self.theta)
@@ -313,6 +353,10 @@ class FaultAdaptiveDocking(object):
         if event_active:
             if reverse_after_step:
                 self.routing_direction *= -1
+                if self.rekey_active:
+                    self.rekey_relay_reversals += 1
+                else:
+                    self.first_relay_reversals += 1
             stride = 2 if sum(command) > 1.35 else 1
             self.routing_phase = (
                 self.routing_phase + stride * self.routing_direction
@@ -328,11 +372,13 @@ class FaultAdaptiveDocking(object):
         self.best_error = min(self.best_error, pos_error)
         docked = (
             self.rekey_active
+            and self.first_relay_reversals >= 1
+            and self.rekey_relay_reversals >= 1
             and pos_error < 0.105 and vel_error < 0.075
-            and angle_error < 0.075 and rate_error < 0.060
+            and angle_error < 0.025 and rate_error < 0.020
         )
         self.hold_steps = self.hold_steps + 1 if docked else 0
-        if self.hold_steps >= 7:
+        if self.hold_steps >= 20:
             self.success, self.failure_reason = True, "docked"
 
         radius = math.hypot(self.x, self.y)
