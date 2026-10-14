@@ -137,6 +137,9 @@ class FaultAdaptiveDocking(object):
             self.rng.integer(148, 166),
         )
         self.rekey_proximity = self.rng.uniform(0.88, 0.98)
+        self.rekey_blackout_duration = 30 + (
+            (self.failure_step + self.rekey_deadline) % 13
+        )
         # Until the event fires this exposes the conservative latest time only
         # to verifier-side diagnostics. It is never part of the observation.
         self.rekey_step = self.rekey_deadline
@@ -207,7 +210,13 @@ class FaultAdaptiveDocking(object):
         self.pose_history = self.pose_history[-12:]
 
     def _is_blackout(self):
-        return any(a <= self.steps < b for a, b in self.blackouts)
+        scheduled = any(a <= self.steps < b for a, b in self.blackouts)
+        event_blackout = (
+            self.rekey_active
+            and self.rekey_step <= self.steps
+            < self.rekey_step + self.rekey_blackout_duration
+        )
+        return scheduled or event_blackout
 
     def _delayed_pose(self):
         wanted = max(0, self.steps - self.pose_delay)

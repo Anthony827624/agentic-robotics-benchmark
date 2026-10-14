@@ -70,6 +70,10 @@ Episode randomization is fixed to these ranges:
   deadline between steps 148 and 165 forces it if the approach has not entered
   that region. The observation carries no explicit arm, proximity, or event flag;
 - two pose blackout bursts last 7 to 18 steps, plus sparse single-frame dropouts.
+- the second re-key itself starts an additional 30 to 42 step pose blackout.
+  Thus the target reversal, rotor replacement, and IMU remount must initially be
+  detected and survived without a fresh camera pose; the blackout does not add
+  steps to the 300-step episode.
 
 The episode lasts at most 300 steps at 0.12 simulated seconds per step. This shortened
 horizon is deliberate: difficulty should come from identification and closed-loop

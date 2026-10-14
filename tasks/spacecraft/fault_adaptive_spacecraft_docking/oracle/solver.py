@@ -269,6 +269,12 @@ class Controller:
             # outer waypoint can strand an otherwise safe vehicle.
             self.last_alloc = np.zeros(6)
             self.frame_candidates = self._signed_frame_candidates()
+            # The task contract says the target reverses at this same event.
+            # Camera is deliberately unavailable immediately afterward, so use
+            # the known sign change and the midpoint of the disclosed new-speed
+            # interval until a fresh pose makes the exact rate observable.
+            if abs(self.goal_rate) > 1e-6:
+                self.goal_rate = -math.copysign(0.0325, self.goal_rate)
         else:
             self.frame_candidates = [self.frame_matrix.copy()]
         self.ring_probe_start = int(probe_start)
