@@ -82,9 +82,18 @@ with cwd `/home/user/submission` at the agent's UID. `READY` must arrive within
 after each `reset`. Nothing on the wire marks a probe. `ProbeLock.probe(solver, t, obs)`
 asks a probed step twice with the same `t`, the real observation and a perturbed copy in a
 hidden order, applies only the real reply and compares the two. The instruction tells the
-agent exactly this, so an honest solver needs no special case and a dishonest one has
-nothing to key on. The practice grader speaks the same wire, deadlines and repeated-`t`
-queries included.
+agent exactly this, so an honest solver needs no special case. The lock catches a policy
+that ignores its input; it is not a proof of honesty (a solver can notice a repeated `t`
+and vary its answer on purpose), and isolation, not the lock, keeps the score honest. The
+practice grader speaks the same wire, deadlines and repeated-`t` queries included.
+
+After an aborted episode (a missed deadline, a crash, a malformed or missing action) the
+next `reset` stops the solver's whole process group and launches `run.sh` again, which must
+print `READY` again: a late reply left on the wire must not answer the next request. After
+`max_restarts` (3) restarts, or a restart that fails, every remaining episode aborts at
+once. Say so in the instruction, and charge an aborted episode a real cost (the template
+charges what standing still would cost), never drop it: a dropped episode lets a weak
+policy abort its bad starts and average only its good ones.
 
 ## How validation gates
 

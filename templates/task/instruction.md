@@ -19,7 +19,7 @@ speaks one JSON object per line on stdin/stdout. The grader launches it as `bash
 with the working directory set to `/home/user/submission`, under your own user account.
 
 ```
-                                  <- READY                  (once, when you are loaded)
+                                  <- READY                  (when you are loaded)
 {"type": "reset"}                 -> {"ok": true}
 {"type": "act", "t": 0, "obs": [x, y, vx, vy, gx, gy]}
                                   -> {"action": [ax, ay]}
@@ -29,8 +29,12 @@ with the working directory set to `/home/user/submission`, under your own user a
 Keep stdout clean — it is the wire. Send diagnostics to stderr.
 
 Deadlines: print `READY` within 120 s of launch (load whatever you need first, then print
-it), and answer every request within 30 s. A missed deadline aborts the episode, which then
-counts as a failure.
+it), and answer every request within 30 s. A missed deadline, a reply that is not one JSON
+object with an `action` of two numbers, or a crash aborts the episode, which is then charged
+as if you had not moved at all. After an aborted episode the grader stops your process and
+launches `bash run.sh` again for the next one (it must print `READY` again); after three
+such restarts every remaining episode aborts. So `run.sh` has to work when started a second
+time: no fixed ports, PID files or locks that the first run leaves behind.
 
 `t` is the step index within the episode, starting at 0 after each `reset`. A step may be
 queried more than once with the same `t`; answer each request from the observation it
