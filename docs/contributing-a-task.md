@@ -176,8 +176,8 @@ Before reading a failed run as a model limitation, fix what is not the task: env
 failures, missing dependencies, unclear instructions. Keep the run instructions and the
 results for the pull request.
 
-Two defects of the `claude-code` harness at the pinned engine commit lower scores without
-any error. Check for both before trusting a run:
+Three limits of the `claude-code` harness and the engine at the pinned commit lower scores
+without any error. Check for each before trusting a run:
 
 - A model stream that is silent for 300 s is cut off, and the episode ends as
   `API Error: The operation timed out`. For evaluation runs, add
@@ -187,6 +187,15 @@ any error. Check for both before trusting a run:
   so `/opt/venv/bin` is gone and the agent's `python3` lacks the venv's packages. Say in
   `instruction.md` that the venv's interpreter is `/opt/venv/bin/python3`, and check the
   agent's transcript for `ModuleNotFoundError`.
+- The CLI caps one response at 64k output tokens, and the engine's gateway ends any single
+  model request after 1800 s in total. A model that thinks for longer than that before
+  acting gets back a response with no text and no tool call, and can loop on it until the
+  agent budget runs out with nothing in `/home/user/submission/`. Look for
+  `stop_reason: max_tokens` and 30-minute calls in the episode's `trace.transport.jsonl`.
+  Raising `CLAUDE_CODE_MAX_OUTPUT_TOKENS` in the evaluation copy helps only up to what fits
+  in 30 minutes. On the spacecraft task (2026-10-15), Fable 5.1 and Fable 5 never acted at
+  64k, 100k or 128k; Opus 5.5 and Opus 5 did. Treat such a zero as an evaluation
+  failure, not as difficulty.
 
 ## 8. Submit
 

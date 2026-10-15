@@ -222,9 +222,19 @@ and `verify/` included.
     the probe lock is not a proof of honesty).
 - Measured on 2026-10-13, on the previous version of the task: Fable 5.1 1.0, Opus 5.5 1.0,
   Opus 5 0.84, Fable 5 0.74. The 2026-10-15 runs on the merged version use an evaluation copy
-  whose image only adds two harness workarounds (outside the repository, `arb-eval`).
-  - The stream idle timeout.
-  - A `.pth` so that the harness's hard-coded `PATH` still finds the venv's numpy.
+  whose image only adds harness workarounds (outside the repository, `arb-eval`): the stream
+  idle timeout, a `.pth` so the harness's hard-coded `PATH` still finds the venv's numpy, and
+  for the later runs `CLAUDE_CODE_MAX_OUTPUT_TOKENS`. Results (n = 1 per configuration):
+  - Opus 5.5: reward 1.0 twice (`mean_docking_quality` 0.940 and 0.982; ratio 1.26 and 1.32;
+    46/48 and 48/48 docked).
+  - Opus 5: the first run ended in an API error before writing `run.sh`. The second hit the
+    3 h agent timeout (no score); its leftover submission, scored afterwards in the sandbox,
+    reaches reward 1.0 (0.740, ratio 0.99).
+  - Fable 5.1 and Fable 5: empty submissions, reward 0. Every long turn hit the response
+    cap (64k, then 100k) or the gateway's 30-minute request limit (at 128k) with no text and
+    no tool call, so this is an evaluation-stack failure, not difficulty.
+  - Conclusion: the task does not stump frontier models; its difficulty must go up (results
+    posted on #1 for its author). About $104 at list prices.
 
 ## Open items
 
@@ -236,9 +246,10 @@ and `verify/` included.
 - After this merges: export the registry from a clean `main`, commit `identity-history.json`
   (the spacecraft task is new; the `drone_hover` record stays as history), and install the
   export in the website.
-- Frontier-model runs on the merged spacecraft task (Opus 5.5, Opus 5, Fable 5.1, Fable 5).
-  If they saturate it, raise the difficulty in a new pull request, by Jack or the
-  maintainers. The guidelines' target is roughly below 0.5.
+- Raise the spacecraft task's difficulty in a new pull request (Jack or the maintainers):
+  Opus 5.5 saturates it (§6). The guidelines' target is a frontier `reward` roughly below 0.5,
+  from a harder engineering or perception challenge, not penalties. Then re-measure the anchor
+  and re-run the frontier models.
 - Pull request #4 (`ball_physics_stepper`) must re-vendor the kit from #6 (CI's byte
   comparison), and should move to 64-bit, keyed-hash seeding if its agent holds a simulator
   copy.
@@ -247,6 +258,8 @@ and `verify/` included.
 - Engine (upstream) issues that skew agent runs:
   - the claude-code harness kills a model stream after 300 s without a byte;
   - it hard-codes the agent's `PATH`, so the image's `/opt/venv/bin` is lost;
+  - the CLI caps a response at 64k tokens and the gateway ends a request after 1800 s in total
+    (`gateway/server.py`), which leaves long-thinking models with empty turns;
   - egress is opened before verify while a closed_loop solver runs.
 
 ## Gotchas

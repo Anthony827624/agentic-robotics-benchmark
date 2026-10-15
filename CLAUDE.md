@@ -153,8 +153,9 @@ task after it lands, so the copy a maintainer validated is the copy that scores.
 - Before the pull request a contributor runs `ale lint` + `ale validate` and measures
   difficulty with frontier models (`ale run`); the target is a frontier-model `reward` roughly
   below 0.5, reached by raising the engineering or perception challenge, never by arbitrary
-  penalties. Check runs for the two pinned-harness defects first (300 s stream cut-off; the
-  agent's `PATH` without `/opt/venv/bin`; `docs/contributing-a-task.md` §7).
+  penalties. Check runs for the three pinned-stack limits first (300 s stream cut-off; the
+  agent's `PATH` without `/opt/venv/bin`; 64k tokens per response and 30 minutes per request,
+  which leave long-thinking models with empty turns; `docs/contributing-a-task.md` §7).
 - Maintainer flow: read `verify/` and `oracle/`, check out the branch, re-run `ale lint` +
   `ale validate` from `vendor/ale`, fix the anchor on the branch if the measurement
   disagrees, merge, then export the registry (`scripts/export_registry.py`) and commit
@@ -209,8 +210,9 @@ uv run pytest -q
 - No secrets in the repo (`.env`, tokens, keys). No hardware-dependent scored metric. No
   100 MB+ blobs in git.
 - `tasks/space/fault_adaptive_spacecraft_docking` (contributed in #1, merged 2026-10-15 after
-  a maintainer pass) is the worked example of a complete task. Its difficulty is being
-  re-measured: on its previous version, Opus 5.5 and Fable 5.1 scored 1.0. The dummy
+  a maintainer pass) is the worked example of a complete task. It is too easy as merged:
+  on 2026-10-15 Opus 5.5 scored reward 1.0 twice (ratio 1.26 and 1.32 against the reference),
+  so raising its difficulty is open work. The dummy
   `uav_hover` (formerly `drone_hover`) was removed on 2026-10-15: a task frontier models solve
   trivially is neither a real example nor a task anyone could submit (owner decision).
 

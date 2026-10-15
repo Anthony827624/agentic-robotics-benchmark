@@ -54,8 +54,9 @@ the task's score is the verdict's `reward` (0 to 1), and current frontier models
 roughly below 0.5 under the agreed configuration and budget. Raise the engineering or
 perception challenge rather than adding arbitrary penalties, and fix environment failures,
 missing dependencies and unclear instructions before reading a failed run as a model
-limitation. The pinned `claude-code` harness has two such defects (a model stream silent for
-300 s is cut off; the agent's `PATH` drops `/opt/venv/bin`); see
+limitation. The pinned `claude-code` harness and engine have three such limits (a model stream
+silent for 300 s is cut off; the agent's `PATH` drops `/opt/venv/bin`; a response is capped at
+64k tokens and a request at 30 minutes, so a model that thinks longer never acts); see
 [`docs/contributing-a-task.md`](docs/contributing-a-task.md) §7. Keep the run instructions
 and the results of both.
 
