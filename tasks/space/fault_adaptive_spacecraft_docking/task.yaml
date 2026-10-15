@@ -10,9 +10,4 @@ timeouts: {setup: 120, agent: 10800, verify: 1800}
 artifacts: [/home/user/submission]
 
 metadata:
-  platform: spacecraft
-  direction: control
-  metric:
-    name: mean_docking_quality
-    direction: higher
-    hardware_invariant: true
+  platform: space
