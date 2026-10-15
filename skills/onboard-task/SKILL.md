@@ -15,12 +15,13 @@ solves it)* to a task the upstream ALE engine accepts. The Agentic Robotics Benc
 its tasks on `AgentsLastExam/ale`: each task drops an autonomous agent into a sandboxed
 robotics problem (develop a controller, plan a manipulation sequence, write code-as-policy,
 tune a planner, …) and scores the artifact it leaves behind with a hidden grader on hidden
-seeds. There is one kind of task; `direction` is the taxonomy axis. The folder shape and the
+seeds. There is one kind of task; `metadata.platform` (one of `tasks/platforms.json`) is the
+taxonomy axis. The folder shape and the
 manifest are upstream's, and the pinned engine lives at `vendor/ale`.
 
-Read first: `tasks/README.md` (the task contract — the source of truth for the layout),
-`templates/README.md` (what each template file is for), and the worked example
-`tasks/uav/uav_hover` — a real closed_loop task that validates green.
+Read first: `templates/README.md` (the task contract and what each template file is for —
+the source of truth for the layout) and the worked example `tasks/uav/uav_hover` — a real
+closed_loop task that validates green.
 
 ## What you are producing
 
@@ -59,7 +60,7 @@ assume, and never interrogate.
    — success_rate, reward, SPL, ATE, collision_rate. Not ms / FPS / throughput / frequency:
    those measure the machine. If the natural headline is a time, recast it as a pass/fail
    real-time threshold. If the natural metric is negative (a reward that is minus a distance),
-   report the positive cost and set `direction: lower` — a negative anchor inverts the ratio
+   report the positive cost and set the anchor's `direction` to `lower` — a negative anchor inverts the ratio
    and the kit refuses it.
 4. **Large assets** — weights, datasets, maps. Fetchable from a stable public URL with a
    pinned sha256 at build time, or retrainable in the oracle? If neither, give up.
@@ -93,7 +94,7 @@ There is one template. The pattern only decides what `verify/verify.py` does:
 | **artifact_rollout** | a frozen checkpoint/config the grader runs itself (batched sim, a whole ROS launch) | load the artifact inside `deprivileged`, roll out on hidden seeds; no wire, so no probe lock |
 
 Load the matching mode skill — `onboard-open-loop`, `onboard-closed-loop`,
-`onboard-artifact-rollout` — with `{task, platform, direction, metric, image, task_dir}`.
+`onboard-artifact-rollout` — with `{task, platform, metric, image, task_dir}`.
 
 ### Step 3 — instantiate
 
@@ -101,8 +102,9 @@ Load the matching mode skill — `onboard-open-loop`, `onboard-closed-loop`,
 uv run python -m harness.ale_onboard <spec>.yaml --no-gate
 ```
 
-The spec is small: `task`, `platform`, `direction`, `metric: {name, direction}`, and an
-optional prebuilt `image` ref. It fills metadata and nothing else — the environment, the
+The spec is small: `task`, `platform` (one of `tasks/platforms.json`), `metric: {name,
+direction}` (written into `verify/anchor.json`), and an optional prebuilt `image` ref. It fills
+those and nothing else — the environment, the
 oracle and the grader's physics are yours to write, and inventing them is the one failure
 this pipeline exists to prevent.
 

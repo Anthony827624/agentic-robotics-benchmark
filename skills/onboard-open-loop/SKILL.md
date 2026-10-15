@@ -11,7 +11,7 @@ description: >-
 
 # onboard-open-loop — build an open_loop task
 
-Loaded by **onboard-task** with `{task, platform, direction, metric, image, task_dir}`. Ask
+Loaded by **onboard-task** with `{task, platform, metric, image, task_dir}`. Ask
 only what this pattern needs, then drive the build.
 
 The shape: the agent's work product is **answers**, not a policy. By the time the verify stage

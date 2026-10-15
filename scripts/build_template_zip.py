@@ -106,8 +106,8 @@ clear is the quality standard:
 https://github.com/AgentsLastExam/ale/blob/main/docs/specs/task-quality-standard.md. Read both once.
 A robotics task here adds five rules:
 
-- The metric is an outcome on a positive scale (success rate, reward, path cost), never wall-clock
-  time, throughput or frame rate. `metadata.metric` in `task.yaml` declares it.
+- The metric is an outcome on a positive scale (success rate, path cost), never wall-clock time or
+  throughput. `verify/anchor.json` declares it (`metric`, `direction`); `metric_name=` must match.
 - The anchor (`verify/anchor.json` `value`) is your reference solution's own measured value from a
   real run, never a published figure. `full_at` is the ratio where the reward saturates to 1; size
   it from the metric's spread over several oracle runs.

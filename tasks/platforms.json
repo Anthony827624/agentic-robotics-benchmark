@@ -1,0 +1,14 @@
+[
+  {"key": "arm", "label": "Robotic arm"},
+  {"key": "hand", "label": "Dexterous hand"},
+  {"key": "quadruped", "label": "Quadruped"},
+  {"key": "humanoid", "label": "Humanoid"},
+  {"key": "uav", "label": "UAV"},
+  {"key": "driving", "label": "Autonomous driving"},
+  {"key": "underwater", "label": "Underwater robot (UUV/AUV)"},
+  {"key": "space", "label": "Space robot"},
+  {"key": "soft", "label": "Soft robot"},
+  {"key": "surgical", "label": "Surgical robot"},
+  {"key": "swarm", "label": "Swarm"},
+  {"key": "subsystems", "label": "Subsystems"}
+]

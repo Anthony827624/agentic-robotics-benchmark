@@ -35,25 +35,13 @@ artifacts: [/home/user/submission]
 # seed-to-seed spread. See that file.
 
 metadata:
-  # platform: one of the registry's platform keys, VERBATIM (`platforms[]` in the website
-  # repository's content/tasks/registry.json):
-  #   humanoid | manipulation | multirobot | quadruped | soft | spacecraft | surgical |
-  #   uav | underwater | vehicle
-  # It also names the tasks/<platform>/ folder the task lands in, so it must match
-  # ^[a-z0-9][a-z0-9_-]*$.
-  # direction: one of the registry's `directions[]` keys (control, planning, navigation,
-  # learning, locomotion, motion-planning, ... — read the registry for the full list).
-  # A key that is not in the registry needs a maintainer to add it before the task can be
-  # listed — say so in your upload title.
+  # platform: one of the benchmark's platform keys (tasks/platforms.json in this repository):
+  #   arm | hand | quadruped | humanoid | uav | driving | underwater | space | soft |
+  #   surgical | swarm | subsystems
+  # It also names the tasks/<platform>/ folder the task lands in. A platform that is not on
+  # the list needs a maintainer to add it to tasks/platforms.json first.
+  # The metric and its direction live in verify/anchor.json (`metric`, `direction`): an
+  # OUTCOME on a positive scale (success_rate, reward, SPL, ATE, collision_rate, or a cost
+  # with direction lower), never a wall-clock time, throughput, FPS or frequency, which
+  # measure the machine, not the method.
   platform: TODO
-  direction: TODO
-  metric:
-    name: TODO            # an OUTCOME: success_rate, reward, SPL, ATE, collision_rate
-    # Must be on a POSITIVE scale — a negative anchor inverts the ratio. A negative
-    # reward sum becomes a positive cost with `direction: lower`. Must agree with
-    # verify/anchor.json's `direction` (the grader reads that one; the server reads this
-    # one): the shipped grader scores mean_goal_distance, a cost, so it is `lower` here.
-    direction: lower      # higher | lower
-    # Never a wall-clock time, throughput, FPS or frequency: those measure the machine,
-    # not the method, and cannot be compared across contributors' hardware.
-    hardware_invariant: true

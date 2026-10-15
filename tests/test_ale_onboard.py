@@ -61,15 +61,14 @@ def test_retired_genre_and_paper_keys_are_ignored_not_refused():
 # --------------------------------------------------------------------------- #
 SPEC = {
     "task": "probe_task",
-    "platform": "manipulation",
-    "direction": "control",
+    "platform": "arm",
     "metric": {"name": "success_rate", "direction": "lower"},
 }
 
 
 def test_instantiate_writes_the_core_v1_shape(tmp_path):
     task_dir = ob.instantiate(SPEC, repo=tmp_path)
-    assert task_dir == tmp_path / "tasks" / "manipulation" / "probe_task"
+    assert task_dir == tmp_path / "tasks" / "arm" / "probe_task"
     for required in ("task.yaml", "instruction.md", "image/Dockerfile", "setup/run.sh",
                      "verify/run.sh", "verify/verify.py", "oracle/run.sh"):
         assert (task_dir / required).is_file(), required
@@ -85,12 +84,12 @@ def test_instantiate_writes_the_core_v1_shape(tmp_path):
 
 @pytest.mark.parametrize("direction", ["higher", "lower"])
 def test_instantiate_sets_the_declared_metric_direction(tmp_path, direction):
-    """The template ships `direction: lower` (its grader scores a cost); the spec's value must
-    land in task.yaml either way, never the template's default."""
+    """The template's anchor ships `direction: lower` (its grader scores a cost); the spec's
+    value must land in verify/anchor.json either way, never the template's default."""
     spec = dict(SPEC, metric={"name": "success_rate", "direction": direction})
     task_dir = ob.instantiate(spec, repo=tmp_path)
-    manifest = yaml.safe_load((task_dir / "task.yaml").read_text())
-    assert manifest["metadata"]["metric"]["direction"] == direction
+    anchor = json.loads((task_dir / "verify" / "anchor.json").read_text())
+    assert (anchor["metric"], anchor["direction"]) == ("success_rate", direction)
 
 
 def test_instantiate_fills_metadata_and_keeps_todos(tmp_path):
@@ -100,15 +99,34 @@ def test_instantiate_fills_metadata_and_keeps_todos(tmp_path):
     assert manifest["name"] == "probe_task"          # the stable identity, stamped
     assert manifest["image"] == {"kind": "container"}
     meta = manifest["metadata"]
-    assert meta["platform"] == "manipulation"
-    assert meta["direction"] == "control"
-    assert meta["metric"]["name"] == "success_rate"
-    assert meta["metric"]["direction"] == "lower"
+    assert meta == {"platform": "arm"}          # platform is the only metadata field
     # One kind of task: the retired genre / paper block is not written.
     assert "genre" not in meta and "paper" not in meta
-    # The anchor is NOT filled: it can only come from a real measurement.
+    # The metric and its direction go into the anchor. Its value is NOT filled: it can only
+    # come from a real measurement.
     anchor = json.loads((task_dir / "verify" / "anchor.json").read_text())
+    assert (anchor["metric"], anchor["direction"]) == ("success_rate", "lower")
     assert anchor["value"] is None
+
+
+def test_a_named_metric_without_direction_is_higher_is_better(tmp_path):
+    """Never inherit the template anchor's `lower`: it belongs to the template's cost metric."""
+    task_dir = ob.instantiate(dict(SPEC, metric={"name": "success_rate"}), repo=tmp_path)
+    anchor = json.loads((task_dir / "verify" / "anchor.json").read_text())
+    assert (anchor["metric"], anchor["direction"]) == ("success_rate", "higher")
+
+
+def test_a_direction_without_a_metric_name_leaves_the_anchor_unnamed(tmp_path):
+    """The template's anchor names no metric (`TODO`), so the lint keeps asking for one."""
+    task_dir = ob.instantiate(dict(SPEC, metric={"direction": "higher"}), repo=tmp_path)
+    anchor = json.loads((task_dir / "verify" / "anchor.json").read_text())
+    assert (anchor["metric"], anchor["direction"]) == ("TODO", "higher")
+
+
+def test_instantiate_refuses_an_unregistered_platform(tmp_path):
+    with pytest.raises(ValueError, match="tasks/platforms.json"):
+        ob.instantiate(dict(SPEC, platform="spacecraft"), repo=tmp_path)
+    assert not (tmp_path / "tasks").exists()        # nothing written
 
 
 def test_instantiate_ignores_a_stale_genre_in_the_spec(tmp_path):
@@ -187,8 +205,11 @@ def test_onboard_reports_an_unreadable_spec_file(tmp_path):
 # --------------------------------------------------------------------------- #
 # verdict classification — the only place a fake `built` could come from
 # --------------------------------------------------------------------------- #
-def _task(tmp_path):
-    return ob.instantiate(dict(SPEC, task="cls"), repo=tmp_path)
+def _task(tmp_path, metric=None):
+    # the template's grader reports mean_goal_distance, so that is the anchor's metric here
+    return ob.instantiate(dict(SPEC, task="cls",
+                               metric=metric or {"name": "mean_goal_distance", "direction": "lower"}),
+                          repo=tmp_path)
 
 
 _CLEAN_ZERO = object()  # sentinel: "the untouched pass scored an honest all-zero"
@@ -206,8 +227,8 @@ def _passes(oracle=None, untouched=_CLEAN_ZERO, metrics=None,
     )
 
 
-def _gate(monkeypatch, tmp_path, passes, *, lint_rc=0, proc=True, proc_rc=0):
-    task_dir = _task(tmp_path)
+def _gate(monkeypatch, tmp_path, passes, *, lint_rc=0, proc=True, proc_rc=0, metric=None):
+    task_dir = _task(tmp_path, metric)
 
     class FakeLint:
         returncode = lint_rc
@@ -253,12 +274,25 @@ def test_a_null_anchor_is_needs_anchor_with_the_measurement(monkeypatch, tmp_pat
     assert result.anchor_recorded is False
     assert result.engine_failures == ["oracle_not_full"]
     assert "verify/anchor.json" in result.detail and "oracle_not_full" in result.detail
+    assert "`metric`" not in result.detail              # the anchor already names it
+
+
+def test_an_anchor_still_naming_todo_asks_for_the_metric_name(monkeypatch, tmp_path):
+    """`TODO` is the template's placeholder, not a metric: no mismatch, but ask for the name."""
+    result = _gate(monkeypatch, tmp_path, _passes(
+        oracle={"reward": 0.0},
+        metrics={"ratio": 0.0, "mean_goal_distance": 0.1024,
+                 "anchor_recorded": 0.0, "match_lock_ok": 1.0},
+        engine_failures=["oracle_not_full"],
+    ), proc_rc=2, metric={"direction": "lower"})
+    assert result.status == "needs_anchor"
+    assert "`metric`: 'mean_goal_distance'" in result.detail
 
 
 def test_an_oracle_below_one_is_not_built(monkeypatch, tmp_path):
     result = _gate(monkeypatch, tmp_path, _passes(
         oracle={"reward": 0.62},
-        metrics={"ratio": 0.5, "success_rate": 0.4,
+        metrics={"ratio": 0.5, "mean_goal_distance": 0.4,
                  "anchor_recorded": 1.0, "match_lock_ok": 1.0},
     ))
     assert result.status == "needs_input"
@@ -268,6 +302,17 @@ def test_an_oracle_below_one_is_not_built(monkeypatch, tmp_path):
     # call it a warning or a domain rule.
     assert "oracle_not_full" in result.detail
     assert "partial_oracle" not in result.detail and "domain policy" not in result.detail
+
+
+def test_a_grader_reporting_another_metric_is_needs_input(monkeypatch, tmp_path):
+    """The anchor's metric is what the registry publishes and the server's recompute looks up."""
+    result = _gate(monkeypatch, tmp_path, _passes(
+        oracle={"reward": 1.0},
+        metrics={"ratio": 1.1, "success_rate": 0.9, "anchor_recorded": 1.0, "match_lock_ok": 1.0},
+    ))
+    assert result.status == "needs_input"
+    assert "mean_goal_distance" in result.detail and "success_rate" in result.detail
+    assert "metric_name" in result.detail
 
 
 def test_an_untouched_pass_that_crashed_is_not_built(monkeypatch, tmp_path):
@@ -327,7 +372,7 @@ def test_a_timeout_is_its_own_message(monkeypatch, tmp_path):
 def test_result_is_json_serializable(monkeypatch, tmp_path):
     result = _gate(monkeypatch, tmp_path, _passes(
         oracle={"reward": 1.0},
-        metrics={"ratio": 1.08, "x": 1.0, "anchor_recorded": 1.0},
+        metrics={"ratio": 1.08, "mean_goal_distance": 1.0, "anchor_recorded": 1.0},
     ))
     assert json.loads(result.to_json())["status"] == "built"
 

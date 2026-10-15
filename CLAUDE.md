@@ -7,10 +7,10 @@
 > `/home/user/submission/` with a hidden grader on hidden seeds. The contract is
 > artifact-general: `verify/` scores the artifact however the author decides, `oracle/` is the
 > reference artifact that scores full. Never frame the benchmark as "running a policy"; that
-> is one shape among many. There is **one kind of task**; `direction` in `metadata` is the
-> taxonomy axis. The tasks run on the upstream `AgentsLastExam/ale` engine, pinned as a
-> submodule at `vendor/ale`. **Never reimplement anything the engine does.** This repository
-> is public. The user-visible name is always the full "Agentic Robotics Benchmark"; "ALE
+> is one shape among many. There is **one kind of task**; `metadata.platform` (one of the fixed
+> keys in `tasks/platforms.json`) is the taxonomy axis. The tasks run on the upstream
+> `AgentsLastExam/ale` engine, pinned as a submodule at `vendor/ale`. **Never reimplement
+> anything the engine does.** This repository is public. The user-visible name is always the full "Agentic Robotics Benchmark"; "ALE
 > Robotics" is the name it had before 2026-09-07 and appears only where history is explained.
 
 ## Read this first
@@ -19,8 +19,9 @@
   `vendor/ale/docs/specs/task-authoring.md` and `task-quality-standard.md` (public:
   https://github.com/AgentsLastExam/ale/blob/main/docs/specs/). Our docs state only the
   robotics deltas and link there; never paraphrase the specs at length.
-- **Our deltas:** `tasks/README.md` (the task contract) and `templates/README.md`
-  (file-by-file). **Design records for the current tree:**
+- **Our deltas:** `templates/README.md` (the task contract, file by file: the verify
+  patterns, the closed_loop wire, scoring); `tasks/README.md` is only a note on the
+  `uav_hover` example. **Design records for the current tree:**
   `docs/dev/20260902-engine-run-submission.md` (task form, leaderboard bridge) and
   `docs/dev/20260902-contribute-download-upload.md` (the contribution path).
 - **Docs vs code: code wins.** If a document (this file, `PROGRESS.md`, `docs/`) disagrees
@@ -47,7 +48,7 @@
 ```
 tasks/<platform>/<slug>/
 ├── task.yaml         strict core/v1: spec_type, stable `name` slug, image, resources,
-│                     timeouts, artifacts, metadata{platform, direction, metric}
+│                     timeouts, artifacts, metadata{platform}
 ├── instruction.md    the prompt — the only thing the tested agent is told
 ├── image/Dockerfile  sole build context; final stage FROM ghcr.io/agentslastexam/container-ubuntu22-base;
 │                     py3.12 /opt/venv (installs image/requirements.txt, the ONE Python dep list)
@@ -59,9 +60,12 @@ tasks/<platform>/<slug>/
                       robotics_grader/ (vendored kit) — ABSENT while the agent works
 ```
 
-- Identity = `task.yaml`'s `name` slug; `platform` lives in `metadata`. A landed task sits at
-  exactly `tasks/<metadata.platform>/<name>/` (`scripts/lint_domain.py` battery 7 checks the
-  placement; both contribution channels put the folder there directly). There is no
+- Identity = `task.yaml`'s `name` slug. `metadata.platform` is the only metadata field: one of
+  the fixed keys in `tasks/platforms.json` (this repository owns the vocabulary; the registry
+  export hands it to the website, which only displays it). A landed task sits at exactly
+  `tasks/<metadata.platform>/<name>/` (`scripts/lint_domain.py` battery 7 checks the key and
+  the placement; both contribution channels put the folder there directly). The metric and its
+  direction live only in `verify/anchor.json` (`metric`, `direction`). There is no
   task-kind field and no evaluation-mode field: the three verify patterns (open_loop /
   closed_loop / artifact_rollout) are **authoring choices inside `verify/verify.py`**, not
   manifest fields. Do not reintroduce retired metadata keys from the archived form.
@@ -96,10 +100,12 @@ tasks/<platform>/<slug>/
   also fails with `oracle_not_full` and must read as `needs_anchor` (measured value
   reported), never as an error. Outcomes: `built` | `needs_anchor` | `needs_input` |
   `gave_up` (cannot be scored fairly) | `error`.
-- `scripts/lint_domain.py`: hardware-invariant metric, positive metric scale, `full_at`
-  present, visible-surface isolation (`setup/payload/` never reads the anchor or grader; the
-  practice grader prints the raw metric only), image hygiene, anchor provenance (never a
-  published figure), core/v1 completeness, placement at `tasks/<platform>/<slug>/`.
+- `scripts/lint_domain.py`: hardware-invariant metric (`verify/anchor.json` names it, with a
+  `direction` of higher or lower), positive metric scale, `full_at` present, visible-surface
+  isolation (`setup/payload/` never reads the anchor or grader; the practice grader prints the
+  raw metric only), image hygiene, anchor provenance (never a published figure), core/v1
+  completeness, a `metadata.platform` from `tasks/platforms.json` and placement at
+  `tasks/<platform>/<slug>/`.
 - **Never run `ale validate` on `uav_hover` casually** — its oracle trains PPO for hours.
   The template validates in seconds.
 
@@ -110,11 +116,12 @@ ratio  = clamp(measured / anchor, 0, cap=1.5)   # inverted for direction: lower
 reward = clamp(ratio / full_at, 0, 1)           # the single gated reward key
 ```
 
-- `verify/anchor.json`: `value` = the reference implementation's own measured value from a
+- `verify/anchor.json`: `metric` + `direction` (higher | lower) = the task's metric, declared
+  nowhere else; `value` = the reference implementation's own measured value from a
   real run (never a printed figure; null while bootstrapping — that is `needs_anchor`, not an
   error); `full_at` = the ratio at which reward saturates, sized from measured seed spread.
 - Metric must be an **outcome on a positive scale**; never wall-clock time / throughput / FPS
-  / frequency. A negative reward becomes a positive cost with `direction: lower`; the kit
+  / frequency. A negative reward becomes a positive cost with the anchor's `direction` lower; the kit
   refuses a non-positive anchor.
 - `rewards` carries only `reward`; the raw metric, capped `ratio` (the leaderboard number),
   `match_lock_ok`, `anchor_recorded`, probe counts ride in the verdict's `metrics`.
@@ -162,7 +169,8 @@ task after it lands, so the copy a maintainer validated is the copy that scores.
   never reads `verify/`. Refuses mixed harnesses (`--harness` to filter) and builtin harnesses
   (`oracle`/`nop`/`scripted`) unless `--allow-builtin` (origin `smoke`).
 - `scripts/export_registry.py`: `ale-robotics-task-registry/v2` from the engine's own loader
-  (`spec_hash`, `content_digest`), anchor/full_at/cap from `verify/`; merges
+  (`spec_hash`, `content_digest`), metric/direction/anchor/full_at/cap from `verify/`,
+  `platforms` from `tasks/platforms.json` (no directions, no carry-over from the website); merges
   `identity-history.json`; **refuses a dirty tree**. Runs inside the engine venv (re-execs
   itself if needed). The protocol names (`ale-engine-run/v1`, `ale-robotics-task-registry/v2`)
   and the `ALE_*` environment variables are runtime identifiers, not brand text: they did not
@@ -184,8 +192,7 @@ uv run python scripts/lint_domain.py .
 cd shared && python3 -m robotics_grader.selftest
 uv run ale-export <runs>/<run_id> --out <name>.ale-engine-run.tar.zst.age --public-key age1...
 cd vendor/ale && VIRTUAL_ENV= uv run python ../../scripts/export_registry.py --tasks ../../tasks \
-    --history ../../identity-history.json \
-    --carry-over ../../../agentic-robotics-benchmark-website/content/tasks/registry.json --out registry.json
+    --history ../../identity-history.json --out registry.json
 #   then, in the website: node scripts/sync-benchmark.mjs --manifest registry.json
 uv run python scripts/build_template_zip.py --out agentic-robotics-task-template.zip --source-out SOURCE.json
 uv run pytest -q

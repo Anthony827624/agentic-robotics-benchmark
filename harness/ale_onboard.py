@@ -42,6 +42,8 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 #: `templates/` side by side (flat layout since the 2026-09 rebrand).
 DOMAIN_ROOT = REPO_ROOT
 TEMPLATE_DIR = REPO_ROOT / "templates" / "task"
+#: The benchmark's platform vocabulary (also read by scripts/lint_domain.py and the export).
+PLATFORMS_FILE = REPO_ROOT / "tasks" / "platforms.json"
 ENGINE_DIR = REPO_ROOT / "vendor" / "ale"
 #: The task collections the engine lints and the name-collision scan walks. Never the
 #: repository root itself: that would descend into vendor/ale and the venvs.
@@ -132,20 +134,17 @@ def check_feasibility(spec: dict[str, Any]) -> str | None:
 # instantiate the template
 # --------------------------------------------------------------------------- #
 def _substitute(text: str, spec: dict[str, Any]) -> str:
-    """Fill the template's TODOs with what the spec knows.
+    """Fill the template manifest's TODOs with what the spec knows.
 
-    Only metadata is filled: the parts that are a matter of record (which platform, which
-    direction, which metric). Physics, the environment layer and the grader body are left as
-    they are, because inventing them is exactly the failure mode this pipeline exists to
-    prevent — an agent that "finishes" a task by writing a plausible grader has produced a
-    task that scores nothing.
+    Only matters of record are filled: the task's name, its platform and a prebuilt image
+    (the metric and its direction go into verify/anchor.json, see `_record_metric`). Physics,
+    the environment layer and the grader body are left as they are, because inventing them is
+    exactly the failure mode this pipeline exists to prevent — an agent that "finishes" a task
+    by writing a plausible grader has produced a task that scores nothing.
     """
-    metric = spec.get("metric") or {}
     pairs = [
         ("name: {}".format(_TEMPLATE_NAME), "name: {}".format(spec["task"])),
         ("platform: TODO", "platform: {}".format(spec.get("platform", "TODO"))),
-        ("direction: TODO", "direction: {}".format(spec.get("direction", "TODO"))),
-        ("    name: TODO", "    name: {}".format(metric.get("name", "TODO"))),
     ]
     if spec.get("image"):
         # A fully-qualified prebuilt image ref. The engine gives a local image/Dockerfile
@@ -153,16 +152,35 @@ def _substitute(text: str, spec: dict[str, Any]) -> str:
         # ref is declared (see there).
         pairs.append(("image: {kind: container}",
                       "image: {{kind: container, ref: {}}}".format(_quote(spec["image"]))))
-    # The template ships `direction: lower` (its grader scores a cost); a spec that declares
-    # `higher` flips the line. verify/anchor.json's own `direction` is deliberately left
-    # alone: the anchor belongs to the grader the contributor writes, and the domain lint
-    # refuses a task whose two directions disagree.
-    if metric.get("direction") == "higher":
-        pairs.append(("    direction: lower      # higher | lower",
-                      "    direction: higher     # higher | lower"))
     for old, new in pairs:
         text = text.replace(old, new)
     return text
+
+
+def platform_keys() -> tuple[str, ...]:
+    """The benchmark's platform keys (tasks/platforms.json), in file order."""
+    return tuple(str(entry["key"]) for entry in json.loads(PLATFORMS_FILE.read_text(encoding="utf-8")))
+
+
+def _record_metric(anchor_path: Path, spec: dict[str, Any]) -> None:
+    """Write the spec's metric name and direction into the copied verify/anchor.json.
+
+    The anchor is the one place a task declares its metric: the grader reads `direction`
+    there, and the registry export copies both for the server's recompute. The contributor's
+    grader must report that metric. `value` stays null: only a real `ale validate` fills it.
+    """
+    metric = spec.get("metric") or {}
+    if not metric.get("name") and not metric.get("direction"):
+        return
+    anchor = json.loads(anchor_path.read_text(encoding="utf-8"))
+    if metric.get("name"):
+        # A named metric without a direction is higher-is-better, as check_feasibility reads
+        # it; never inherit the template's `lower`, which belongs to its cost metric.
+        anchor["metric"] = str(metric["name"])
+        anchor["direction"] = str(metric.get("direction", "higher"))
+    else:
+        anchor["direction"] = str(metric["direction"])
+    anchor_path.write_text(json.dumps(anchor, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
 
 
 def _quote(value: Any) -> str:
@@ -210,18 +228,25 @@ def _manifests(repo: Path) -> list[Path]:
 
 
 def instantiate(spec: dict[str, Any], *, repo: Path, force: bool = False) -> Path:
-    """Copy the template into `<repo>/tasks/<platform>/<task>/` and fill its metadata.
+    """Copy the template into `<repo>/tasks/<platform>/<task>/` and fill in what the spec knows.
 
     The spec's `task` becomes the manifest's stable `name`, so it must be a valid slug
     and unique across every task.yaml in the repo — checked here, because the engine's
-    own rejection would otherwise surface only at gate time with a cryptic message.
+    own rejection would otherwise surface only at gate time with a cryptic message. Its
+    `platform` must be one of the benchmark's platforms (tasks/platforms.json): it names the
+    folder the task lands in.
     """
     task = str(spec["task"])
     if not _SLUG.match(task):
         raise ValueError(
             f"task name {task!r} is not a valid slug (^[a-z0-9][a-z0-9_-]*$)"
         )
-    platform = str(spec.get("platform") or "misc")
+    platform = str(spec.get("platform") or "")
+    if platform not in (keys := platform_keys()):
+        raise ValueError(
+            f"platform {platform!r} is not one of the benchmark's platforms "
+            f"({' | '.join(keys)}; tasks/platforms.json)"
+        )
     target = repo / "tasks" / platform / task
     if (claimed := _name_collision(repo, task, target)) is not None:
         raise ValueError(f"task name {task!r} is already claimed by {claimed}")
@@ -237,6 +262,7 @@ def instantiate(spec: dict[str, Any], *, repo: Path, force: bool = False) -> Pat
 
     manifest = target / "task.yaml"
     manifest.write_text(_substitute(manifest.read_text(), spec))
+    _record_metric(target / "verify" / "anchor.json", spec)
     if spec.get("image"):
         # The manifest now declares a prebuilt ref, and a local Dockerfile would win
         # over it — remove the template's so the declared image is the one that runs.
@@ -391,7 +417,7 @@ _NEXT_STEPS = [
     "Write oracle/run.sh: the reference method, trained/run inside the agent's own budget, "
     "leaving a self-contained /home/user/submission/.",
     "Adapt verify/verify.py to your physics, keeping the abort handling, the match lock and "
-    "the scoring untouched.",
+    "the scoring untouched; its `metric_name=` must be verify/anchor.json's `metric`.",
     "Record the anchor: run `ale validate`, take the measured metric off the oracle pass's "
     "result.json, write it into verify/anchor.json (with a `full_at` sized from the "
     "metric's measured seed-to-seed spread), re-run — `ale validate` fails with "
@@ -490,7 +516,11 @@ def run_gates(*, task: str, task_dir: Path, repo: Path, runs_dir: Path,
     metrics = passes.metrics
     oracle = passes.oracle or {}
     reward = oracle.get("reward")
-    metric, measured = _primary_metric(metrics)
+    declared = _declared_metric(task_dir)
+    if declared is not None and declared in metrics:
+        metric, measured = declared, metrics[declared]
+    else:
+        metric, measured = _primary_metric(metrics)
     anchored = metrics.get("anchor_recorded", 1.0) >= 1.0
     lock_ok = metrics.get("match_lock_ok")
     untouched_zero = (passes.untouched is not None
@@ -503,11 +533,24 @@ def run_gates(*, task: str, task_dir: Path, repo: Path, runs_dir: Path,
         engine_failures=list(passes.engine_failures),
     )
 
+    if metrics and declared is not None and declared not in metrics:
+        reported = repr(metric) if metric else "no raw metric"
+        return OnboardResult(
+            status="needs_input",
+            detail=(f"verify/anchor.json names the metric {declared!r}, but the grader "
+                    f"reported {reported}. Set `metric_name=` in verify/verify.py to the "
+                    f"anchor's metric, or fix the anchor: the anchor's name is what the "
+                    f"registry export publishes and what the server's recompute looks up in "
+                    f"every submission."),
+            next_steps=list(_NEXT_STEPS),
+            **common,
+        )
     if not anchored:
+        name_it = "" if declared else f" (as `value`, with `metric`: {metric!r})"
         return OnboardResult(
             status="needs_anchor",
             detail=(f"the run measured {metric} = {measured}. Record it in "
-                    f"verify/anchor.json and re-validate; until then the oracle scores 0 "
+                    f"verify/anchor.json{name_it} and re-validate; until then the oracle scores 0 "
                     f"by design and `ale validate` fails with `oracle_not_full`, because "
                     f"a task nobody has measured cannot score anybody."),
             next_steps=[_NEXT_STEPS[-1]],
@@ -546,6 +589,15 @@ def run_gates(*, task: str, task_dir: Path, repo: Path, runs_dir: Path,
     )
 
 
+def _declared_metric(task_dir: Path) -> str | None:
+    """The metric verify/anchor.json declares, or None when it names none (the template's `TODO`)."""
+    try:
+        metric = json.loads((task_dir / "verify" / "anchor.json").read_text(encoding="utf-8")).get("metric")
+    except (OSError, ValueError, AttributeError):
+        return None
+    return metric if isinstance(metric, str) and metric not in ("", "TODO") else None
+
+
 def _primary_metric(metrics: dict[str, float]) -> tuple[str | None, float | None]:
     """The task's raw metric — whichever metrics key is not framework bookkeeping."""
     reserved = {"ratio", "anchor_recorded", "match_lock_ok",
@@ -572,7 +624,7 @@ def main(argv: list[str] | None = None) -> int:
         description="Build an ALE-shaped robotics task and gate it on `ale validate`.",
     )
     parser.add_argument("spec", type=Path, nargs="?",
-                        help="spec YAML (task, platform, direction, metric, optional image)")
+                        help="spec YAML (task, platform, metric, optional image)")
     parser.add_argument("--gate-only", type=Path, metavar="TASK_DIR",
                         help="skip instantiation; lint + validate an existing task folder")
     parser.add_argument("--repo", type=Path, default=DOMAIN_ROOT,

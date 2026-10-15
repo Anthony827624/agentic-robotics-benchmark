@@ -17,7 +17,6 @@ import sys
 from pathlib import Path
 
 import pytest
-import yaml
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 _SPEC = importlib.util.spec_from_file_location(
@@ -33,6 +32,8 @@ NOW = "2026-09-02T00:00:00Z"
 HASH_A = "sha256:" + "a" * 64
 HASH_B = "sha256:" + "b" * 64
 HASH_C = "sha256:" + "c" * 64
+#: What every anchor now declares: the metric and its direction live in verify/anchor.json.
+_METRIC = {"metric": "mean_episode_reward", "direction": "higher"}
 
 
 def _task_dir(tmp_path: Path, *, anchor: dict | None = None, grader_config: dict | None = None,
@@ -50,15 +51,12 @@ def _task_dir(tmp_path: Path, *, anchor: dict | None = None, grader_config: dict
 
 
 def _loaded(root: Path, *, slug: str = "some_task", variant: str = "base",
-            spec_hash: str = HASH_A, content_digest: str = HASH_B) -> xr.LoadedTask:
+            spec_hash: str = HASH_A, content_digest: str = HASH_B,
+            metadata: dict | None = None) -> xr.LoadedTask:
     return xr.LoadedTask(
         slug=slug, variant=variant, root=root, spec_hash=spec_hash,
         content_digest=content_digest,
-        metadata={
-            "platform": "uav", "direction": "control",
-            "metric": {"name": "mean_episode_reward", "direction": "higher",
-                       "hardware_invariant": True},
-        },
+        metadata={"platform": "uav"} if metadata is None else metadata,
         resources={"cpus": 4, "memory_mb": 8192, "storage_mb": None, "gpus": 0, "sudo": False},
         timeouts={"setup": 120.0, "agent": 10800.0, "verify": 1800.0},
     )
@@ -146,21 +144,12 @@ def test_non_positive_anchor_is_refused_like_the_kit_does(tmp_path, value):
         xr.read_anchor(root, 1.5)
 
 
-def test_anchor_direction_must_agree_with_task_yaml(tmp_path):
-    root = _task_dir(tmp_path, anchor={"value": 1.0, "direction": "lower"})
-    with pytest.raises(xr.RegistryError, match="contradicts"):
-        xr.read_anchor(root, 1.5, "higher")
-    assert xr.read_anchor(root, 1.5, "lower")["anchor"] == 1.0
-    # no direction in the anchor, or no task.yaml direction to compare with: nothing to check
-    assert xr.read_anchor(root, 1.5)["anchor"] == 1.0
-    root2 = _task_dir(tmp_path / "b", anchor={"value": 1.0})
-    assert xr.read_anchor(root2, 1.5, "higher")["anchor"] == 1.0
-
-
-def test_task_entry_refuses_a_contradictory_direction(tmp_path):
-    root = _task_dir(tmp_path, anchor={"value": 1.0, "direction": "lower"})
-    with pytest.raises(xr.RegistryError, match="contradicts"):
-        xr.task_entry(_loaded(root), [])   # _loaded declares metric.direction higher
+def test_task_entry_refuses_an_unregistered_or_missing_platform(tmp_path):
+    root = _task_dir(tmp_path, anchor=dict(_METRIC, value=1.0))
+    with pytest.raises(xr.RegistryError, match="tasks/platforms.json"):
+        xr.task_entry(_loaded(root, metadata={"platform": "spacecraft"}), [])
+    with pytest.raises(xr.RegistryError, match="not one of"):
+        xr.task_entry(_loaded(root, metadata={}), [])
 
 
 def test_score_cap_default_and_override(tmp_path):
@@ -174,30 +163,31 @@ def test_score_cap_default_and_override(tmp_path):
 # --------------------------------------------------------------------------- #
 # metric + whole entry
 # --------------------------------------------------------------------------- #
-def test_metric_fields_map_direction_and_label():
-    fields = xr.metric_fields(
-        {"metric": {"name": "mean_goal_distance", "direction": "lower", "hardware_invariant": True}},
-        "t",
-    )
-    assert fields == {
+def test_metric_fields_come_from_the_anchor(tmp_path):
+    root = _task_dir(tmp_path, anchor={"metric": "mean_goal_distance", "direction": "lower",
+                                       "value": None})
+    assert xr.metric_fields(root, "t") == {
         "metric_name": "mean_goal_distance", "metric_label": "Mean goal distance",
-        "metric_direction": "lower_is_better", "hardware_invariant": True,
+        "metric_direction": "lower_is_better",
     }
-    with pytest.raises(xr.RegistryError, match="metric.name"):
-        xr.metric_fields({}, "t")
-    with pytest.raises(xr.RegistryError, match="direction"):
-        xr.metric_fields({"metric": {"name": "x", "direction": "sideways"}}, "t")
+    cases = [({"direction": "lower"}, "`metric`"), ({"metric": "TODO", "direction": "lower"}, "`metric`"),
+             ({"metric": "x", "direction": "sideways"}, "`direction`"), ({"metric": "x"}, "`direction`")]
+    for index, (anchor, match) in enumerate(cases):
+        with pytest.raises(xr.RegistryError, match=match):
+            xr.metric_fields(_task_dir(tmp_path / f"case{index}", anchor=anchor), "t")
+    with pytest.raises(xr.RegistryError, match="missing verify/anchor.json"):
+        xr.metric_fields(_task_dir(tmp_path / "none"), "t")
 
 
 def test_task_entry_assembles_every_v2_field(tmp_path):
-    root = _task_dir(tmp_path, anchor={"value": 472.07, "full_at": 0.825, "source": "oracle"},
+    root = _task_dir(tmp_path, anchor=dict(_METRIC, value=472.07, full_at=0.825, source="oracle"),
                      grader_config={"scoring_cap": 1.5})
     identities = [{"spec_hash": HASH_A, "content_digest": HASH_B, "since": NOW}]
     entry = xr.task_entry(_loaded(root), identities)
     assert entry == {
-        "slug": "some_task", "title": "Some Task", "platform": "uav", "direction": "control",
+        "slug": "some_task", "title": "Some Task", "platform": "uav",
         "metric_name": "mean_episode_reward", "metric_label": "Mean episode reward",
-        "metric_direction": "higher_is_better", "hardware_invariant": True,
+        "metric_direction": "higher_is_better",
         "identities": identities,
         "anchor": 472.07, "anchor_full_at": 0.825, "anchor_source": "oracle",
         "anchor_image_identity": None, "score_cap": 1.5,
@@ -205,7 +195,7 @@ def test_task_entry_assembles_every_v2_field(tmp_path):
         "timeouts": {"setup": 120, "agent": 10800, "verify": 1800},
         "status": "active",
     }
-    for key in ("genre", "mode", "paper_title", "paper_arxiv"):
+    for key in ("genre", "mode", "paper_title", "paper_arxiv", "direction", "hardware_invariant"):
         assert key not in entry
 
 
@@ -294,18 +284,21 @@ def test_history_revert_dedupes_the_pair_and_keeps_current_first(tmp_path):
 
 
 # --------------------------------------------------------------------------- #
-# carry-over, release, dirty tree
+# platforms, release, dirty tree
 # --------------------------------------------------------------------------- #
-def test_carry_over_copies_taxonomy_verbatim(tmp_path):
-    existing = tmp_path / "registry.json"
-    payload = {"platforms": [{"key": "uav", "label": "UAV"}], "directions": [{"key": "control"}],
-               "category_tree": {"uav": ["control"]}, "tasks": [{"slug": "legacy"}],
-               "modes": [{"key": "closed_loop"}]}
-    existing.write_text(json.dumps(payload), encoding="utf-8")
-    carried = xr.carry_over(existing)
-    assert carried == {"platforms": payload["platforms"], "directions": payload["directions"],
-                       "category_tree": payload["category_tree"]}
-    assert xr.carry_over(None) == {"platforms": [], "directions": [], "category_tree": {}}
+def test_platforms_come_from_this_repository(tmp_path):
+    platforms = xr.load_platforms()
+    assert [entry["key"] for entry in platforms] == [
+        "arm", "hand", "quadruped", "humanoid", "uav", "driving", "underwater", "space",
+        "soft", "surgical", "swarm", "subsystems"]
+    assert all(set(entry) == {"key", "label"} and entry["label"] for entry in platforms)
+    bad = tmp_path / "platforms.json"
+    for payload, match in (([], "non-empty"), ([{"key": "Arm", "label": "x"}], "slug"),
+                           ([{"key": "arm", "label": "a"}, {"key": "arm", "label": "b"}], "unique"),
+                           ([{"key": "arm", "label": ""}], "label")):
+        bad.write_text(json.dumps(payload), encoding="utf-8")
+        with pytest.raises(xr.RegistryError, match=match):
+            xr.load_platforms(bad)
 
 
 def test_release_block_policy():
@@ -323,7 +316,8 @@ def _git_repo_with_task(tmp_path: Path) -> Path:
     env = {**os.environ, "GIT_AUTHOR_NAME": "t", "GIT_AUTHOR_EMAIL": "t@x",
            "GIT_COMMITTER_NAME": "t", "GIT_COMMITTER_EMAIL": "t@x"}
     subprocess.run(["git", "init", "-q"], cwd=repo, check=True, env=env)
-    root = _task_dir(repo, anchor={"value": 1.0})
+    root = _task_dir(repo, anchor=dict(_METRIC, value=1.0))
+    (repo / "platforms.json").write_text(xr.PLATFORMS_FILE.read_text(encoding="utf-8"), encoding="utf-8")
     (repo / ".gitignore").write_text("__pycache__/\n", encoding="utf-8")
     subprocess.run(["git", "add", "-A"], cwd=repo, check=True, env=env)
     subprocess.run(["git", "commit", "-q", "-m", "init"], cwd=repo, check=True, env=env)
@@ -344,11 +338,14 @@ def test_build_registry_refuses_dirty_unless_allowed(tmp_path):
     (root / "instruction.md").write_text("# edited\n", encoding="utf-8")
     task = _loaded(root)
     kwargs = {"history": [], "now": NOW, "source_commit_sha": "abc",
-              "engine": {"commits": ["e"]}, "carried": xr.carry_over(None)}
+              "engine": {"commits": ["e"]}, "platforms_file": root.parent / "platforms.json"}
     with pytest.raises(xr.RegistryError, match="not clean"):
         xr.build_registry([task], **kwargs)
     registry, history = xr.build_registry([task], allow_dirty=True, **kwargs)
     assert registry["schema_version"] == "ale-robotics-task-registry/v2"
+    # the taxonomy is this repository's: platforms from tasks/platforms.json, nothing else
+    assert registry["platforms"] == xr.load_platforms()
+    assert "directions" not in registry and "category_tree" not in registry
     assert registry["provenance"]["source"] == "engine_task_loader"
     # a throwaway export can never pass for a release one
     assert registry["provenance"]["source_commit"] == "abc-dirty"
@@ -362,9 +359,23 @@ def test_clean_export_provenance_carries_no_dirty_marker(tmp_path):
     root = _git_repo_with_task(tmp_path)
     registry, _ = xr.build_registry(
         [_loaded(root)], history=[], now=NOW, source_commit_sha="abc",
-        engine={"commits": ["e"]}, carried=xr.carry_over(None))
+        engine={"commits": ["e"]}, platforms_file=root.parent / "platforms.json")
     assert registry["provenance"]["source_commit"] == "abc"
     assert "dirty" not in registry["provenance"]
+
+
+def test_an_uncommitted_platform_vocabulary_is_refused(tmp_path):
+    """The vocabulary goes into the document as `platforms`, so it obeys the clean-tree rule."""
+    root = _git_repo_with_task(tmp_path)
+    vocabulary = root.parent / "platforms.json"
+    vocabulary.write_text(vocabulary.read_text(encoding="utf-8").replace("Robotic arm", "Arm"),
+                          encoding="utf-8")
+    kwargs = {"history": [], "now": NOW, "source_commit_sha": "abc", "engine": {},
+              "platforms_file": vocabulary}
+    with pytest.raises(xr.RegistryError, match="not clean"):
+        xr.build_registry([_loaded(root)], **kwargs)
+    registry, _ = xr.build_registry([_loaded(root)], allow_dirty=True, **kwargs)
+    assert registry["platforms"][0] == {"key": "arm", "label": "Arm"}
 
 
 def test_allow_dirty_never_writes_the_canonical_history(tmp_path):
@@ -382,19 +393,19 @@ def test_parse_args_history_defaults_to_none_so_explicitness_is_known():
 
 
 def test_build_registry_registers_only_base_variants(tmp_path):
-    root = _task_dir(tmp_path, anchor={"value": 1.0})
+    root = _task_dir(tmp_path, anchor=dict(_METRIC, value=1.0))
     base = _loaded(root)
     variant = _loaded(root, variant="hard", spec_hash=HASH_C)
     registry, history = xr.build_registry(
         [variant, base], history=[], now=NOW, source_commit_sha="abc", engine={},
-        carried=xr.carry_over(None), allow_dirty=True,
+        allow_dirty=True,
     )
     assert [t["slug"] for t in registry["tasks"]] == ["some_task"]
     assert registry["tasks"][0]["identities"][0]["spec_hash"] == HASH_A
     assert len(history) == 1
     with pytest.raises(xr.RegistryError, match="base"):
         xr.build_registry([variant], history=[], now=NOW, source_commit_sha="abc", engine={},
-                          carried=xr.carry_over(None), allow_dirty=True)
+                          allow_dirty=True)
 
 
 def test_dump_json_is_stable(tmp_path):
@@ -405,6 +416,18 @@ def test_dump_json_is_stable(tmp_path):
 
 # --------------------------------------------------------------------------- #
 # integration: the real loader over a copy of the template (engine venv required)
+def _register_platform(task_copy: Path) -> None:
+    """The template ships `platform: TODO` and an anchor naming no metric (`TODO`); an
+    exported task needs a registered platform and the metric its grader reports."""
+    manifest = task_copy / "task.yaml"
+    manifest.write_text(manifest.read_text(encoding="utf-8").replace("platform: TODO", "platform: arm"),
+                        encoding="utf-8")
+    anchor_path = task_copy / "verify" / "anchor.json"
+    anchor = json.loads(anchor_path.read_text(encoding="utf-8"))
+    anchor["metric"] = "mean_goal_distance"          # what the template's grader reports
+    anchor_path.write_text(json.dumps(anchor, indent=2) + "\n", encoding="utf-8")
+
+
 # --------------------------------------------------------------------------- #
 ENGINE_PYTHON = REPO_ROOT / "vendor" / "ale" / ".venv" / "bin" / "python"
 TEMPLATE = REPO_ROOT / "templates" / "task"
@@ -424,6 +447,7 @@ def test_real_loader_on_template_copy(tmp_path):
     task_copy = tmp_path / "tasks" / "template_reach"
     shutil.copytree(TEMPLATE, task_copy,
                     ignore=shutil.ignore_patterns("__pycache__", "*.pyc"))
+    _register_platform(task_copy)
     out = tmp_path / "registry.json"
     history = tmp_path / "history.json"
     result = subprocess.run(
@@ -438,11 +462,11 @@ def test_real_loader_on_template_copy(tmp_path):
     assert registry["schema_version"] == "ale-robotics-task-registry/v2"
     (task,) = registry["tasks"]
     assert task["slug"] == "template_reach"
-    # the template's metric name is a placeholder; what matters is that it is task.yaml's
-    manifest = yaml.safe_load((TEMPLATE / "task.yaml").read_text(encoding="utf-8"))
-    assert task["metric_name"] == manifest["metadata"]["metric"]["name"]
-    # the template grades a cost (mean_goal_distance): task.yaml and anchor.json both say lower
+    # the metric is the one verify/anchor.json declares (the template grades a cost)
+    assert task["metric_name"] == "mean_goal_distance"
     assert task["metric_direction"] == "lower_is_better"
+    assert task["platform"] == "arm" and "direction" not in task
+    assert [entry["key"] for entry in registry["platforms"]][:2] == ["arm", "hand"]
     assert task["anchor"] is None and task["anchor_full_at"] == 0.8
     assert registry["provenance"]["dirty"] is True
     assert registry["provenance"]["source_commit"].endswith("-dirty")
@@ -475,6 +499,7 @@ def test_reexec_from_the_repo_venv(tmp_path):
     """Run under this repo's interpreter (no ``ale``): the script must re-exec into the engine."""
     task_copy = tmp_path / "tasks" / "template_reach"
     shutil.copytree(TEMPLATE, task_copy, ignore=shutil.ignore_patterns("__pycache__", "*.pyc"))
+    _register_platform(task_copy)
     out = tmp_path / "registry.json"
     result = subprocess.run(
         [sys.executable, str(REPO_ROOT / "scripts" / "export_registry.py"),

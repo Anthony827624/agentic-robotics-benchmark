@@ -1,7 +1,7 @@
 # Architecture — how a task runs and how a run reaches the leaderboard
 
 > Audience: maintainers and contributors. The task contract is
-> [`tasks/README.md`](../tasks/README.md); the trust boundary is
+> [`templates/README.md`](../templates/README.md); the trust boundary is
 > [`security-model.md`](security-model.md); the bundle is
 > [`submission-format.md`](submission-format.md); the design record is
 > [`dev/20260902-engine-run-submission.md`](dev/20260902-engine-run-submission.md).
@@ -29,7 +29,7 @@ run records into leaderboard submissions.
 ```
 tasks/<platform>/<slug>/
 ├── task.yaml         strict core/v1 manifest — spec_type, stable `name`, image, resources,
-│                     timeouts, artifacts, metadata{platform, direction, metric}
+│                     timeouts, artifacts, metadata{platform}
 ├── instruction.md    the prompt — the only thing the tested agent is told
 ├── image/Dockerfile  the environment; sole build context, final stage FROM an official ALE base
 ├── setup/run.sh      trusted root, before the agent; stages setup/payload/ into the agent home
@@ -147,7 +147,8 @@ byte-identical copy under `verify/robotics_grader/` because the engine stages ex
      ├─ ale lint / ale validate  ──►  harness/ale_onboard.py  ──►  built | needs_anchor | …
      │
      ├─ scripts/export_registry.py  (engine loader: spec_hash, content_digest;
-     │        verify/anchor.json: anchor, full_at; grader_config: cap; identity-history)
+     │        verify/anchor.json: metric, direction, anchor, full_at; grader_config: cap;
+     │        tasks/platforms.json: platforms; identity-history)
      │        ──►  registry.json  (ale-robotics-task-registry/v2)  ──►  website seed
      │                                                                   (Task rows: identities,
      │                                                                    anchor, full_at, cap)

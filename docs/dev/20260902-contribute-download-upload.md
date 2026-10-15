@@ -4,6 +4,15 @@
 > Status: **implemented** on both sides (this repository: the template zip builder and
 > the docs; the website: the upload endpoint, the landing credential, the Contribute page).
 >
+> **2026-10-15 update.** The task taxonomy now lives in this repository: `metadata.platform` is
+> the only metadata field, one of the fixed keys in `tasks/platforms.json`, and a task lands at
+> `tasks/<platform>/<slug>/`. `metadata.direction` and `metadata.metric` are retired; the metric
+> and its direction are declared in `verify/anchor.json` only. Where the text below says the
+> template points at the website registry's keys, or that a task lands by direction, read the
+> platform rule instead. The website side (download, precheck, landing bot) still implements the
+> old form until its own update ships; meanwhile contributors open the pull request themselves.
+> See PROGRESS.md §5.
+>
 > **2026-09-07 update, see §11.** The project was renamed to the Agentic Robotics Benchmark
 > and this repository replaced the private one with a flat, public layout. Read the paths
 > below as `tasks/`, `templates/task/` and `identity-history.json`; the download is

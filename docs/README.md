@@ -1,8 +1,8 @@
 # docs/
 
-The task form itself is documented next to the tasks — [`tasks/README.md`](../tasks/README.md)
-(the contract) and [`templates/README.md`](../templates/README.md) (the template, file by
-file). The pages here cover everything around it.
+The task form itself is documented next to the template, in
+[`templates/README.md`](../templates/README.md) (the contract, file by file). The pages here
+cover everything around it.
 
 - [`architecture.md`](architecture.md) — how the engine runs a task (stages, stage
   isolation, the UID boundary), the artifact + verdict envelope, the scoring model, and the

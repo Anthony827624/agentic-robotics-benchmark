@@ -6,8 +6,8 @@ design a part or a mechanism, write code-as-policy, tune a planner, …) and sco
 artifact it leaves** in `/home/user/submission/` — a controller process, a plan or planner, a
 URDF / mesh / parameter design, generated code, a report — with a **hidden grader on hidden
 seeds**. `verify/` scores the artifact however the task author decides; `oracle/` is the
-reference artifact that scores full. There is one kind of task; `direction` (control,
-planning, navigation, …) is the taxonomy axis.
+reference artifact that scores full. There is one kind of task; `metadata.platform`
+(one of the fixed keys in [`tasks/platforms.json`](tasks/platforms.json)) is the taxonomy axis.
 
 The tasks run on the upstream **ALE engine**
 ([AgentsLastExam/ale](https://github.com/AgentsLastExam/ale)), pinned as the submodule at
@@ -30,8 +30,8 @@ isolation while it works, not from people.
 A task is a self-contained `core/v1` folder that the engine runs in three stages
 (`setup` → `agent` → `verify`); `oracle/` stands in for the agent under `ale validate`.
 What the robotics domain adds (the three verify patterns, scoring, the vendored kit, the
-probe wire) is in [`tasks/README.md`](tasks/README.md); the file-by-file tour of the
-template is [`templates/README.md`](templates/README.md).
+probe wire) is in [`templates/README.md`](templates/README.md), next to the file-by-file
+tour of the template.
 
 ```
 tasks/<platform>/<slug>/
@@ -90,10 +90,11 @@ is [`docs/contributing-a-task.md`](docs/contributing-a-task.md).
 
 ```
 vendor/ale/                     upstream engine (submodule, pinned commit) — do not reimplement it
-tasks/<platform>/<slug>/       the tasks (today: uav/uav_hover)
-tasks/README.md                 the task contract (source of truth for the task form)
+tasks/<platform>/<slug>/        the tasks (today: uav/uav_hover)
+tasks/platforms.json            the platform vocabulary: the `metadata.platform` keys and their labels
+tasks/README.md                 a note: uav/uav_hover is a dummy example of the file structure
 templates/task/                 ONE template, gates green as shipped (null anchor by design)
-templates/README.md             the template, file by file
+templates/README.md             the task contract, file by file (source of truth for the task form)
 identity-history.json           past (spec_hash, content_digest) pairs per task (registry v2)
 shared/robotics_grader/         canonical verify-stage kit; each task vendors a byte-identical copy
 harness/
@@ -127,7 +128,7 @@ uv run ale-onboard <spec>.yaml --json                                      # ins
 uv run ale-onboard --gate-only tasks/<platform>/<slug> --json
 #   built | needs_anchor (measured value reported) | needs_input | gave_up | error
 
-# domain lint (placement, metric discipline, anchor provenance, visible surface, image hygiene)
+# domain lint (platform and placement, metric discipline, anchor provenance, visible surface, image hygiene)
 # + the shared kit's self-test (no docker)
 uv run python scripts/lint_domain.py .
 cd shared && python3 -m robotics_grader.selftest
@@ -138,11 +139,10 @@ cd vendor/ale && VIRTUAL_ENV= DOCKER_HOST=unix:///var/run/docker.sock \
 uv run ale-export <runs>/<run_id> --out <name>.ale-engine-run.tar.zst.age --public-key age1...
 
 # task registry for the website (task identity from the engine loader; refuses a dirty tree).
-# --carry-over copies platforms/directions/category_tree from the current website registry;
-# the website installs the result with `node scripts/sync-benchmark.mjs --manifest registry.json`
+# platforms come from tasks/platforms.json; the website only displays what this exports and
+# installs it with `node scripts/sync-benchmark.mjs --manifest registry.json`
 cd vendor/ale && VIRTUAL_ENV= uv run python ../../scripts/export_registry.py \
-    --tasks ../../tasks --history ../../identity-history.json \
-    --carry-over <website>/content/tasks/registry.json --out registry.json
+    --tasks ../../tasks --history ../../identity-history.json --out registry.json
 
 # the website's template download (agentic-robotics-task-template/ + GETTING-STARTED.md +
 # TEMPLATE-SOURCE.json; members + modes from the git index; refuses a dirty template tree).

@@ -6,7 +6,9 @@ task without them must lint clean. The batteries that stay — hardware-invarian
 positive anchor, `full_at`, anchor provenance, visible-surface isolation — are pinned so the
 genre removal cannot be mistaken for a general loosening. The placement battery (2026-09-07,
 flat layout; the parent folder is `metadata.platform` since 2026-10-12:
-`tasks/<platform>/<slug>/`) replaces the retired staging-area promote check.
+`tasks/<platform>/<slug>/`) replaces the retired staging-area promote check. On 2026-10-15
+`metadata.direction` and `metadata.metric` were retired: the metric and its direction live in
+verify/anchor.json only, and `metadata.platform` must be one of tasks/platforms.json.
 """
 
 from __future__ import annotations
@@ -34,31 +36,28 @@ network: {{mode: block}}
 timeouts: {{setup: 120, agent: 3600, verify: 900}}
 artifacts: [/home/user/submission]
 metadata:
-  platform: uav
-  direction: control
-{extra}  metric:
-    name: {metric}
-    direction: higher
-    hardware_invariant: true
-"""
+  platform: {platform}
+{extra}"""
 
-_ANCHOR = {"metric": "mean_episode_reward", "value": 472.07, "full_at": 0.825,
+_ANCHOR = {"metric": "mean_episode_reward", "direction": "higher", "value": 472.07, "full_at": 0.825,
            "source": "oracle/run.sh real graded run — NOT the paper's printed figure"}
 
 
 def _task(tmp_path: Path, *, name: str = "probe", metric: str = "mean_episode_reward",
-          extra_metadata: str = "", anchor: dict | None = None) -> Path:
-    """A minimal core/v1 task folder that the lint accepts as shipped."""
-    task = tmp_path / "tasks" / "uav" / name
+          extra_metadata: str = "", anchor: dict | None = None,
+          platform: str = "uav") -> Path:
+    """A minimal core/v1 task folder that the lint accepts as shipped (`metric` lands in the
+    anchor, the one place a task declares it)."""
+    task = tmp_path / "tasks" / platform / name
     (task / "image").mkdir(parents=True)
     (task / "verify").mkdir()
     (task / "setup" / "payload" / "practice_grader").mkdir(parents=True)
-    (task / "task.yaml").write_text(_MANIFEST.format(name=name, metric=metric,
+    (task / "task.yaml").write_text(_MANIFEST.format(name=name, platform=platform,
                                                      extra=extra_metadata))
     (task / "image" / "Dockerfile").write_text(
         "FROM ghcr.io/agentslastexam/container-ubuntu22-base:latest\n")
     (task / "verify" / "anchor.json").write_text(
-        json.dumps(_ANCHOR if anchor is None else anchor))
+        json.dumps(dict(_ANCHOR, metric=metric) if anchor is None else anchor))
     (task / "setup" / "payload" / "practice_grader" / "grade.py").write_text(
         "print({'mean_episode_reward': 1.0})\n")
     return task
@@ -190,11 +189,53 @@ def test_an_anchor_disclaiming_the_paper_is_accepted(tmp_path, source):
     assert problems == [], problems
 
 
-def test_anchor_direction_must_agree_with_task_yaml(tmp_path):
-    """The grader reads anchor.json's direction, the server reads task.yaml's."""
-    problems = lint_domain.lint_task(_task(tmp_path, anchor=dict(_ANCHOR, direction="lower")))
-    assert len(problems) == 1 and "direction" in problems[0], problems
-    assert lint_domain.lint_task(_task(tmp_path / "ok", anchor=dict(_ANCHOR, direction="higher"))) == []
+def test_anchor_direction_must_be_higher_or_lower(tmp_path):
+    """The anchor is the one place a task declares its direction (the grader reads it there)."""
+    problems = lint_domain.lint_task(_task(tmp_path, anchor=dict(_ANCHOR, direction="up")))
+    assert len(problems) == 1 and "`direction`" in problems[0], problems
+    missing = {key: value for key, value in _ANCHOR.items() if key != "direction"}
+    assert len(lint_domain.lint_task(_task(tmp_path / "missing", anchor=missing))) == 1
+    assert lint_domain.lint_task(_task(tmp_path / "ok", anchor=dict(_ANCHOR, direction="lower"))) == []
+
+
+@pytest.mark.parametrize("metric", [None, "", "TODO"])
+def test_anchor_must_name_its_metric(tmp_path, metric):
+    problems = lint_domain.lint_task(_task(tmp_path, anchor=dict(_ANCHOR, metric=metric)))
+    assert len(problems) == 1 and "names no `metric`" in problems[0], problems
+
+
+def test_retired_direction_and_metric_metadata_is_not_flagged(tmp_path):
+    """metadata.direction / metadata.metric (retired 2026-10-15) are stale, not wrong."""
+    task = _task(tmp_path, extra_metadata=(
+        "  direction: control\n"
+        "  metric: {name: mean_episode_reward, direction: higher, hardware_invariant: true}\n"))
+    assert lint_domain.lint_task(task) == []
+
+
+# --------------------------------------------------------------------------- #
+# the platform vocabulary (tasks/platforms.json, owned by this repository)
+# --------------------------------------------------------------------------- #
+def test_the_platform_vocabulary_is_the_fixed_list():
+    assert lint_domain.platform_keys() == (
+        "arm", "hand", "quadruped", "humanoid", "uav", "driving", "underwater", "space",
+        "soft", "surgical", "swarm", "subsystems")
+
+
+def test_every_registered_platform_is_accepted(tmp_path):
+    for key in lint_domain.platform_keys():
+        assert lint_domain.lint_paths([_task(tmp_path / key, platform=key)]) == [], key
+
+
+@pytest.mark.parametrize("platform", ["spacecraft", "manipulation", "TODO"])
+def test_an_unregistered_platform_is_refused(tmp_path, platform):
+    problems = lint_domain.lint_task(_task(tmp_path, platform=platform))
+    assert len(problems) == 1, problems
+    assert f"metadata.platform {platform!r}" in problems[0] and "tasks/platforms.json" in problems[0]
+
+
+def test_a_missing_platform_is_refused(tmp_path):
+    problems = lint_domain.lint_task(_task(tmp_path, platform=""))
+    assert len(problems) == 1 and "metadata.platform None" in problems[0], problems
 
 
 def test_a_visible_file_reaching_the_anchor_is_still_refused(tmp_path):

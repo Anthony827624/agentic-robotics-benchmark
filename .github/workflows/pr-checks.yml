@@ -12,7 +12,8 @@
 #   - the registry identity cross-check for every task the committed history knows
 #     (a new slug is a notice: the maintainer exports the registry after the merge);
 #   - the domain lint (hardware-invariant + positive-scale metrics, agent-visible-surface
-#     isolation, image hygiene, anchor provenance, placement at tasks/<platform>/<slug>/);
+#     isolation, image hygiene, anchor provenance, a metadata.platform from
+#     tasks/platforms.json and placement at tasks/<platform>/<slug>/);
 #   - the shared verify-stage kit: robotics_grader selftest + canonical-vs-vendored byte
 #     equality (a task that ships a modified kit fails here; nothing re-vendors it later);
 #   - the pytest suite (onboarding gate, exporter, bundle crypto, registry export, skills,
@@ -136,8 +137,9 @@ jobs:
 
       # The domain's own policy lints over tasks/ and templates/: metrics that measure the
       # machine, non-positive anchors (which invert the ratio silently), agent-visible
-      # material that reaches the grader, image hygiene, unattributed anchors, and the
-      # placement of every landed task at tasks/<platform>/<slug>/. `ale lint` is generic
+      # material that reaches the grader, image hygiene, unattributed anchors, platforms
+      # outside tasks/platforms.json, and the placement of every landed task at
+      # tasks/<platform>/<slug>/. `ale lint` is generic
       # and knows none of it.
       - name: Domain lint (tasks/ and templates/, placement included)
         run: uv run python scripts/lint_domain.py .

@@ -12,7 +12,7 @@ description: >-
 
 # onboard-artifact-rollout — build an artifact_rollout task
 
-Loaded by **onboard-task** with `{task, platform, direction, metric, image, task_dir}`. Ask
+Loaded by **onboard-task** with `{task, platform, metric, image, task_dir}`. Ask
 only what this pattern needs, then drive the build.
 
 The shape: the agent's work product is a **frozen artifact** under a path the task declared in
@@ -105,8 +105,8 @@ That timing *is* the hiding mechanism; there is no assertion to write.
    which is worth more here than in any other pattern.
 6. **`verify/anchor.json`** — leave `value` null, and make sure the metric is on a positive scale
    (the package fails the run on a non-positive anchor, because the ratio would order every
-   future score backwards; a negative reward sum becomes a positive cost with `direction:
-   lower`). Gate once, take the measured value off the verdict, record it, gate again. Never a
+   future score backwards; a negative reward sum becomes a positive cost with the anchor's
+   `direction` set to `lower`). Gate once, take the measured value off the verdict, record it, gate again. Never a
    published figure — the anchor is the reference implementation's own measured value. Name
    the metric something that is not one of the framework's bookkeeping keys (`reward`,
    `ratio`, `anchor_recorded`, `match_lock_ok`, `probes_total`, `probes_passed`,

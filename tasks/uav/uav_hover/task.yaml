@@ -33,8 +33,3 @@ artifacts: [/home/user/submission]
 
 metadata:
   platform: uav
-  direction: control
-  metric:
-    name: mean_episode_reward
-    direction: higher
-    hardware_invariant: true

@@ -6,8 +6,8 @@
 robotics 问题里（开发控制器、规划操作序列、设计零件或机构、写 code-as-policy、调参规划器……），然后用
 **隐藏 grader 在隐藏 seed 上**给它留在 `/home/user/submission/` 里的**任何产物**打分——一个控制器进程、
 一份规划或规划器、一个 URDF / mesh / 参数设计、生成的代码、一份报告。`verify/` 按任务作者的定义给产物
-打分；`oracle/` 就是能拿满分的参考产物。任务只有一种；`direction`（control、planning、navigation……）
-是分类轴。
+打分；`oracle/` 就是能拿满分的参考产物。任务只有一种；`metadata.platform`（[`tasks/platforms.json`](tasks/platforms.json)
+里固定的 key 之一）是分类轴。
 
 任务运行在上游 **ALE 引擎**（[AgentsLastExam/ale](https://github.com/AgentsLastExam/ale)）上，
 引擎以 submodule 钉在 `vendor/ale`；这里不重新实现它的任何东西。上游的
@@ -24,8 +24,8 @@ robotics 问题里（开发控制器、规划操作序列、设计零件或机�
 
 一个任务是一个自包含的 `core/v1` 文件夹，引擎分三个阶段运行它
 （`setup` → `agent` → `verify`）；`ale validate` 时 `oracle/` 代替 agent。robotics 领域在其上
-增加的部分（三种 verify 模式、评分、vendored kit、probe wire）见 [`tasks/README.md`](tasks/README.md)；
-模板的逐文件说明见 [`templates/README.md`](templates/README.md)。
+增加的部分（三种 verify 模式、评分、vendored kit、probe wire）和模板的逐文件说明都在
+[`templates/README.md`](templates/README.md)。
 
 ```
 tasks/<platform>/<slug>/
@@ -78,10 +78,11 @@ merge、导出注册表。短版见 [`CONTRIBUTING.md`](CONTRIBUTING.md)；从�
 
 ```
 vendor/ale/                     上游引擎（submodule，钉 commit）——不要重新实现它
-tasks/<platform>/<slug>/       任务本身（目前：uav/uav_hover）
-tasks/README.md                 任务契约（任务形态的事实源）
+tasks/<platform>/<slug>/        任务本身（目前：uav/uav_hover）
+tasks/platforms.json            平台词表：`metadata.platform` 的 key 及其显示名
+tasks/README.md                 说明：uav/uav_hover 是展示文件结构的 dummy 示例
 templates/task/                 唯一模板，出厂即闸门全绿（anchor 为 null 是设计）
-templates/README.md             模板的逐文件说明
+templates/README.md             任务契约，逐文件说明（任务形态的事实源）
 identity-history.json           每个任务历史上的 (spec_hash, content_digest) 对（registry v2）
 shared/robotics_grader/         verify 阶段共享 kit 的 canonical 副本；每个任务 vendor 一份字节一致的副本
 harness/
@@ -115,7 +116,7 @@ uv run ale-onboard <spec>.yaml --json                                      # 实
 uv run ale-onboard --gate-only tasks/<platform>/<slug> --json
 #   built | needs_anchor（报出实测值）| needs_input | gave_up | error
 
-# 领域 lint（落地路径、指标纪律、anchor 出处、可见面、镜像卫生）+ 共享 kit 自测（不需要 docker）
+# 领域 lint（platform 与落地路径、指标纪律、anchor 出处、可见面、镜像卫生）+ 共享 kit 自测（不需要 docker）
 uv run python scripts/lint_domain.py .
 cd shared && python3 -m robotics_grader.selftest
 
@@ -125,11 +126,10 @@ cd vendor/ale && VIRTUAL_ENV= DOCKER_HOST=unix:///var/run/docker.sock \
 uv run ale-export <runs>/<run_id> --out <name>.ale-engine-run.tar.zst.age --public-key age1...
 
 # 给网站的任务 registry（任务身份来自引擎 loader；工作树不干净则拒绝）。
-# --carry-over 从网站当前的 registry 复制 platforms/directions/category_tree；
-# 网站侧用 `node scripts/sync-benchmark.mjs --manifest registry.json` 安装结果
+# platforms 来自 tasks/platforms.json；网站只展示这里导出的内容，
+# 用 `node scripts/sync-benchmark.mjs --manifest registry.json` 安装
 cd vendor/ale && VIRTUAL_ENV= uv run python ../../scripts/export_registry.py \
-    --tasks ../../tasks --history ../../identity-history.json \
-    --carry-over <website>/content/tasks/registry.json --out registry.json
+    --tasks ../../tasks --history ../../identity-history.json --out registry.json
 
 # 网站的模板下载包（agentic-robotics-task-template/ + GETTING-STARTED.md +
 # TEMPLATE-SOURCE.json；成员与权限位来自 git index；模板树不干净则拒绝）。

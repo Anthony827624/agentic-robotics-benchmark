@@ -10,7 +10,7 @@ description: >-
 
 # onboard-closed-loop — build a closed_loop task
 
-Loaded by **onboard-task** with `{task, platform, direction, metric, image, task_dir}`. Ask
+Loaded by **onboard-task** with `{task, platform, metric, image, task_dir}`. Ask
 only what this pattern needs, then drive the build.
 
 The shape: the grader **owns** the simulator. It steps the agent's policy one observation at a

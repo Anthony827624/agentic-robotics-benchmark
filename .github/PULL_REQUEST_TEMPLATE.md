@@ -24,7 +24,9 @@ and the artifact the agent has to leave in `/home/user/submission/`.
       the raw metric only.
 - [ ] No `__pycache__`, `.ale-cache`, `assets/` or large binaries in the folder. Large data is
       fetched by `image/Dockerfile` at build time.
-- [ ] If `metadata.platform` or `metadata.direction` is not yet a registry key, I say so below.
+- [ ] `metadata.platform` is one of the keys in `tasks/platforms.json` (a new platform needs a
+      maintainer: say so below), and `verify/anchor.json` declares `metric` and `direction`;
+      the grader reports that metric under the same name (`metric_name=` in `verify/verify.py`).
 
 ## Notes for the maintainers
 
