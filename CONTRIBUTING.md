@@ -1,63 +1,73 @@
 # Contributing a task
 
 A task is one self-contained folder. Contributing one means getting a pull request merged
-that adds it at `tasks/<platform>/<slug>/`. There are two ways to get that pull request open;
-both are reviewed the same way and land in the same place.
+that adds it at `tasks/<platform>/<name>/`. The project's contribution guidelines, with
+sign-up, the three roles (development, validation, benchmarking), the task stages and how
+contributions are credited, are two Google Docs with the same content:
+[English](https://docs.google.com/document/d/1s1E3ymIBLujWf2l7rhu4g9Nl4orBfooK0aDWOdum7-Y/view)
+and [中文](https://docs.google.com/document/d/1gX8v-w-idIPLjzoWgRskT0llE7cKXqg9sVLB0cWfZk0/view).
+This page covers what happens in this repository.
 
 ## Before you start
 
-You need the ALE engine and Docker. The engine repository is public and not on PyPI:
+1. Sign up in the project's coordination sheet (linked from the guidelines) and tell the
+   project initiator your GitHub ID; they give you write access to this repository (the sheet
+   alone does not).
+2. Register the task in the sheet. Its Task Name is the task's permanent `name`, identical in
+   the sheet, in the folder name and in `name` in `task.yaml`: preferably a short `snake_case`
+   string (lowercase letters, digits, underscores; the lint accepts `^[a-z0-9][a-z0-9_-]*$`).
+   A retired task keeps its name; never reuse one.
+3. Pick its platform, one of the keys in [`tasks/platforms.json`](tasks/platforms.json):
+   `arm`, `hand`, `quadruped`, `humanoid`, `uav`, `driving`, `underwater`, `space`, `soft`,
+   `surgical`, `swarm`, `subsystems`. A task that fits none needs a maintainer first.
+
+You need Docker and the ALE engine at the commit this repository pins: the `vendor/ale`
+submodule (upstream `main` moves on; a task is gated on the pinned commit). Clone with the
+submodule (or run `git submodule update --init vendor/ale` in an existing clone):
 
 ```bash
-git clone https://github.com/AgentsLastExam/ale.git && cd ale
+git clone --recurse-submodules https://github.com/Grounded-Intelligence-Initiative/agentic-robotics-benchmark.git
+cd agentic-robotics-benchmark/vendor/ale  # the pinned engine; run every `ale` command from here
 just bootstrap                          # needs uv and just (uv tool install rust-just)
 uv run ale --help
 images/build.sh container-ubuntu22      # the sandbox base image; once per machine
 ```
 
-Start from the template. Either download it as a zip from
-<https://agentic-robotics-benchmark.org/contribute> (the download adds a `GETTING-STARTED.md`
-with every command) or copy `templates/task/` from a checkout of this repository (until the
-website catches up with the 2026-10-15 change, its download is an older template: take the
-checkout copy, see way two). Rename the folder to your slug and set `name` in `task.yaml` to
-the same string. What each file is for, and what the robotics domain requires beyond the
-engine's own specs, is in [`templates/README.md`](templates/README.md). The long form of the
-whole path, including the anchor bootstrap, is
-[`docs/contributing-a-task.md`](docs/contributing-a-task.md).
+## Build and test it
 
-Build the task, then gate it from the engine checkout until both lines are green:
+Copy `templates/task/` from a checkout of this repository, rename the folder to the task's
+name and set `name` in `task.yaml` to the same string. What each file is for, and what the
+robotics domain requires beyond the engine's own specs, is in
+[`templates/README.md`](templates/README.md). The long form of the whole path, including the
+anchor bootstrap, is [`docs/contributing-a-task.md`](docs/contributing-a-task.md).
+
+Gate it from `vendor/ale` until both lines are green:
 
 ```bash
 uv run ale lint <task_dir>
 uv run ale validate <task_dir> --runs-dir <runs>     # untouched all-zero, oracle exactly 1.0
 ```
 
-## Way one: open the pull request yourself
+Validation shows that the task runs; it says nothing about difficulty. Measure that with a
+frontier model (`uv run ale run <task_dir> --agent <harness> --model <model>`) and iterate:
+the task's score is the verdict's `reward` (0 to 1), and current frontier models should stay
+roughly below 0.5 under the agreed configuration and budget. Raise the engineering or
+perception challenge rather than adding arbitrary penalties, and fix environment failures,
+missing dependencies and unclear instructions before reading a failed run as a model
+limitation. The pinned `claude-code` harness has two such defects (a model stream silent for
+300 s is cut off; the agent's `PATH` drops `/opt/venv/bin`); see
+[`docs/contributing-a-task.md`](docs/contributing-a-task.md) §7. Keep the run instructions
+and the results of both.
 
-1. Fork this repository and create a branch.
-2. Copy your folder to `tasks/<platform>/<slug>/`. `<platform>` is `metadata.platform`
-   from your `task.yaml`, one of the keys in `tasks/platforms.json`; `<slug>` is its
-   `name`. Nothing else goes in the pull request.
-3. Push and open the pull request. The template asks you for the `ok` line of your
-   `ale validate` run and a few confirmations.
+## Open the pull request
 
-## Way two: upload on the website
-
-> **Until the website catches up with this repository (2026-10-15).** Its download is still an
-> older template, and its upload check and bot still expect the old form (`metadata.direction`,
-> `metadata.metric`, the old platform keys): an upload made from the current template is
-> refused, and one made from the old download lands at `tasks/<direction>/<slug>/`, which CI
-> here refuses. Until the website update ships, use way one.
-
-1. Sign in at <https://agentic-robotics-benchmark.org/contribute> (GitHub or Google).
-2. Zip the task folder alone (the folder itself, or its contents at the zip root). Limits:
-   50 MB, 256 files, 2 MB per file, no symlinks.
-3. Upload it with a title. The server runs the engine's `ale lint` on the archive plus the
-   domain checks, refuses it with a list of problems if anything is wrong (nothing is stored),
-   and otherwise opens the pull request for you on a `contrib/...` branch and shows you the
-   link. "Check only" runs the same checks without uploading.
-4. A revision is a new zip with the same slug, uploaded from your profile; it becomes a new
-   commit on the same pull request.
+1. Push a branch (to this repository, or to a fork) that adds exactly one folder,
+   `tasks/<platform>/<name>/`, where `<platform>` is `metadata.platform` in your
+   `task.yaml` and `<name>` its `name`. Nothing else goes in the pull request.
+2. Open the pull request. Its template asks for the `ok` line of your `ale validate` run,
+   your frontier-model results and a few confirmations.
+3. Once CI passes, hand the task version (the branch and its commit) to the task's validator,
+   as the guidelines describe.
 
 ## What CI checks on every pull request
 
@@ -85,19 +95,18 @@ and with a maintainer before the merge.
 2. Check out the branch and re-run the gate from `vendor/ale`:
 
    ```bash
-   VIRTUAL_ENV= uv run ale lint ../../tasks/<platform>/<slug>
+   VIRTUAL_ENV= uv run ale lint ../../tasks/<platform>/<name>
    VIRTUAL_ENV= DOCKER_HOST=unix:///var/run/docker.sock \
-       uv run ale validate ../../tasks/<platform>/<slug> --runs-dir <runs>
-   cd ../.. && uv run python scripts/lint_domain.py tasks/<platform>/<slug>
+       uv run ale validate ../../tasks/<platform>/<name> --runs-dir <runs>
+   cd ../.. && uv run python scripts/lint_domain.py tasks/<platform>/<name>
    ```
 
    If the measured anchor differs from `verify/anchor.json`, push a correction to the branch
    rather than asking the contributor to redo it.
 3. Merge. The task is live at its path; nothing relocates or rewrites it.
-4. Export the registry from a clean checkout of `main` and install it in the website
-   (`scripts/export_registry.py`, then the website's `node scripts/sync-benchmark.mjs`);
-   commit the updated `identity-history.json` here. For a website upload, record the merge in
-   the review panel so the contributor's status reads "Landed".
+4. Export the registry from a clean checkout of `main` (`scripts/export_registry.py`) and
+   commit the updated `identity-history.json`. The website installs that export and only
+   displays it.
 
 ## Contributing to the tooling
 

@@ -20,10 +20,11 @@
   https://github.com/AgentsLastExam/ale/blob/main/docs/specs/). Our docs state only the
   robotics deltas and link there; never paraphrase the specs at length.
 - **Our deltas:** `templates/README.md` (the task contract, file by file: the verify
-  patterns, the closed_loop wire, scoring); `tasks/README.md` is only a note on the
-  `uav_hover` example. **Design records for the current tree:**
-  `docs/dev/20260902-engine-run-submission.md` (task form, leaderboard bridge) and
-  `docs/dev/20260902-contribute-download-upload.md` (the contribution path).
+  patterns, the closed_loop wire, scoring); `tasks/README.md` is only a note on the worked
+  example. **Design records** (dated; their 2026-10-15 notes say what no longer
+  holds): `docs/dev/20260902-engine-run-submission.md` (task form, registry; its leaderboard
+  bridge is retired) and `docs/dev/20260902-contribute-download-upload.md` (its website
+  download and upload channel are retired).
 - **Docs vs code: code wins.** If a document (this file, `PROGRESS.md`, `docs/`) disagrees
   with the code or `git log`, trust the code, say so, and fix the document.
 - **Everything written into the repository is English** — code, comments, docstrings, task
@@ -64,7 +65,7 @@ tasks/<platform>/<slug>/
   the fixed keys in `tasks/platforms.json` (this repository owns the vocabulary; the registry
   export hands it to the website, which only displays it). A landed task sits at exactly
   `tasks/<metadata.platform>/<name>/` (`scripts/lint_domain.py` battery 7 checks the key and
-  the placement; both contribution channels put the folder there directly). The metric and its
+  the placement; a contribution's pull request puts the folder there directly). The metric and its
   direction live only in `verify/anchor.json` (`metric`, `direction`). There is no
   task-kind field and no evaluation-mode field: the three verify patterns (open_loop /
   closed_loop / artifact_rollout) are **authoring choices inside `verify/verify.py`**, not
@@ -75,7 +76,7 @@ tasks/<platform>/<slug>/
   decides; `oracle/` is simply the reference artifact (a hand-made file is fine). Wording
   everywhere says "submission" / "artifact", never "policy", where the artifact is meant
   ("code-as-policy" as a task-kind example is fine). Shapes + skeletons:
-  `templates/README.md` "What a task can be" and the download's GETTING-STARTED.
+  `templates/README.md` "What a task can be".
 - Hidden material is hidden by **stage isolation**: `verify/` and `oracle/` reach the sandbox
   only when their stage runs, `/opt/ale` is `drwx------ root:root`, and the solver runs at the
   agent's UID (`robotics_grader.Solver` / `deprivileged` via `runuser`). Proof:
@@ -106,8 +107,8 @@ tasks/<platform>/<slug>/
   raw metric only), image hygiene, anchor provenance (never a published figure), core/v1
   completeness, a `metadata.platform` from `tasks/platforms.json` and placement at
   `tasks/<platform>/<slug>/`.
-- **Never run `ale validate` on `uav_hover` casually** — its oracle trains PPO for hours.
-  The template validates in seconds.
+- The template and the worked example (`tasks/space/fault_adaptive_spacecraft_docking`)
+  each validate in well under a minute.
 
 ## Scoring (the kit owns it; do not re-derive)
 
@@ -123,7 +124,7 @@ reward = clamp(ratio / full_at, 0, 1)           # the single gated reward key
 - Metric must be an **outcome on a positive scale**; never wall-clock time / throughput / FPS
   / frequency. A negative reward becomes a positive cost with the anchor's `direction` lower; the kit
   refuses a non-positive anchor.
-- `rewards` carries only `reward`; the raw metric, capped `ratio` (the leaderboard number),
+- `rewards` carries only `reward` (the task's score, 0 to 1); the raw metric, capped `ratio`,
   `match_lock_ok`, `anchor_recorded`, probe counts ride in the verdict's `metrics`.
 
 ## Kit vendoring rule
@@ -135,49 +136,45 @@ task after it lands, so the copy a maintainer validated is the copy that scores.
 `shared/` and copy — never edit a vendored copy in place. Self-test:
 `cd shared && python3 -m robotics_grader.selftest`.
 
-## Contributing: two channels, one pull request
+## Contributing: one pull request
 
-- **Channel A**: the contributor forks, puts the folder at `tasks/<platform>/<slug>/` and
-  opens the pull request. **Channel B**: the contributor uploads the zipped folder on the
-  website's Contribute page; the server prechecks it (the engine's real `ale lint` plus the
-  domain checks) and a bot opens a pull request of the same shape on a `contrib/<id>` branch,
-  then shows the contributor the link. Both land in the same place and get the same CI
-  (`.github/workflows/pr-checks.yml`: no secrets, so fork pull requests run it). No staging
-  area, no promote step, no public mirror: the repository is public.
+- The project's contribution guidelines (sign-up in the coordination sheet, the three roles,
+  task stages, credit) are two Google Docs with the same content, linked from
+  `CONTRIBUTING.md`:
+  [English](https://docs.google.com/document/d/1s1E3ymIBLujWf2l7rhu4g9Nl4orBfooK0aDWOdum7-Y/view)
+  and [中文](https://docs.google.com/document/d/1gX8v-w-idIPLjzoWgRskT0llE7cKXqg9sVLB0cWfZk0/view).
+  Link them as `/view` URLs, never `/edit`. This repository documents what happens here.
+- The sheet's Task Name, the folder name and `task.yaml`'s `name` are one string (preferably
+  `snake_case`). Contributors get write access from the project initiator after signing up,
+  push a branch (here or on a fork) adding
+  `tasks/<platform>/<name>/`, and open the pull request; CI
+  (`.github/workflows/pr-checks.yml`: no secrets, so fork pull requests run it) is the same
+  for everyone. No staging area, no promote step, no public mirror: the repository is public.
+- Before the pull request a contributor runs `ale lint` + `ale validate` and measures
+  difficulty with frontier models (`ale run`); the target is a frontier-model `reward` roughly
+  below 0.5, reached by raising the engineering or perception challenge, never by arbitrary
+  penalties. Check runs for the two pinned-harness defects first (300 s stream cut-off; the
+  agent's `PATH` without `/opt/venv/bin`; `docs/contributing-a-task.md` §7).
 - Maintainer flow: read `verify/` and `oracle/`, check out the branch, re-run `ale lint` +
   `ale validate` from `vendor/ale`, fix the anchor on the branch if the measurement
-  disagrees, merge, then export the registry (`scripts/export_registry.py`) and install it
-  in the website (`node scripts/sync-benchmark.mjs`), commit `identity-history.json`, and
-  record the merge in the website's review panel for an uploaded contribution.
-- `scripts/build_template_zip.py`: the Contribute page's download — `templates/task/` as
-  `agentic-robotics-task-template/` plus, **next to** the folder (the engine's top-level
-  whitelist forbids extras inside it): `GETTING-STARTED.md` and `TEMPLATE-SOURCE.json`.
-  Nothing else ships. Deterministic, refuses a dirty template tree. The guide is engine-first,
-  at most 90 lines, written for humans (no em dashes, short sentences), and ends with the two
-  submission channels. No local stand-in runtime and no authoring-session capture (hooks,
-  vendored packages, agent-harness config) may ever ship beside the folder again (owner
-  decisions 2026-09-05 and 2026-09-07). Rebuild the website's copy
-  (`apps/web/public/task-template/`) plus its `SOURCE.json` from a clean commit after any
-  template change.
+  disagrees, merge, then export the registry (`scripts/export_registry.py`) and commit
+  `identity-history.json`.
 
-## The bridge to the leaderboard
+## The registry export, and the website
 
-- `harness/export_run.py` (`ale-export`): packs `ale run` / `ale validate` episode records
-  (`runs/<run_id>/<episode>/{lock,result,verification}.json` + opaque members) into an
-  `ale-engine-run/v1` bundle (tar → zstd → age via `harness/bundle_crypto.py`). Derives the
-  agent tuple from the locks, redacts by value pattern (`harness/redact.py`), never scores,
-  never reads `verify/`. Refuses mixed harnesses (`--harness` to filter) and builtin harnesses
-  (`oracle`/`nop`/`scripted`) unless `--allow-builtin` (origin `smoke`).
 - `scripts/export_registry.py`: `ale-robotics-task-registry/v2` from the engine's own loader
   (`spec_hash`, `content_digest`), metric/direction/anchor/full_at/cap from `verify/`,
-  `platforms` from `tasks/platforms.json` (no directions, no carry-over from the website); merges
-  `identity-history.json`; **refuses a dirty tree**. Runs inside the engine venv (re-execs
-  itself if needed). The protocol names (`ale-engine-run/v1`, `ale-robotics-task-registry/v2`)
-  and the `ALE_*` environment variables are runtime identifiers, not brand text: they did not
-  change with the rename and must not be edited casually.
-- Server side: `validated` is a **consistency badge** (recompute from the registry anchor);
-  `verified` is a maintainer attestation after an organisation re-run. See
-  `docs/security-model.md` and `docs/submission-format.md`.
+  `platforms` from `tasks/platforms.json`; merges `identity-history.json`; **refuses a dirty
+  tree**. Runs inside the engine venv (re-execs itself if needed). Its contract is
+  `schemas/task-registry.schema.json`, owned here and tested against the export: change both
+  in one commit. The protocol name (`ale-robotics-task-registry/v2`) and the `ALE_*`
+  environment variables are runtime identifiers, not brand text: they did not change with the
+  rename and must not be edited casually.
+- The website (<https://agentic-robotics-benchmark.org>) is a display-only front end (owner
+  decision 2026-10-15): it installs the registry export and shows the tasks, and its
+  submission page links the two guideline documents. It takes no uploads, no run or score
+  submissions, and has no leaderboard. Nothing in this repository depends on the website or
+  reads from it; never reintroduce such a dependency.
 
 ## Commands
 
@@ -190,11 +187,9 @@ uv run ale-onboard <spec>.yaml --json
 uv run ale-onboard --gate-only tasks/<platform>/<slug> --json
 uv run python scripts/lint_domain.py .
 cd shared && python3 -m robotics_grader.selftest
-uv run ale-export <runs>/<run_id> --out <name>.ale-engine-run.tar.zst.age --public-key age1...
 cd vendor/ale && VIRTUAL_ENV= uv run python ../../scripts/export_registry.py --tasks ../../tasks \
     --history ../../identity-history.json --out registry.json
-#   then, in the website: node scripts/sync-benchmark.mjs --manifest registry.json
-uv run python scripts/build_template_zip.py --out agentic-robotics-task-template.zip --source-out SOURCE.json
+#   the website installs registry.json with its own sync script and only displays it
 uv run pytest -q
 ```
 
@@ -213,11 +208,11 @@ uv run pytest -q
   re-simulation (open_loop) sit on top of that; they do not replace it.
 - No secrets in the repo (`.env`, tokens, keys). No hardware-dependent scored metric. No
   100 MB+ blobs in git.
-- `tasks/uav/uav_hover` (renamed from `tasks/control/drone_hover` on 2026-10-12) is a dummy
-  task that frontier models complete easily. It stays only to show what a task's file
-  structure looks like (owner decision 2026-10-12; it replaces "delete it with the first
-  merged community task"). Its `task.yaml` and `verify/verify.py` still carry three comments
-  from the old brand name ("ALE Robotics domain policy").
+- `tasks/space/fault_adaptive_spacecraft_docking` (contributed in #1, merged 2026-10-15 after
+  a maintainer pass) is the worked example of a complete task. Its difficulty is being
+  re-measured: on its previous version, Opus 5.5 and Fable 5.1 scored 1.0. The dummy
+  `uav_hover` (formerly `drone_hover`) was removed on 2026-10-15: a task frontier models solve
+  trivially is neither a real example nor a task anyone could submit (owner decision).
 
 ## Gotchas (details in PROGRESS.md)
 

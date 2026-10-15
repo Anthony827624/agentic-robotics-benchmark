@@ -20,9 +20,10 @@ the solver directly would hand the agent the grader's privileges. `robotics_grad
 the drop through `runuser`; from there `/opt/ale`, the verdict file and the grader's memory are
 all out of reach (see `docs/evidence/isolation-audit.md` for the audited proof).
 
-Worked example: `tasks/uav/uav_hover` — a real closed_loop task (develop a
-hovering policy for a Crazyflie in gym-pybullet-drones) that validates green (its grader
-predates the shared package and inlines the same machinery). Template:
+Worked example: `tasks/space/fault_adaptive_spacecraft_docking` — a real closed_loop task
+(a fault-adaptive docking controller for a six-thruster spacecraft) that validates green
+on the shared kit. It also shows what a task that hands the agent its simulator must do:
+64-bit seeds and a keyed-hash generator, so the source gives nothing away. Template:
 `templates/task/`, whose `verify/verify.py` is already this pattern.
 
 ## Mode-specific questions
@@ -43,7 +44,7 @@ predates the shared package and inlines the same machinery). Template:
    components, move the goal, nudge the obstacle) and set `dims` in `ProbeLock` to cover exactly
    those leading components. A constant, a replay and an obs-blind policy must all fail it.
 5. **How long does the oracle need to train?** That is `timeouts.agent`, and `ale validate`
-   really pays it — uav_hover's oracle trains PPO for eleven minutes.
+   really pays it: an oracle that trains a policy (PPO, say) makes every validate that slow.
 
 ## The solver contract (what the agent must build)
 

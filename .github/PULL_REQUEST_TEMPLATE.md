@@ -2,19 +2,23 @@
 
 ## What this pull request adds
 
-One task folder at `tasks/<platform>/<slug>/`. One or two sentences on the robotics problem
-and the artifact the agent has to leave in `/home/user/submission/`.
+One task folder at `tasks/<platform>/<name>/`, where `<name>` is the Task Name registered in
+the project's sheet. One or two sentences on the robotics problem and the artifact the agent
+has to leave in `/home/user/submission/`.
 
 ## Checklist
 
-- [ ] The folder sits at `tasks/<platform>/<slug>/`. `<slug>` equals `name` in `task.yaml`
-      and `<platform>` equals `metadata.platform`.
+- [ ] The folder sits at `tasks/<platform>/<name>/`. `<name>` equals `name` in `task.yaml`
+      and the registered Task Name; `<platform>` equals `metadata.platform`.
 - [ ] `ale lint <folder>` passes on the engine commit pinned at `vendor/ale`.
 - [ ] `ale validate <folder>` passes. The `ok` line from my run:
 
   ```
-  ok    <slug>: untouched={'reward': 0.0}, oracle={'reward': 1.0}
+  ok    <name>: untouched={'reward': 0.0}, oracle={'reward': 1.0}
   ```
+
+- [ ] I measured the difficulty with frontier models (`ale run`). Models, agent harness,
+      budget and scores are below; the target is a score roughly below 0.5.
 
 - [ ] `verify/anchor.json`: `value` is my own measured number from that run, never a
       published figure; `source` says where it came from; `full_at` is sized from the spread
@@ -27,6 +31,11 @@ and the artifact the agent has to leave in `/home/user/submission/`.
 - [ ] `metadata.platform` is one of the keys in `tasks/platforms.json` (a new platform needs a
       maintainer: say so below), and `verify/anchor.json` declares `metric` and `direction`;
       the grader reports that metric under the same name (`metric_name=` in `verify/verify.py`).
+
+## Frontier-model results
+
+For each run: the task commit it ran on, model, harness, run budget, `reward` and the run's
+`ratio`.
 
 ## Notes for the maintainers
 

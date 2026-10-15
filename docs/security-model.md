@@ -1,28 +1,30 @@
-# Security model — what is hidden from the agent, and what a badge proves
+# Security model — what is hidden from the agent, and what a verdict proves
 
 This page states what the benchmark defends against, how, and — just as carefully — what
-it does not prove. It has two halves: the **grading trust boundary** (how the grader's
-number stays authoritative against a hostile agent inside the sandbox) and the
-**submission trust levels** (what the leaderboard can and cannot conclude from an uploaded
-run). The mechanics are the engine's (`vendor/ale/docs/specs/standard-environment.md`) plus
-the verify-stage kit (`shared/robotics_grader/`); the ingest rules are in
-[`dev/20260902-engine-run-submission.md`](dev/20260902-engine-run-submission.md) §5.
+it does not prove: the **grading trust boundary**, which keeps the grader's number
+authoritative against a hostile agent inside the sandbox. The mechanics are the engine's
+(`vendor/ale/docs/specs/standard-environment.md`) plus the verify-stage kit
+(`shared/robotics_grader/`).
+
+Results are the engine's own episode records. The website is a display-only front end: it
+takes no uploads and no run or score submissions (2026-10-15), so the submission trust
+levels this page used to describe (`validated` / `verified` badges, the bundle exporter) are
+retired with the upload path.
 
 ## 1. Assets and adversaries
 
 Assets: (1) **result integrity** — the score is what the grader computed, not what the agent
 claims; (2) **hidden-protocol secrecy during the run** — the per-episode seeds, the grader,
 the anchor and the oracle are unreachable from inside the sandbox while the agent works;
-(3) **credential secrecy** — nothing credential-shaped leaves the host inside a bundle;
-(4) **tamper-evidence** — an edited run record is detectable.
+(3) **credential secrecy** — the model credentials stay on the host's gateway, never in the
+sandbox or a task folder.
 
-The primary adversary is the **tested agent**: arbitrary code running for hours as the
-sandbox's agent account, and again — through the solver it leaves behind — while the grader
-runs. It may try to inflate its metric, echo canned output, pre-create or overwrite the
-verdict, or read the grader. A secondary adversary is a **submitter** who edits a bundle
-after the fact, or relabels an authoring run as a model run. We do **not** defend against a
-compromised host or a malicious operator: that is exactly the gap the `verified`
-attestation exists to close (§4).
+The adversary is the **tested agent**: arbitrary code running for hours as the sandbox's
+agent account, and again — through the solver it leaves behind — while the grader runs. It
+may try to inflate its metric, echo canned output, pre-create or overwrite the verdict, read
+the grader, or predict the hidden seeds. We do **not** defend against a compromised host or a
+malicious operator: a result is only as trustworthy as whoever ran the episodes (the
+guidelines' Agent Benchmarking role says who runs formal evaluations and what they record).
 
 ## 2. What stage isolation hides
 
@@ -37,7 +39,7 @@ stage protocol; the task only has to respect it.
 | **Verdict path** | The reward map is written to `ALE_VERDICT_PATH`, inside the root-only tree, through `ale_verify`'s atomic write; the agent can neither pre-create nor overwrite it. The engine cross-checks the reward file against `verification.json`. | engine + kit |
 | **Seeds in memory** | The grader draws hidden seeds from OS entropy inside its own process (`seed_rng`); they never touch disk. The practice grader the agent gets uses different, visible seeds and prints the raw metric only. | kit + `scripts/lint_domain.py` |
 | **No self-reported numbers** | The metric is computed from the grader's own simulator state. Nothing the solver prints is parsed as a score; the wire carries observations and actions only. | kit |
-| **Network** | `network.mode: block` during the agent phase; the agent cannot fetch anything, including the public mirror. | engine |
+| **Network** | `network.mode: block` during the agent phase; the agent cannot fetch anything, including this repository. | engine |
 | **Image hygiene** | The task image may not `COPY` `verify/`, `oracle/`, the anchor or the manifest — an image layer is readable by anyone who can run the image. | `scripts/lint_domain.py` |
 
 Real-run evidence for the first four rows: [`evidence/isolation-audit.md`](evidence/isolation-audit.md)
@@ -51,80 +53,53 @@ and reject one that does not start where it claims; artifact_rollout is structur
 (the grader is the only thing that ever runs the artifact).
 
 **What "hidden" means, precisely.** The anchor and the oracle are hidden from the *tested
-agent during its run*, by stage isolation. They are **not** secrets from maintainers, from
-the server, or from the public: this repository is public and every task folder is in it
+agent during its run*, by stage isolation. They are **not** secrets from maintainers or from
+the public: this repository is public and every task folder is in it
 whole, `verify/anchor.json` included (the engine's loader refuses a folder without
 `oracle/run.sh`, and a stub would change the task's identity). A human can read the anchor;
 the agent in the sandbox cannot, and the agent is what is being measured.
 
-## 3. What the exporter protects
+## 3. What a verdict proves
 
-`ale-export` packs what the engine wrote and adds nothing the server trusts on its own word:
+The grader runs as root inside the sandbox after the agent phase, owns its simulator, draws
+its seeds from OS entropy through a keyed hash (`robotics_grader.seeds`: no output predicts
+another, so the probe perturbations a solver sees reveal nothing about later seeds), and
+writes the verdict itself. The engine records the episode (`lock.json` with the task
+identity, the engine commit and the `ale_verify` content hash; `result.json`;
+`verification.json`). A result therefore says: this agent's artifact, scored by this
+grader at this task identity, on seeds nobody saw in advance.
 
-- the `agent` block is derived from every episode's `lock.json` and must agree across the
-  bundle; there is no `--agent-model` override;
-- episodes run by the authoring harnesses (`oracle`, `nop`, `scripted`) are refused unless
-  `--allow-builtin`, which stamps `submission_origin: smoke` — the server never scores those;
-- redaction is by **value pattern** over string leaves (`harness/redact.py`: API keys, AWS
-  tokens, bearer/authorization material, cookies) — never by key name, which would corrupt
-  the engine's token-limit fields; `lock.task.source.path` becomes `"<local>"`;
-- `members` hashes are computed over the stored (redacted) bytes; the receipt records the
-  compressed and encrypted sha256 and the recipient key;
-- only the recipient's **public** age key is ever handled on the packing side.
+The registry (`scripts/export_registry.py`) publishes each task's identity history, so a
+result can be matched to the exact committed tree it ran against.
 
-## 4. What the server proves — `validated` versus `verified`
+## 4. Honest limits
 
-For a bundle it can parse, the server rejects (writing no rows) on any hash or consistency
-failure and otherwise recomputes the score from the **registry's** anchor, `full_at` and cap
-(`engine:score_matches_recompute`, an exact port of `robotics_grader.scoring.ratio_rewards`).
-
-The recompute catches: anchor / `full_at` / cap drift between the run's grader and the
-registry (`task_identity`, `score_matches_recompute`), edits to any single member
-(`member_hashes`, `manifest_consistent`, `verification_consistent`), arithmetic bugs in ported
-graders (`reward_consistent`), relabelled authoring runs (`scorable_harness`,
-`agent_phase_present`), and cherry-picked task subsets (release policy `zero`). It cannot
-catch a *consistent* rewrite of every file: the members are plain JSON and the solver/verify
-image is a local build whose identity is recorded but bound to no reference. `validated` is
-therefore a **consistency badge**; authenticity comes only from a maintainer attestation after
-an organisation re-run.
-
-Concretely:
-
-| status | meaning |
-|---|---|
-| `rejected` | a hash, manifest, verification or recompute check failed; **no** per-task rows are written |
-| `received` | consistent, but not scored or not fully trusted: unknown task, drifted identity (`task_content_drift`, `engine_schema_drift`), anchorless grader run, authoring harness, or no challenge |
-| `validated` | every check passed, the challenge verified, the anchor present, a scorable harness — the numbers are self-consistent with the registry |
-| `verified` | a **maintainer attestation** (`VerificationEvent` with actor, `method = official_rerun`, reason, and `evidence_hash` = the re-run bundle's receipt `encrypted_sha256`), never an automatic outcome. An upload onto a `verified` row is refused with 409: revoke, re-upload, re-verify |
-
-Things the server deliberately does **not** count: episodes with `env_error`, `task_error`,
-`cancelled` or `interrupted` status (infrastructure failures — shown, never scored);
-`-reverify-` regrades from a challenge upload (a regrade replaces its source episode only on
-the maintainer path); tasks not `active` in the release.
-
-## 5. Honest limits
-
-- **Image provenance.** A locally built task image has an observed identity in `lock.json`
-  but no registry reference to compare against; `engine:image_matches_anchor_run` is
-  informational.
-- **Engine provenance.** `lock.framework.commit` outside the registry's `engine.commits`
-  is a warning, not a rejection — external partners may run a newer engine.
-- **The host.** A self-hosted run is a consistent, tamper-evident *recording*, not proof
-  that it happened under controlled conditions. Only an organisation re-run closes that gap,
-  and the leaderboard says so in exactly these words: `validated` is a consistency badge,
-  `verified` is an attestation.
-- **Public anchors.** Because the repository is public and complete, the target value is public knowledge
-  outside the sandbox. The benchmark measures what the agent does inside a blocked-network
-  sandbox that does not contain it; it does not measure what a human who read the repository
+- **The host.** An episode record is a recording made on whoever's machine ran it, not proof
+  that it happened under controlled conditions. Trust the runs whose operator you trust.
+- **Network during verify (an engine issue, not yet fixed upstream).** The engine opens egress
+  before the verify stage, and a closed_loop task runs the agent's solver during that stage.
+  The solver can therefore reach the internet while it is being scored, and download anything
+  public, this repository's `oracle/` included. The hidden seeds never leave the grader's
+  memory, but a solver that fetches the reference controller can play it. Until the engine
+  keeps the verify stage offline for the solver, check formal runs' submissions and traces
+  for network use.
+- **The probe lock is not a proof of honesty.** It catches a policy that ignores its input;
+  a solver that notices a repeated `t` can vary its answer on purpose. Isolation, not the
+  lock, keeps a score honest.
+- **Public anchors.** Because the repository is public and complete, the target value is
+  public knowledge outside the sandbox. The agent phase runs in a blocked-network sandbox that
+  does not contain it; the benchmark does not measure what a human who read the repository
   could type into an instruction.
+- **A simulator the agent holds.** When a task gives the agent a copy of its simulator, the
+  episode seed is the only secret: seed it with 64 bits (`rng.seed(bits=64)`) and draw every
+  hidden value through a generator whose outputs reveal nothing (a keyed hash), or the first
+  observations give the seed away.
 
-## 6. Constraints the tooling must preserve
+## 5. Constraints the tooling must preserve
 
 - The task image never contains `verify/`, `oracle/`, the anchor, or the manifest.
 - `setup/payload/` never reads the anchor or the grader; the practice grader prints the raw
   metric only, never a ratio or score.
 - `rewards` in the verdict carries only the gated `reward`; raw values ride in `metrics`.
-- The exporter never scores, never reads `verify/`, never types the agent identity.
-- Credentials live in the engine's `.env` on the host, never in a task folder or a bundle.
-- Run outputs (`runs/`) are git-ignored; nothing is uploaded without an explicit
-  `ale-export` + upload step.
+- Credentials live in the engine's `.env` on the host, never in a task folder.
+- Run outputs (`runs/`) are git-ignored.

@@ -1,15 +1,16 @@
 #!/usr/bin/env python3
-"""Export the website task registry (``ale-robotics-task-registry/v2``) from the engine loader.
+"""Export the task registry (``ale-robotics-task-registry/v2``) from the engine loader.
 
-Design: docs/dev/20260902-engine-run-submission.md §4. The one rule that shapes this script
-is that *task identity comes from the engine*: ``spec_hash`` and ``content_digest`` are read
-off ``ale.run.tasksets.manifest.load_tasks`` and never re-implemented here, so the server
-compares a run's ``lock.json`` against exactly the numbers the engine would compute for the
+The document's contract is ``schemas/task-registry.schema.json`` in this repository, and the
+tests hold the export to it. The one rule that shapes this script is that *task identity
+comes from the engine*: ``spec_hash`` and ``content_digest`` are read off
+``ale.run.tasksets.manifest.load_tasks`` and never re-implemented here, so a run's
+``lock.json`` can be matched against exactly the numbers the engine computes for the
 committed tree. Everything else is assembled from files the task folder already carries
 (``task.yaml``'s ``metadata.platform``, ``instruction.md``, ``verify/anchor.json`` for the
 metric, its direction and the anchor, ``verify/grader_config.json``) plus git provenance. The
 document's ``platforms`` list is this repository's ``tasks/platforms.json``: the benchmark
-owns its taxonomy, and the website displays what this export hands it.
+owns its taxonomy, and a consumer (the website) only displays what this export hands it.
 
 The loader lives in the pinned engine's venv (``vendor/ale``), not in this repo's. When
 ``ale`` is not importable the script re-executes itself through ``uv run`` in that venv, so
@@ -48,9 +49,8 @@ DEFAULT_HISTORY = REPO_ROOT / "identity-history.json"
 PLATFORMS_FILE = REPO_ROOT / "tasks" / "platforms.json"
 
 SCHEMA_VERSION = "ale-robotics-task-registry/v2"
-#: The server reads the cap from ``metadata_json``; this default mirrors the kit's
-#: ``robotics_grader.scoring`` default so a task without ``scoring_cap`` scores identically
-#: on both sides.
+#: Mirrors the kit's ``robotics_grader.scoring`` default, so a task without ``scoring_cap``
+#: is registered with the cap its grader actually applies.
 DEFAULT_SCORE_CAP = 1.5
 DEFAULT_FULL_AT = 1.0
 DEFAULT_RELEASE_NAME = "Agentic Robotics Benchmark"
@@ -153,7 +153,7 @@ def read_anchor(task_dir: Path, score_cap: float) -> dict[str, Any]:
     ``full_at`` defaults to 1.0 and must lie in ``(0, cap]`` and ``value`` must be positive —
     the same rules the kit applies at grading time, so a registry that disagrees with the
     grader is impossible to export. A ``null`` value is allowed: it is the authoring state
-    ("not admissible yet") and the server simply cannot score such a task.
+    ("not admissible yet"): nobody can be scored against such a task yet.
     """
     path = task_dir / "verify" / "anchor.json"
     if not path.is_file():
@@ -176,6 +176,9 @@ def read_anchor(task_dir: Path, score_cap: float) -> dict[str, Any]:
         raise RegistryError(
             f"{path}: full_at must lie in (0, {score_cap}] (score_cap), got {full_at!r}"
         )
+    for key in ("source", "image_identity"):
+        if anchor.get(key) is not None and not isinstance(anchor.get(key), str):
+            raise RegistryError(f"{path}: {key} must be a string or null, got {anchor.get(key)!r}")
     return {
         "anchor": None if value is None else float(value),
         "anchor_full_at": float(full_at),
@@ -188,7 +191,7 @@ def metric_fields(task_dir: Path, slug: str) -> dict[str, Any]:
     """``verify/anchor.json``'s ``metric``/``direction`` → ``metric_name``/``metric_label``/``metric_direction``.
 
     The anchor is the one place a task declares its metric: the grader reads it there, and
-    the server's recompute reads the copy this export puts in the registry.
+    this export publishes the same name and direction.
     """
     path = task_dir / "verify" / "anchor.json"
     if not path.is_file():
@@ -256,6 +259,12 @@ def task_entry(
 # identity history (§4): outside every task folder so it never feeds the digest
 # --------------------------------------------------------------------------- #
 _HISTORY_KEYS = ("slug", "spec_hash", "content_digest", "since")
+#: What schemas/task-registry.schema.json requires of an identity's fields.
+_HISTORY_PATTERNS = {
+    "spec_hash": re.compile(r"^sha256:[0-9a-f]{64}$"),
+    "content_digest": re.compile(r"^sha256:[0-9a-f]{64}$"),
+    "since": re.compile(r"^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"),
+}
 
 
 def load_history(path: Path) -> list[dict[str, Any]]:
@@ -280,6 +289,12 @@ def load_history(path: Path) -> list[dict[str, Any]]:
                 raise RegistryError(
                     f"{path}: record {index} must carry a non-empty string {key!r}"
                 )
+        for key, pattern in _HISTORY_PATTERNS.items():
+            if not pattern.match(record[key]):
+                raise RegistryError(
+                    f"{path}: record {index} {key} {record[key]!r} does not match "
+                    f"{pattern.pattern} (schemas/task-registry.schema.json)"
+                )
     return loaded
 
 
@@ -294,7 +309,7 @@ def merge_history(
     script's. One exception: a pair appears at most once. A revert (A → B → A) or a
     hand-reordered file would otherwise re-prepend an identity that already sits further
     down; the older duplicate is dropped so the current identity is always ``[0]`` (which
-    is what the website's ``seed.py`` reads) and the file stays prunable by eye.
+    is what a consumer reads as the task's version) and the file stays prunable by eye.
     """
     own = [record for record in history if record.get("slug") == task.slug]
     others = [record for record in history if record.get("slug") != task.slug]
@@ -355,11 +370,30 @@ def source_commit(repo: Path) -> str:
     return _git(["rev-parse", "HEAD"], cwd=repo).strip()
 
 
+#: ``owner/name`` at the end of a remote URL: ``https://host/owner/name(.git)`` or
+#: ``git@host:owner/name(.git)``.
+_REMOTE_SLUG = re.compile(r"([^/:]+/[^/:]+?)(?:\.git)?/?$")
+
+
+def tasks_repo(repo: Path) -> str:
+    """``owner/name`` of the ``origin`` remote (the folder name when there is none).
+
+    The folder name alone says nothing about where the tasks came from: a clone can be
+    called anything.
+    """
+    try:
+        url = _git(["remote", "get-url", "origin"], cwd=repo).strip()
+    except RegistryError:
+        return repo.name
+    match = _REMOTE_SLUG.search(url)
+    return match.group(1) if match else repo.name
+
+
 def engine_provenance(engine_dir: Path) -> dict[str, Any]:
     """Engine commit + package version + the ``ale_verify`` content hash the locks carry.
 
-    The hash is what ``lock.ale_verify.content_hash`` records per episode, so the server
-    can tell a run made with the registered engine from one made with a modified verifier.
+    The hash is what ``lock.ale_verify.content_hash`` records per episode, so a run made with
+    the registered engine can be told from one made with a modified verifier.
     It is only cheap from inside the engine venv; elsewhere it is ``null``.
     """
     try:
@@ -406,6 +440,8 @@ def load_platforms(path: Path = PLATFORMS_FILE) -> list[dict[str, str]]:
 
 def release_block(name: str, version: str, task_set: list[str]) -> dict[str, Any]:
     """The release policy: macro mean over *every* active task, missing scored as zero."""
+    if not name or not version:
+        raise RegistryError("the release needs a non-empty name and version")
     return {
         "name": name,
         "version": version,
@@ -439,7 +475,7 @@ def build_registry(
 
     With ``allow_dirty`` the clean-tree check is skipped and the provenance says so:
     ``source_commit`` gets a ``-dirty`` suffix and ``dirty: true`` is set, so a throwaway
-    export can never pass for a release one (the website's validator can refuse it).
+    export can never pass for a release one (the schema marks it; never install one).
     """
     if platforms is None:
         if not allow_dirty:
@@ -459,7 +495,7 @@ def build_registry(
         entries.append(task_entry(task, identities, platform_keys))
     provenance: dict[str, Any] = {
         "source": "engine_task_loader",
-        "tasks_repo": REPO_ROOT.name,
+        "tasks_repo": tasks_repo(REPO_ROOT),
         "source_commit": f"{source_commit_sha}-dirty" if allow_dirty else source_commit_sha,
         "generated_at": now,
         "engine": engine,
@@ -483,7 +519,7 @@ def history_writable(path: Path, *, allow_dirty: bool) -> bool:
 
     A clean export always writes. A ``--allow-dirty`` export may only write to a file other
     than the canonical ``identity-history.json``: the identity it would record
-    is one no commit reproduces, and the canonical file is what the website is seeded from.
+    is one no commit reproduces, and the canonical file is what every clean export merges.
     """
     if not allow_dirty:
         return True

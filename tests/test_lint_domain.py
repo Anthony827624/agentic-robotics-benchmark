@@ -77,7 +77,7 @@ def test_a_task_still_carrying_genre_is_not_flagged(tmp_path):
 
 
 def test_the_shipped_domain_lints_clean():
-    """The real tree — template excluded from task batteries, uav_hover included, and the
+    """The real tree — template excluded from task batteries, the worked example included, and the
     repository root as the default target (only tasks/ and templates/ are walked)."""
     assert lint_domain.lint_domain(REPO_ROOT) == []
     assert lint_domain.lint_paths([REPO_ROOT]) == []
@@ -170,6 +170,13 @@ def test_a_missing_full_at_names_the_engine_gate(tmp_path):
     assert "oracle_not_full" in problems[0] and "domain policy" not in problems[0]
 
 
+@pytest.mark.parametrize("source", [None, 474, ["oracle run"], "", "   "])
+def test_an_anchor_source_that_is_not_text_is_refused(tmp_path, source):
+    """str(None) is "None": a null, numeric or list source must not pass as attribution."""
+    problems = lint_domain.lint_task(_task(tmp_path, anchor=dict(_ANCHOR, source=source)))
+    assert any("no `source`" in p for p in problems), problems
+
+
 def test_an_anchor_quoting_a_published_figure_is_still_refused(tmp_path):
     anchor = dict(_ANCHOR, source="the paper reports 474")
     problems = lint_domain.lint_task(_task(tmp_path, anchor=anchor))
@@ -177,7 +184,7 @@ def test_an_anchor_quoting_a_published_figure_is_still_refused(tmp_path):
 
 
 @pytest.mark.parametrize("source", [
-    # uav_hover's exact wording
+    # a former task's exact wording (uav_hover, removed 2026-10-15)
     "oracle implementation (oracle/run.sh, PPO on HoverAviary at the pinned gym-pybullet-drones "
     "commit): real graded run over hidden per-run seeds, never a published figure",
     "oracle/run.sh real graded run — NOT the paper's printed figure",
@@ -258,8 +265,8 @@ def test_a_pdf_in_the_image_is_no_longer_hidden_surface(tmp_path):
 
 def test_full_at_is_bounded_by_the_task_own_scoring_cap(tmp_path):
     """The cap comes from verify/grader_config.json (1.5 by default), read exactly as the
-    kit and the website precheck read it — a task the server
-    accepts must never go red in PR CI over a hardcoded 1.5."""
+    kit reads it — a task its own grader accepts must never go red in PR CI over a
+    hardcoded 1.5."""
     over_default = _task(tmp_path / "a", anchor=dict(_ANCHOR, full_at=1.8))
     problems = lint_domain.lint_task(over_default)
     assert len(problems) == 1 and "full_at" in problems[0] and "(0, 1.5]" in problems[0], problems

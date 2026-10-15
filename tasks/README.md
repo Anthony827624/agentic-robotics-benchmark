@@ -1,1 +1,1 @@
-The UAV hover task ([`uav/uav_hover/`](uav/uav_hover/)) is a dummy task that frontier models complete easily. It is here only to show what a task's file structure should look like.
+The worked example is [`space/fault_adaptive_spacecraft_docking/`](space/fault_adaptive_spacecraft_docking/), a complete closed_loop task (fault-adaptive spacecraft docking): copy its structure, not its numbers. Start your own task from [`../templates/task/`](../templates/task/).

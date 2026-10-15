@@ -1,9 +1,10 @@
 # Exporting the task registry (`ale-robotics-task-registry/v2`)
 
-`scripts/export_registry.py` turns the committed `tasks/` tree into the
-`registry.json` the website ingests (design: `20260902-engine-run-submission.md` §4). Task
-identity — `spec_hash` and `content_digest` — comes from the pinned engine's own loader, so
-the numbers the server compares against a run's `lock.json` are exactly what the engine
+`scripts/export_registry.py` turns the committed `tasks/` tree into `registry.json`, the
+document this repository publishes and the website displays. Its contract is
+`schemas/task-registry.schema.json`, owned here; the tests hold the export to it, so change
+both in one commit. Task identity — `spec_hash` and `content_digest` — comes from the pinned
+engine's own loader, so a run's `lock.json` can be matched against exactly what the engine
 computes; nothing here re-implements them.
 
 ## Run it
@@ -21,12 +22,10 @@ cd vendor/ale && VIRTUAL_ENV= uv run python ../../scripts/export_registry.py \
 `uv run python scripts/export_registry.py ...` from this repo's own venv also works: the
 script notices `ale` is not importable and re-executes itself via `uv run --project vendor/ale`.
 
-Then install it in the website with `node scripts/sync-benchmark.mjs --manifest /tmp/registry.json`
-and commit `identity-history.json` here. The document carries the benchmark's own taxonomy:
-`platforms` is `tasks/platforms.json` verbatim and there are no directions, so the website only
-displays what it is given. (Until the website's sync takes `platforms` from the export and stops
-requiring directions, installing this export fails closed: nothing is written. PROGRESS.md,
-Open items.)
+Then commit `identity-history.json` here. The website installs the export with its own sync
+script, validating it against this repository's schema; it only displays what it is given.
+The document carries the benchmark's own taxonomy: `platforms` is `tasks/platforms.json`
+verbatim and there are no directions.
 
 | flag | meaning |
 |---|---|
@@ -65,12 +64,15 @@ either hash of a task differs from its newest record, the new pair is prepended 
 `since = generated_at`; a pair appears at most once (a revert drops the older duplicate so the
 current identity is always `[0]`), and nothing else is removed automatically. When a change is
 genuinely breaking (new grader semantics, a new anchor), prune the stale records by hand so that
-runs made against the old task stop matching `engine:task_identity`. The file is validated on
-load (a JSON list of objects with string `slug`, `spec_hash`, `content_digest`, `since`); a typo
-made while pruning is reported as `error: ...`, not a traceback.
+results recorded against the old task no longer match a registered identity. The file is
+validated on load (a JSON list of objects with string `slug`, `spec_hash`, `content_digest`,
+`since`, the hashes `sha256:<64 hex>` and `since` an ISO-8601 UTC timestamp, as the schema
+requires); a typo made while pruning is reported as `error: ...`, not a traceback.
 
-CI (`engine-lint` job) re-exports the tree into throwaway paths and checks that every task the
-history knows has `identities[0]` equal to its first committed record, so a tree that drifted
-from its registered identity is caught before a run against it lands as
-`task_unknown_version`. A slug the history does not know yet is a new task arriving by pull
-request: CI prints a notice, and the maintainer's export after the merge records it.
+CI (`engine-lint` job) re-exports the tree into throwaway paths, validates the document against
+`schemas/task-registry.schema.json`, and checks that every task the history knows has
+`identities[0]` equal to its first committed record, so a tree that drifted from its registered
+identity is caught before results are recorded against it. A slug the history does not know yet
+is a new task arriving by pull request: CI prints a notice, and the maintainer's export after the
+merge records it. `provenance.tasks_repo` is the `origin` remote's `owner/name`: export from a
+clone whose `origin` is the canonical repository, not a fork.

@@ -16,8 +16,8 @@ The tasks run on the upstream **ALE engine**
 and
 [task-quality-standard.md](https://github.com/AgentsLastExam/ale/blob/main/docs/specs/task-quality-standard.md)
 are the authority on the task format and the quality bar; this repository documents only what
-the robotics domain adds. Leaderboard, task pages and the contribution upload:
-<https://agentic-robotics-benchmark.org>.
+the robotics domain adds. The website, <https://agentic-robotics-benchmark.org>, displays
+the tasks; it takes no uploads and no submissions.
 
 This repository is public and complete: every task folder is here whole, `oracle/` and
 `verify/` included. The anchor is hidden from the *tested agent* by the engine's stage
@@ -58,8 +58,8 @@ reward = clamp(ratio / full_at, 0, 1)         # the single gated reward key
 
 The **anchor** is the reference implementation's own measured value from a real run —
 never a printed figure from elsewhere — and `full_at` is the ratio at which the reward
-saturates, sized from the metric's measured seed-to-seed spread. The capped `ratio` is the
-leaderboard number; `reward` is the engine's gated signal. Metrics are always outcome
+saturates, sized from the metric's measured seed-to-seed spread. `reward` (0 to 1) is the
+task's score and the engine's gated signal; the capped `ratio` rides along in the verdict. Metrics are always outcome
 metrics on a positive scale, never wall-clock time or throughput.
 
 `ale validate` runs every task twice. An untouched sandbox must produce an exact all-zero
@@ -70,18 +70,15 @@ way by design; `harness/ale_onboard.py` reads the run records and reports it as
 
 ## Contributing a task
 
-Two ways, one result: a pull request into this repository that adds your task folder at
-`tasks/<platform>/<slug>/`, where `<slug>` is the manifest's `name` and `<platform>` its
-`metadata.platform`.
+A contribution is a pull request into this repository that adds one task folder at
+`tasks/<platform>/<name>/`, where `<name>` is the manifest's `name` (the task's registered
+name) and `<platform>` its `metadata.platform`. The project's contribution guidelines cover
+sign-up, roles, the task stages and credit:
+[English](https://docs.google.com/document/d/1s1E3ymIBLujWf2l7rhu4g9Nl4orBfooK0aDWOdum7-Y/view) and [中文](https://docs.google.com/document/d/1gX8v-w-idIPLjzoWgRskT0llE7cKXqg9sVLB0cWfZk0/view).
 
-1. **Open the pull request yourself.** Fork the repository, copy your folder to that path,
-   push a branch and open the pull request.
-2. **Upload on the website.** Download the template zip from
-   <https://agentic-robotics-benchmark.org/contribute>, build the task, zip the folder and
-   upload it with a title. The server prechecks it (the engine's `ale lint` plus the domain
-   checks) and a bot opens the same pull request for you.
-
-Either way CI runs `ale lint`, the domain lint and the kit comparison on the pull request, a
+Build the task from `templates/task/`, gate it with `ale lint` and `ale validate`, measure its
+difficulty with frontier models (`ale run`; the target is a score roughly below 0.5), then
+open the pull request. CI runs `ale lint`, the domain lint and the kit comparison on it; a
 maintainer re-runs `ale validate`, merges, and exports the registry. The short version is
 [`CONTRIBUTING.md`](CONTRIBUTING.md); the whole path, from the template to a merged task,
 is [`docs/contributing-a-task.md`](docs/contributing-a-task.md).
@@ -90,25 +87,22 @@ is [`docs/contributing-a-task.md`](docs/contributing-a-task.md).
 
 ```
 vendor/ale/                     upstream engine (submodule, pinned commit) — do not reimplement it
-tasks/<platform>/<slug>/        the tasks (today: uav/uav_hover)
+tasks/<platform>/<slug>/        the tasks (today: space/fault_adaptive_spacecraft_docking)
 tasks/platforms.json            the platform vocabulary: the `metadata.platform` keys and their labels
-tasks/README.md                 a note: uav/uav_hover is a dummy example of the file structure
+tasks/README.md                 a note: which task is the worked example
 templates/task/                 ONE template, gates green as shipped (null anchor by design)
 templates/README.md             the task contract, file by file (source of truth for the task form)
 identity-history.json           past (spec_hash, content_digest) pairs per task (registry v2)
 shared/robotics_grader/         canonical verify-stage kit; each task vendors a byte-identical copy
 harness/
   ale_onboard.py                `ale-onboard`: instantiate the template + run the real gates
-  export_run.py                 `ale-export`: pack `ale run` episodes into a leaderboard bundle
-  bundle_crypto.py              tar -> zstd -> age envelope shared by exporter and verifier
-  redact.py  trajectory.py  integrity.py   value-pattern redaction, canonical bytes + sha256
 scripts/
   export_registry.py            registry v2 from the engine's own loader (task identity)
   lint_domain.py                domain lint (what `ale lint` cannot know), placement included
-  build_template_zip.py         the website's template download (zip + GETTING-STARTED.md)
+schemas/task-registry.schema.json   the registry's contract (owned here; the export is tested against it)
 skills/onboard-*/SKILL.md       agent-facing onboarding skills (router + one per verify pattern)
-tests/                          pytest suite (fixtures under tests/fixtures/engine_run/)
-docs/                           architecture, security model, submission format, contributing,
+tests/                          pytest suite
+docs/                           architecture, security model, contributing,
                                 evidence/ (real verdicts, isolation audit), dev/ (design records)
 .github/workflows/pr-checks.yml the checks every pull request gets
 ```
@@ -133,52 +127,42 @@ uv run ale-onboard --gate-only tasks/<platform>/<slug> --json
 uv run python scripts/lint_domain.py .
 cd shared && python3 -m robotics_grader.selftest
 
-# run a task with a real agent, then pack the run into a leaderboard bundle
+# run a task with a real agent (the difficulty test; the verdicts are in <runs>)
 cd vendor/ale && VIRTUAL_ENV= DOCKER_HOST=unix:///var/run/docker.sock \
-    uv run ale run ../../tasks/<platform>/<slug> --agent claude-code --runs-dir <runs>
-uv run ale-export <runs>/<run_id> --out <name>.ale-engine-run.tar.zst.age --public-key age1...
+    uv run ale run ../../tasks/<platform>/<slug> --agent claude-code --model <model> --runs-dir <runs>
 
-# task registry for the website (task identity from the engine loader; refuses a dirty tree).
-# platforms come from tasks/platforms.json; the website only displays what this exports and
-# installs it with `node scripts/sync-benchmark.mjs --manifest registry.json`
+# the task registry (task identity from the engine loader; refuses a dirty tree; contract in
+# schemas/task-registry.schema.json). platforms come from tasks/platforms.json; the website
+# installs this export with its own sync script and only displays it
 cd vendor/ale && VIRTUAL_ENV= uv run python ../../scripts/export_registry.py \
     --tasks ../../tasks --history ../../identity-history.json --out registry.json
-
-# the website's template download (agentic-robotics-task-template/ + GETTING-STARTED.md +
-# TEMPLATE-SOURCE.json; members + modes from the git index; refuses a dirty template tree).
-# --source-out writes the website's SOURCE.json = TEMPLATE-SOURCE.json + sha256 of the zip
-uv run python scripts/build_template_zip.py --out agentic-robotics-task-template.zip --source-out SOURCE.json
 
 uv run pytest -q
 ```
 
-Never run `ale validate` on `uav_hover` casually: its oracle trains PPO and the run takes
-hours. The template validates in seconds.
+The template and the worked example each validate in well under a minute.
 
 ## Access
 
 Running a task needs the **ALE engine** and the **ALE base image**. The engine repository
 ([AgentsLastExam/ale](https://github.com/AgentsLastExam/ale)) is public; it is not on PyPI
-and has no license file yet, so reference it, never vendor its code into this repository or
-its downloads. Install per its README (`git clone`, `just bootstrap`, `uv run ale --help`;
+and has no license file yet, so reference it, never vendor its code into this
+repository. Install per its README (`git clone`, `just bootstrap`, `uv run ale --help`;
 needs `uv`, `just`, Docker). The base image `ghcr.io/agentslastexam/container-ubuntu22-base`
 refuses anonymous pulls; `images/build.sh container-ubuntu22` in the engine checkout builds it
 locally in a few minutes. A contributor runs `ale lint` and `ale validate` themselves before
-opening or uploading a pull request; a maintainer re-runs them before merging.
+opening a pull request; a maintainer re-runs them before merging.
 
 ## Docs
 
 - [`docs/architecture.md`](docs/architecture.md) — engine stages, stage isolation, the UID
-  boundary, the verdict envelope, and the bridge from engine runs to the leaderboard.
-- [`docs/security-model.md`](docs/security-model.md) — what stage isolation hides, what
-  `validated` proves and what only `verified` does.
-- [`docs/submission-format.md`](docs/submission-format.md) — the `ale-engine-run/v1` bundle,
-  `ale-export`, and the maintainer runbook.
+  boundary, the verdict envelope, and the registry export.
+- [`docs/security-model.md`](docs/security-model.md) — what stage isolation hides from the
+  tested agent, and what a verdict can and cannot prove.
 - [`docs/contributing-a-task.md`](docs/contributing-a-task.md) — the contributor's path from
-  the template to a merged task, both channels included. Design record:
-  [`docs/dev/20260902-contribute-download-upload.md`](docs/dev/20260902-contribute-download-upload.md).
-- [`docs/dev/20260902-engine-run-submission.md`](docs/dev/20260902-engine-run-submission.md)
-  — the design record behind the task form and the leaderboard bridge.
+  the template to a merged task.
+- [`docs/dev/`](docs/dev/) — dated design records; their 2026-10-15 notes say what no longer
+  holds (the website upload channel and the leaderboard bridge are retired).
 
 ## History
 

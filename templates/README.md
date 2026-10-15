@@ -2,9 +2,8 @@
 
 `task/` is a complete robotics task. It passes `ale lint` and `ale validate` as shipped,
 except that its anchor is null, so the oracle scores 0 until a measured value is recorded.
-Copy it, rename it, and change one thing at a time from a state you know is green.
-Contributors receive it as the website's download (`scripts/build_template_zip.py` packs
-this folder).
+Copy it from a checkout of this repository, rename it, and change one thing at a time from
+a state you know is green.
 
 The folder contract is upstream's:
 https://github.com/AgentsLastExam/ale/blob/main/docs/specs/task-authoring.md (the engine is
@@ -185,7 +184,8 @@ One template; the pattern is an authoring choice inside `verify.py`, not a manif
 ## Turning it into your task
 
 1. Name. `task.yaml`'s `name` must be a collection-unique slug (`^[a-z0-9][a-z0-9_-]*$`).
-   Do it first; the upload precheck compares it with the folder name. `metadata.platform`
+   Do it first: it is the Task Name registered in the project's sheet, and once the task sits
+   under `tasks/` the domain lint checks that the folder carries the same name. `metadata.platform`
    is one of the benchmark's platforms (`tasks/platforms.json`, listed in the manifest's
    comment) and names the `tasks/<platform>/` folder the task lands in. A new key needs a
    maintainer.

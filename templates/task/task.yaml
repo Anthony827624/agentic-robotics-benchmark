@@ -3,9 +3,10 @@
 
 spec_type: core/v1
 
-# The task's stable identity: a collection-unique slug (^[a-z0-9][a-z0-9_-]*$), decoupled
-# from the folder path. Pick your own before anything else; the upload precheck requires it
-# to equal the name of the folder you zip.
+# The task's stable identity: a collection-unique slug (^[a-z0-9][a-z0-9_-]*$, preferably
+# snake_case). Pick your own before anything else: it is the Task Name registered in the
+# project's sheet, and once the task lands at tasks/<platform>/<name>/ the folder must carry
+# the same name (the domain lint checks).
 name: template_reach
 
 # image/Dockerfile is the sole build context, and its final stage must derive directly

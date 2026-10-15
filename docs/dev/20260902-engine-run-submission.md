@@ -4,6 +4,15 @@
 > data model / migration, operability, upstream semantics; 44 objections were confirmed against
 > the code and are folded in below). Status: **approved direction, implementation in progress.**
 >
+> **2026-10-15, second update: the leaderboard bridge is retired.** The website became a
+> display-only front end: no run or score submissions and no leaderboard. `ale-export`
+> (`harness/export_run.py`, `bundle_crypto.py`, `redact.py`, `trajectory.py`, `integrity.py`),
+> the `ale-engine-run/v1` bundle documentation (`docs/submission-format.md`) and the bundle
+> fixtures are removed. A result is the engine's own episode record. The task form and the
+> registry (§4) still hold; the registry's contract is now `schemas/task-registry.schema.json`
+> in this repository. Sections on the bundle, its encryption, the challenge and the server's
+> `validated` / `verified` levels describe the retired path.
+>
 > **2026-10-15 update.** The registry export now takes `platforms` from this repository's
 > `tasks/platforms.json` (no `--carry-over`, no `directions`, no `category_tree`) and reads
 > `metric_name` / `metric_direction` from `verify/anchor.json`, where the metric is declared;

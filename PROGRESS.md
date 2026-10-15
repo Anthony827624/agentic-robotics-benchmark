@@ -7,9 +7,9 @@
 > before every hand-off. Where it disagrees with the code or `git log`, the code wins: fix
 > this file.
 >
-> Last updated: 2026-10-15 (the benchmark owns its taxonomy: platform keys in
-> `tasks/platforms.json`; `metadata.direction` and `metadata.metric` retired, the metric lives in
-> `verify/anchor.json`; the registry export no longer copies anything from the website).
+> Last updated: 2026-10-15, later the same day (§6: the website is display-only; the
+> spacecraft task is the worked example and `uav_hover` is gone; `ale-export` and the template
+> download are retired; the registry's schema lives here).
 
 ## 0. 2026-09-07 — created by the rebrand from "ALE Robotics"
 
@@ -182,39 +182,79 @@ and `verify/` included.
   (`packages/contracts/schemas`); `provenance.tasks_repo` is the clone's directory name; the
   `episode_id` pattern in `harness/export_run.py` mirrors the server's.
 
+## 6. 2026-10-15 — display-only website; the spacecraft task is the worked example
+
+- Owner decisions: the website is a display-only front end. It shows the tasks, and its
+  submission page links the contribution guidelines (two Google Docs, English and Chinese,
+  `/view` links). It takes no uploads and no run or score submissions, and the leaderboard is
+  removed for now. The registry and submission-bundle JSON Schemas are decoupled from the
+  website. `ale-export` is removed. Contribution follows the guidelines: sign up, register
+  the Task Name (= folder = `task.yaml` `name`), measure difficulty with frontier models
+  (target roughly below 0.5), and open a pull request.
+- #6 (kit). The grader's seed stream is BLAKE2b keyed by OS entropy. Before, splitmix64 let
+  a solver rebuild the stream from probe perturbations and compute the next episode's seed.
+  - After an aborted episode the solver is restarted: at most 3 times, with its process group
+    stopped and READY required again. A stray reply line no longer cascades into every later
+    episode.
+  - The template charges an aborted episode what standing still would cost. It used to drop
+    aborted episodes, so a weak policy could abort its bad starts and score 1.0.
+  - Malformed actions abort an episode instead of crashing the grader.
+- #1 merged (merge commit, contributor history kept) after a maintainer pass on its branch.
+  - The agent held a byte-identical simulator copy, and 31-bit LCG seeding let it
+    brute-force each episode's seed. Episodes now use 64-bit, keyed-hash seeding.
+  - The instruction now matches the grader.
+  - The anchor was re-measured: 40 fresh oracle runs, mean 0.7440 (sd 0.063); `full_at` went
+    from 0.90 to 0.75. With 0.90, 2 of 31 fresh runs failed `ale validate`.
+  - Eight fresh validates passed. The `contrib/fault_adaptive_spacecraft_docking` branch is
+    kept because the guidelines link to it.
+- This change:
+  - `tasks/uav/uav_hover` removed. A dummy that frontier models solve cannot be a real
+    example or a submittable task. `tasks/README.md` names the spacecraft task as the worked
+    example.
+  - Removed: `harness/{export_run,bundle_crypto,redact,trajectory,integrity}.py`, their
+    tests and fixtures, `docs/submission-format.md`, `scripts/build_template_zip.py` and
+    its tests, and the `zstandard` and `pyrage` dependencies.
+  - `schemas/task-registry.schema.json` is the registry's contract, tested against the
+    export.
+  - `provenance.tasks_repo` is the origin's `owner/name`.
+  - Docs follow the guidelines: one path, a frontier-model difficulty test, and no website
+    channel. The security model now lists the limits that matter (open egress during verify;
+    the probe lock is not a proof of honesty).
+- Measured on 2026-10-13, on the previous version of the task: Fable 5.1 1.0, Opus 5.5 1.0,
+  Opus 5 0.84, Fable 5 0.74. The 2026-10-15 runs on the merged version use an evaluation copy
+  whose image only adds two harness workarounds (outside the repository, `arb-eval`).
+  - The stream idle timeout.
+  - A `.pth` so that the harness's hard-coded `PATH` still finds the venv's numpy.
+
 ## Open items
 
-- Website, one pull request merged as a single commit (its deploy does not wait for CI):
-  registry schema and types without `directions`, `category_tree` and per-task `direction`;
-  the sync takes `platforms` from the export; a migration dropping `tasks.direction` and the
-  seed that writes it; the upload precheck checks `metadata.platform` against the installed
-  `platforms` and the metric on `verify/anchor.json` (no `metadata.direction` /
-  `metadata.metric`); the bot lands uploads at `tasks/<metadata.platform>/<slug>/`; pages
-  without direction facets and badges, the run command built from the platform; the
-  hardware-invariant badge (the export no longer carries `hardware_invariant`);
-  `validate-registry.mjs`, `sync-benchmark.mjs` and the generated schema enums
-  (`generate-schema-enums.mjs`) without directions; the Contribute page copy, the upload
-  contract docs (`docs/contribution-flow*.md`, `docs/data-model.md`) and the `--carry-over`
-  mentions in its README and `docs/content-sync.md`; tests; then install a fresh export and
-  rebuild the template download. Until then an upload made from the new template is refused
-  by the website's precheck, one made from the old download lands at `tasks/<direction>/<slug>/`
-  and fails battery 7, and installing a new export fails closed.
-- `ale validate` `uav_hover` (the oracle trains PPO for hours), then export the registry and
-  commit `identity-history.json`; installing it in the website waits for the website pull
-  request above.
-- Pull request #1 (`fault_adaptive_spacecraft_docking`, at
-  `tasks/spacecraft/fault_adaptive_spacecraft_docking/` since 5000d45) follows this change on
-  its branch: merge `main`, move the folder to `tasks/space/fault_adaptive_spacecraft_docking/`,
-  reduce its metadata to `{platform: space}` (its anchor already declares the metric and
-  direction). Merge or reject it after `ale validate`.
+- Website, display-only pull request: remove the backend (API, database service, sign-in,
+  upload, review, admin), the leaderboard and the run pages; `/submit` links the two
+  guidelines; the registry is validated against this repository's schema; install a fresh
+  export made from a clean `main`. The production database volume is left untouched on the
+  server.
+- After this merges: export the registry from a clean `main`, commit `identity-history.json`
+  (the spacecraft task is new; the `drone_hover` record stays as history), and install the
+  export in the website.
+- Frontier-model runs on the merged spacecraft task (Opus 5.5, Opus 5, Fable 5.1, Fable 5).
+  If they saturate it, raise the difficulty in a new pull request, by Jack or the
+  maintainers. The guidelines' target is roughly below 0.5.
+- Pull request #4 (`ball_physics_stepper`) must re-vendor the kit from #6 (CI's byte
+  comparison), and should move to 64-bit, keyed-hash seeding if its agent holds a simulator
+  copy.
+- The guidelines' example `task.yaml` link points at the `contrib/` branch. Point it at
+  `main` once the docs are next edited.
+- Engine (upstream) issues that skew agent runs:
+  - the claude-code harness kills a model stream after 300 s without a byte;
+  - it hard-codes the agent's `PATH`, so the image's `/opt/venv/bin` is lost;
+  - egress is opened before verify while a closed_loop solver runs.
 
 ## Gotchas
 
 - `export_registry.py` refuses a dirty tree on purpose: `content_digest` covers every
   regular file, ignored `__pycache__/` included. Export from a clean commit; `--allow-dirty`
   is for throwaway exports and never writes the canonical `identity-history.json`.
-- Never run `ale validate` on `uav_hover` casually: its oracle trains PPO for hours. The
-  template validates in seconds.
+- The template and the worked example each validate in well under a minute.
 - Engine commands run from `vendor/ale` with `VIRTUAL_ENV=` cleared and
   `DOCKER_HOST=unix:///var/run/docker.sock` pinned (two docker contexts on the dev machine).
   `uvx ruff`, not `uv run ruff` (ruff is not a project dependency).
@@ -227,6 +267,5 @@ and `verify/` included.
   `trace.execution.jsonl`.
 - A null anchor is not an error: the engine fails the run with `oracle_not_full` and
   `harness/ale_onboard.py` reads that as `needs_anchor` with the measured value.
-- The template's `GETTING-STARTED.md` is an inline constant in
-  `scripts/build_template_zip.py` (capped at 90 lines by its test); edit it there and rebuild
-  the website's `apps/web/public/task-template/` copy plus `SOURCE.json`.
+- A task that hands the agent a copy of its simulator must seed episodes with 64 bits and
+  draw hidden values through a keyed hash; an LCG or a 31-bit seed gives the episode away.

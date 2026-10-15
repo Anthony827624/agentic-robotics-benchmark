@@ -1,7 +1,0 @@
-{
-  "episodes": 10,
-  "probe_rate": 0.1,
-  "probe_pass_fraction": 0.5,
-  "step_timeout_s": 30,
-  "scoring_cap": 1.5
-}

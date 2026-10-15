@@ -20,8 +20,9 @@ taxonomy axis. The folder shape and the
 manifest are upstream's, and the pinned engine lives at `vendor/ale`.
 
 Read first: `templates/README.md` (the task contract and what each template file is for —
-the source of truth for the layout) and the worked example `tasks/uav/uav_hover` — a real
-closed_loop task that validates green.
+the source of truth for the layout) and the worked example
+`tasks/space/fault_adaptive_spacecraft_docking`, a real closed_loop task that validates
+green.
 
 ## What you are producing
 
@@ -118,7 +119,9 @@ That runs `ale lint`, then `ale validate` from the pinned engine. Validate runs 
 TWICE — an untouched sandbox, then the oracle in place of the agent — and the gate reads the
 run records and returns one of:
 
-* **`built`** — untouched all-zero and oracle all-one. Done. Both are the engine's own
+* **`built`** — untouched all-zero and oracle all-one. The task runs; next, measure its
+  difficulty with frontier models (`ale run`, target `reward` roughly below 0.5;
+  `docs/contributing-a-task.md` §7), then open the pull request. Both are the engine's own
   gates: `ale validate` fails with `untouched_nonzero` or `oracle_not_full` (exit 2)
   otherwise. Still never read the engine's exit status as the verdict: a null-anchor run
   fails with `oracle_not_full` on purpose, and only the run records tell it apart from a

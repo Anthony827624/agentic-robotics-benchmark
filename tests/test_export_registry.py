@@ -16,9 +16,12 @@ import subprocess
 import sys
 from pathlib import Path
 
+import jsonschema
 import pytest
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
+#: This repository's contract for the document (consumers validate against the same file).
+SCHEMA = json.loads((REPO_ROOT / "schemas" / "task-registry.schema.json").read_text(encoding="utf-8"))
 _SPEC = importlib.util.spec_from_file_location(
     "export_registry", REPO_ROOT / "scripts" / "export_registry.py"
 )
@@ -301,6 +304,34 @@ def test_platforms_come_from_this_repository(tmp_path):
             xr.load_platforms(bad)
 
 
+@pytest.mark.parametrize("field, value", [("source", 474), ("source", ["a"]),
+                                          ("image_identity", {"ref": "x"})])
+def test_anchor_text_fields_must_be_strings_or_null(tmp_path, field, value):
+    root = _task_dir(tmp_path, anchor=dict(_METRIC, value=1.0, **{field: value}))
+    with pytest.raises(xr.RegistryError, match=field):
+        xr.read_anchor(root, 1.5)
+
+
+@pytest.mark.parametrize("key, value", [
+    ("since", "2026-09-02"),                       # a date alone is not the schema's timestamp
+    ("spec_hash", "sha256:" + "A" * 64),           # uppercase hex
+    ("content_digest", "sha256:abc"),              # too short
+])
+def test_load_history_holds_records_to_the_schema_patterns(tmp_path, key, value):
+    record = {"slug": "some_task", "spec_hash": HASH_A, "content_digest": HASH_B, "since": NOW}
+    record[key] = value
+    path = tmp_path / "h.json"
+    path.write_text(json.dumps([record]), encoding="utf-8")
+    with pytest.raises(xr.RegistryError, match=key):
+        xr.load_history(path)
+
+
+def test_release_block_needs_a_name_and_version():
+    for name, version in (("", "v0.5"), ("Agentic Robotics Benchmark", "")):
+        with pytest.raises(xr.RegistryError, match="non-empty"):
+            xr.release_block(name, version, ["some_task"])
+
+
 def test_release_block_policy():
     block = xr.release_block("Agentic Robotics Benchmark", "v0.5", ["drone_hover"])
     assert block == {
@@ -378,6 +409,59 @@ def test_an_uncommitted_platform_vocabulary_is_refused(tmp_path):
     assert registry["platforms"][0] == {"key": "arm", "label": "Arm"}
 
 
+def _full_build(root: Path, **overrides) -> dict:
+    kwargs = {"history": [], "now": NOW, "source_commit_sha": "0123abcd" * 5,
+              "engine": {"commits": ["90a7c1c" * 5 + "fffff"], "version": "0.1.0",
+                         "ale_verify_content_hash": HASH_C},
+              "platforms_file": root.parent / "platforms.json"}
+    kwargs.update(overrides)
+    registry, _ = xr.build_registry([_loaded(root)], **kwargs)
+    return registry
+
+
+def test_the_export_matches_the_repository_schema(tmp_path):
+    """schemas/task-registry.schema.json is the contract; the export must satisfy it as built."""
+    root = _git_repo_with_task(tmp_path)
+    jsonschema.Draft7Validator.check_schema(SCHEMA)
+    jsonschema.validate(_full_build(root), SCHEMA)
+    jsonschema.validate(_full_build(root, allow_dirty=True), SCHEMA)     # dirty: still well-formed
+
+
+def test_the_schema_refuses_what_the_export_retired(tmp_path):
+    root = _git_repo_with_task(tmp_path)
+    registry = _full_build(root)
+    for field, value in (("direction", "control"), ("hardware_invariant", True)):
+        stale = json.loads(json.dumps(registry))
+        stale["tasks"][0][field] = value
+        with pytest.raises(jsonschema.ValidationError):
+            jsonschema.validate(stale, SCHEMA)
+    stale = json.loads(json.dumps(registry))
+    stale["directions"] = []
+    with pytest.raises(jsonschema.ValidationError):
+        jsonschema.validate(stale, SCHEMA)
+
+
+@pytest.mark.parametrize("url, slug", [
+    ("https://github.com/Grounded-Intelligence-Initiative/agentic-robotics-benchmark.git",
+     "Grounded-Intelligence-Initiative/agentic-robotics-benchmark"),
+    ("https://github.com/Owner/repo", "Owner/repo"),
+    ("git@github.com:Owner/repo.git", "Owner/repo"),
+])
+def test_tasks_repo_is_the_origin_slug(tmp_path, url, slug):
+    repo = tmp_path / "any-folder-name"
+    repo.mkdir()
+    subprocess.run(["git", "init", "-q", str(repo)], check=True)
+    subprocess.run(["git", "-C", str(repo), "remote", "add", "origin", url], check=True)
+    assert xr.tasks_repo(repo) == slug
+
+
+def test_tasks_repo_without_a_remote_is_the_folder_name(tmp_path):
+    repo = tmp_path / "plain"
+    repo.mkdir()
+    subprocess.run(["git", "init", "-q", str(repo)], check=True)
+    assert xr.tasks_repo(repo) == "plain"
+
+
 def test_allow_dirty_never_writes_the_canonical_history(tmp_path):
     assert xr.history_writable(xr.DEFAULT_HISTORY, allow_dirty=False)
     assert not xr.history_writable(xr.DEFAULT_HISTORY, allow_dirty=True)
@@ -442,7 +526,7 @@ def test_real_loader_on_template_copy(tmp_path):
 
     The copy is not a git checkout, so ``--allow-dirty`` is required; what this proves is
     that ``from_manifest_task`` reads the right attribute names off the engine objects and
-    that the end-to-end document validates against the field set the website expects.
+    that the end-to-end document satisfies this repository's schema.
     """
     task_copy = tmp_path / "tasks" / "template_reach"
     shutil.copytree(TEMPLATE, task_copy,
@@ -460,6 +544,7 @@ def test_real_loader_on_template_copy(tmp_path):
     assert result.returncode == 0, result.stderr
     registry = json.loads(out.read_text(encoding="utf-8"))
     assert registry["schema_version"] == "ale-robotics-task-registry/v2"
+    jsonschema.validate(registry, SCHEMA)
     (task,) = registry["tasks"]
     assert task["slug"] == "template_reach"
     # the metric is the one verify/anchor.json declares (the template grades a cost)

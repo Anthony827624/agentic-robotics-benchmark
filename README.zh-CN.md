@@ -14,8 +14,8 @@ robotics 问题里（开发控制器、规划操作序列、设计零件或机�
 [task-authoring.md](https://github.com/AgentsLastExam/ale/blob/main/docs/specs/task-authoring.md)
 与
 [task-quality-standard.md](https://github.com/AgentsLastExam/ale/blob/main/docs/specs/task-quality-standard.md)
-是任务格式与质量门槛的权威；本仓库只写 robotics 领域在其上增加的部分。Leaderboard、任务页与贡献上传：
-<https://agentic-robotics-benchmark.org>。
+是任务格式与质量门槛的权威；本仓库只写 robotics 领域在其上增加的部分。网站
+<https://agentic-robotics-benchmark.org> 只展示任务，不接收上传，也不接收提交。
 
 本仓库公开且完整：每个任务文件夹整体在此，含 `oracle/` 与 `verify/`。anchor 对*被测 agent* 的隐藏靠
 引擎的阶段隔离（agent 工作期间 `verify/` 不在沙箱里），不是对人保密。
@@ -50,8 +50,8 @@ reward = clamp(ratio / full_at, 0, 1)         # 唯一受闸门约束的 reward 
 ```
 
 **anchor** 是参考实现在真实运行中自己测出来的值——绝不是别处印出来的数字；`full_at`
-是 reward 饱和到 1.0 的 ratio，按该指标实测的 seed 间波动来定。带 cap 的 `ratio` 是
-leaderboard 上的数字；`reward` 是引擎的闸门信号。指标永远是正尺度的结果指标，绝不是
+是 reward 饱和到 1.0 的 ratio，按该指标实测的 seed 间波动来定。`reward`（0 到 1）是任务的
+得分，也是引擎的闸门信号；带 cap 的 `ratio` 随 verdict 一并记录。指标永远是正尺度的结果指标，绝不是
 墙钟时间或吞吐。
 
 `ale validate` 把每个任务跑两遍。未触碰的沙箱必须产出精确的全零 verdict，随后 oracle 必须
@@ -61,42 +61,36 @@ leaderboard 上的数字；`reward` 是引擎的闸门信号。指标永远是�
 
 ## 贡献一个任务
 
-两条路，同一个结果：一个向本仓库提交的 pull request，把你的任务文件夹加在
-`tasks/<platform>/<slug>/`，其中 `<slug>` 是 manifest 的 `name`，`<platform>` 是它的
-`metadata.platform`。
+贡献就是向本仓库提交一个 pull request，把一个任务文件夹加在 `tasks/<platform>/<name>/`，其中
+`<name>` 是 manifest 的 `name`（任务登记的名称），`<platform>` 是它的 `metadata.platform`。
+报名、职责分工、任务各阶段与贡献计分见项目的贡献指南：[中文](https://docs.google.com/document/d/1gX8v-w-idIPLjzoWgRskT0llE7cKXqg9sVLB0cWfZk0/view)、[English](https://docs.google.com/document/d/1s1E3ymIBLujWf2l7rhu4g9Nl4orBfooK0aDWOdum7-Y/view)。
 
-1. **自己开 pull request。** fork 本仓库，把文件夹拷到该路径，push 一个分支，开 PR。
-2. **在网站上传。** 从 <https://agentic-robotics-benchmark.org/contribute> 下载模板 zip，
-   做好任务，把文件夹打成 zip 带标题上传。服务器预检（引擎的 `ale lint` 加领域检查）后，
-   bot 替你开出同样的 pull request。
-
-无论哪条路，CI 都会在 PR 上跑 `ale lint`、领域 lint 与 kit 字节比对；维护者重跑 `ale validate`、
-merge、导出注册表。短版见 [`CONTRIBUTING.md`](CONTRIBUTING.md)；从模板到 merge 的完整路径见
+从 `templates/task/` 开始做任务，用 `ale lint` 与 `ale validate` 过闸门，再用 frontier model
+测难度（`ale run`；目标是得分大致低于 0.5），然后开 PR。CI 会在 PR 上跑 `ale lint`、领域 lint
+与 kit 字节比对；维护者重跑 `ale validate`、merge、导出注册表。短版见
+[`CONTRIBUTING.md`](CONTRIBUTING.md)；从模板到 merge 的完整路径见
 [`docs/contributing-a-task.md`](docs/contributing-a-task.md)。
 
 ## 目录结构
 
 ```
 vendor/ale/                     上游引擎（submodule，钉 commit）——不要重新实现它
-tasks/<platform>/<slug>/        任务本身（目前：uav/uav_hover）
+tasks/<platform>/<slug>/        任务本身（目前：space/fault_adaptive_spacecraft_docking）
 tasks/platforms.json            平台词表：`metadata.platform` 的 key 及其显示名
-tasks/README.md                 说明：uav/uav_hover 是展示文件结构的 dummy 示例
+tasks/README.md                 说明：哪个任务是完整示例
 templates/task/                 唯一模板，出厂即闸门全绿（anchor 为 null 是设计）
 templates/README.md             任务契约，逐文件说明（任务形态的事实源）
 identity-history.json           每个任务历史上的 (spec_hash, content_digest) 对（registry v2）
 shared/robotics_grader/         verify 阶段共享 kit 的 canonical 副本；每个任务 vendor 一份字节一致的副本
 harness/
   ale_onboard.py                `ale-onboard`：实例化模板 + 跑真实闸门
-  export_run.py                 `ale-export`：把 `ale run` 的 episode 打包成 leaderboard bundle
-  bundle_crypto.py              exporter 与 verifier 共用的 tar -> zstd -> age 信封
-  redact.py  trajectory.py  integrity.py   按值模式脱敏、canonical bytes + sha256
 scripts/
   export_registry.py            用引擎自己的 loader 导出 registry v2（任务身份）
   lint_domain.py                领域 lint（`ale lint` 不知道的规则），含落地路径检查
-  build_template_zip.py         网站的模板下载包（zip + GETTING-STARTED.md）
+schemas/task-registry.schema.json   registry 的契约（归本仓库所有；导出结果按它测试）
 skills/onboard-*/SKILL.md       面向 agent 的 onboarding skill（路由 + 每种 verify 模式一个）
-tests/                          pytest 套件（fixture 在 tests/fixtures/engine_run/）
-docs/                           架构、安全模型、提交格式、贡献指南、evidence/（真实 verdict 与隔离审计）、
+tests/                          pytest 套件
+docs/                           架构、安全模型、贡献指南、evidence/（真实 verdict 与隔离审计）、
                                 dev/（设计记录）
 .github/workflows/pr-checks.yml 每个 pull request 都要过的检查
 ```
@@ -120,50 +114,40 @@ uv run ale-onboard --gate-only tasks/<platform>/<slug> --json
 uv run python scripts/lint_domain.py .
 cd shared && python3 -m robotics_grader.selftest
 
-# 用真 agent 跑一个任务，然后把这次运行打包成 leaderboard bundle
+# 用真 agent 跑一个任务（难度测试；verdict 在 <runs> 里）
 cd vendor/ale && VIRTUAL_ENV= DOCKER_HOST=unix:///var/run/docker.sock \
-    uv run ale run ../../tasks/<platform>/<slug> --agent claude-code --runs-dir <runs>
-uv run ale-export <runs>/<run_id> --out <name>.ale-engine-run.tar.zst.age --public-key age1...
+    uv run ale run ../../tasks/<platform>/<slug> --agent claude-code --model <model> --runs-dir <runs>
 
-# 给网站的任务 registry（任务身份来自引擎 loader；工作树不干净则拒绝）。
-# platforms 来自 tasks/platforms.json；网站只展示这里导出的内容，
-# 用 `node scripts/sync-benchmark.mjs --manifest registry.json` 安装
+# 任务 registry（任务身份来自引擎 loader；工作树不干净则拒绝；契约见
+# schemas/task-registry.schema.json）。platforms 来自 tasks/platforms.json；
+# 网站用它自己的同步脚本安装这份导出，只做展示
 cd vendor/ale && VIRTUAL_ENV= uv run python ../../scripts/export_registry.py \
     --tasks ../../tasks --history ../../identity-history.json --out registry.json
-
-# 网站的模板下载包（agentic-robotics-task-template/ + GETTING-STARTED.md +
-# TEMPLATE-SOURCE.json；成员与权限位来自 git index；模板树不干净则拒绝）。
-# --source-out 写出网站用的 SOURCE.json = TEMPLATE-SOURCE.json + zip 的 sha256
-uv run python scripts/build_template_zip.py --out agentic-robotics-task-template.zip --source-out SOURCE.json
 
 uv run pytest -q
 ```
 
-不要随手对 `uav_hover` 跑 `ale validate`：它的 oracle 真训 PPO，一次要数小时。模板几秒
-就能 validate 完。
+模板和完整示例任务都远不到一分钟就能 validate 完。
 
 ## 访问
 
 运行任务需要 **ALE 引擎**和 **ALE base 镜像**。引擎仓库
 （[AgentsLastExam/ale](https://github.com/AgentsLastExam/ale)）已公开；它不在 PyPI 上，
-也还没有 LICENSE 文件，所以只引用它，绝不把它的代码 vendor 进本仓库或下载包。按其 README
+也还没有 LICENSE 文件，所以只引用它，绝不把它的代码 vendor 进本仓库。按其 README
 安装（`git clone`、`just bootstrap`、`uv run ale --help`；需要 `uv`、`just`、Docker）。
 base 镜像 `ghcr.io/agentslastexam/container-ubuntu22-base` 拒绝匿名拉取；在引擎 checkout
-里运行 `images/build.sh container-ubuntu22` 几分钟即可本地构建。贡献者在开 PR 或上传前自己运行
+里运行 `images/build.sh container-ubuntu22` 几分钟即可本地构建。贡献者在开 PR 前自己运行
 `ale lint` 与 `ale validate`；维护者在合并前再跑一遍。
 
 ## 文档
 
 - [`docs/architecture.md`](docs/architecture.md)——引擎阶段、阶段隔离、UID 边界、verdict
-  信封，以及从引擎运行到 leaderboard 的桥。
-- [`docs/security-model.md`](docs/security-model.md)——阶段隔离藏了什么，`validated`
-  证明了什么、什么只有 `verified` 才证明。
-- [`docs/submission-format.md`](docs/submission-format.md)——`ale-engine-run/v1` bundle、
-  `ale-export`，以及维护者 runbook。
-- [`docs/contributing-a-task.md`](docs/contributing-a-task.md)——贡献者从模板到 merge 的完整路径，
-  两条渠道都在。设计记录：[`docs/dev/20260902-contribute-download-upload.md`](docs/dev/20260902-contribute-download-upload.md)。
-- [`docs/dev/20260902-engine-run-submission.md`](docs/dev/20260902-engine-run-submission.md)
-  ——任务形态与 leaderboard 之桥背后的设计记录。
+  信封，以及 registry 导出。
+- [`docs/security-model.md`](docs/security-model.md)——阶段隔离对被测 agent 藏了什么，
+  一个 verdict 能证明什么、不能证明什么。
+- [`docs/contributing-a-task.md`](docs/contributing-a-task.md)——贡献者从模板到 merge 的完整路径。
+- [`docs/dev/`](docs/dev/)——带日期的设计记录；其中 2026-10-15 的说明写明了哪些已不再成立
+  （网站上传渠道与 leaderboard 之桥已退役）。
 
 ## 历史
 

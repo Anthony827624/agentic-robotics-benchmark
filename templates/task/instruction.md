@@ -45,8 +45,8 @@ zero regardless of its metric.
 
 ## Environment
 
-`python3` is `/opt/venv/bin/python3` (Python 3.12) with `numpy` installed; there is no
-network access. Your development copy of the environment is `/home/user/template_env.py`
+Python 3.12 with `numpy` is `/opt/venv/bin/python3`; call it by that path (a `python3`
+found on your shell's `PATH` may be a different interpreter). There is no network access. Your development copy of the environment is `/home/user/template_env.py`
 (`TemplateReach`, with `reset(seed)` and `step(action)`).
 
 ## Checking your work

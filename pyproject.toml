@@ -1,7 +1,7 @@
 [project]
 name = "agentic-robotics-benchmark"
 version = "0.5.0"
-description = "Agentic Robotics Benchmark: robotics tasks for autonomous agents, run on the upstream ALE engine pinned at vendor/ale. Host-side tooling only: the authoring gate (ale-onboard) and the bridge that packs engine episode records into leaderboard submission bundles (ale-export)."
+description = "Agentic Robotics Benchmark: robotics tasks for autonomous agents, run on the upstream ALE engine pinned at vendor/ale. Host-side tooling only: the authoring gate (ale-onboard), the domain lint and the task registry export."
 readme = "README.md"
 # Host-side tooling only. 3.11 = what the maintainers' machines and CI run; the
 # engine lives in its own venv under vendor/ale and task images manage their own
@@ -9,19 +9,15 @@ readme = "README.md"
 requires-python = "==3.11.*"
 dependencies = [
     "pyyaml>=6.0",        # task.yaml / onboarding spec parsing (ale_onboard, lint_domain)
-    # Leaderboard submission bundle (harness/bundle_crypto.py): tar -> zstd -> age.
-    "zstandard>=0.22",    # bundle compression
-    "pyrage>=1.1",        # age public-key encryption of the bundle
 ]
 
 [project.scripts]
 ale-onboard = "harness.ale_onboard:main"  # build an ALE-shaped task + gate it on `ale validate`
-ale-export = "harness.export_run:main"  # pack `ale run` episode records into a leaderboard bundle
 
 # Dev-only tooling (test harness). Synced by default with `uv sync`; task env
 # images build their own interior stacks and never install this.
 [dependency-groups]
-dev = ["pytest>=8.0"]
+dev = ["pytest>=8.0", "jsonschema>=4.0"]   # jsonschema: the registry export against schemas/
 
 [build-system]
 requires = ["hatchling"]

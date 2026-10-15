@@ -1,9 +1,0 @@
-{
-  "metric": "mean_episode_reward",
-  "direction": "higher",
-  "value": 472.07,
-  "source": "oracle implementation (oracle/run.sh, PPO on HoverAviary at the pinned gym-pybullet-drones commit): real graded run over hidden per-run seeds, never a published figure",
-  "example_commit": "9bc12bc583fa3b28807b2f90a8cadf09fb06e1ff",
-  "note": "closed_loop grading over hidden per-run seeds; a fresh oracle run varies slightly by seed, so ratios land near 1.0 (cap 1.5). full_at 0.825 is where the reward saturates to 1.0; it encodes the same seed-to-seed tolerance the task has always used and stays until a multi-run spread measurement justifies tightening it. Lives in verify/ so it is absent from the sandbox during the agent phase and root-only during verify.",
-  "full_at": 0.825
-}

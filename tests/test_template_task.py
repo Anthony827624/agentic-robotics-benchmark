@@ -1,4 +1,4 @@
-"""The shipped task template — the contributor's download — keeps its promises.
+"""The shipped task template — what contributors copy — keeps its promises.
 
 These are the rehearsal findings of 2026-09-02, pinned: the probe wire is indistinguishable
 (step index `t`, never a probe marker), the two environment copies are byte-identical,

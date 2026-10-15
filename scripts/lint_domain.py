@@ -26,10 +26,8 @@ Seven batteries:
 7. **Platform and placement.** `metadata.platform` is one of the benchmark's platforms
    (`tasks/platforms.json`, owned by this repository), and a landed task sits exactly at
    `tasks/<platform>/<slug>/`: the folder name is the manifest's `name`, the parent folder is
-   `metadata.platform`. Both contribution
-   channels (a pull request opened by hand, a pull request opened by the website's bot) put
-   the folder there directly, so this is the check that keeps the tree and the registry in
-   agreement.
+   `metadata.platform`. A contribution's pull request puts the folder there directly, so
+   this is the check that keeps the tree and the registry in agreement.
 
 Run: `uv run python scripts/lint_domain.py [paths...]` (default: this repository)
 """
@@ -56,7 +54,7 @@ _SEGMENT = re.compile(r"^[a-z0-9][a-z0-9_-]*$")
 
 #: The benchmark's platform vocabulary: the only values `metadata.platform` may take, and so
 #: the only folders directly under tasks/. This repository owns it; the registry export copies
-#: it into the document the website displays.
+#: it into the document it publishes.
 PLATFORMS_FILE = REPO_ROOT / "tasks" / "platforms.json"
 
 
@@ -70,10 +68,10 @@ DEFAULT_SCORING_CAP = 1.5
 
 
 def _scoring_cap(grader_config: Path) -> float:
-    """`full_at` is bounded by the task's own cap, read exactly as the kit (`verify.py`:
-    `config.get("scoring_cap", 1.5)`) and the website precheck read it — so a task the
-    server accepts is never refused here over the cap. A
-    malformed config is the engine lint's business; here it just falls back."""
+    """`full_at` is bounded by the task's own cap, read exactly as the kit reads it
+    (`verify.py`: `config.get("scoring_cap", 1.5)`), so a task its own grader accepts is
+    never refused here over the cap. A malformed config is the engine lint's business; here
+    it just falls back."""
     try:
         data = json.loads(grader_config.read_text())
     except (OSError, ValueError):
@@ -266,7 +264,8 @@ def _lint_anchor(task_dir: Path, rel: str) -> list[str]:
         except (TypeError, ValueError):
             problems.append(f"{rel}: anchor full_at {full_at!r} is not a number")
 
-    source = str(anchor.get("source", ""))
+    source = anchor.get("source")
+    source = source.strip() if isinstance(source, str) else ""
     if not source or source.startswith("TODO"):
         problems.append(f"{rel}: anchor has no `source` — an unattributed denominator cannot "
                         f"be audited")

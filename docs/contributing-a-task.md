@@ -1,11 +1,12 @@
 # Contributing a task
 
-The path: get the engine, start from the template, build the task locally, validate it, then
-get a pull request open that adds your folder at `tasks/<platform>/<slug>/`. Two ways to
-open that pull request, one result: open it yourself, or upload the zipped folder on the
-website and let its bot open it for you. A maintainer reviews it the same way either way.
-The short version is the repository's [`CONTRIBUTING.md`](../CONTRIBUTING.md); the design
-record is [`dev/20260902-contribute-download-upload.md`](dev/20260902-contribute-download-upload.md).
+The path: get the engine, start from the template, build the task locally, validate it,
+measure its difficulty with a frontier model, then open a pull request that adds your folder
+at `tasks/<platform>/<name>/`. Sign-up, roles, the task stages (expert validation, formal
+benchmarking) and how contributions are credited are in the project's contribution guidelines
+([English](https://docs.google.com/document/d/1s1E3ymIBLujWf2l7rhu4g9Nl4orBfooK0aDWOdum7-Y/view),
+[中文](https://docs.google.com/document/d/1gX8v-w-idIPLjzoWgRskT0llE7cKXqg9sVLB0cWfZk0/view));
+the short version of this page is the repository's [`CONTRIBUTING.md`](../CONTRIBUTING.md).
 
 What a task is and the bar it has to clear are the engine's own specs. Read them once:
 
@@ -25,12 +26,15 @@ untouched sandbox scores an exact zero and the reference artifact scores an exac
 
 ## 1. Prerequisites
 
-You need the ALE engine and Docker. The engine repository is public; it is not on PyPI.
-`uv` and `just` (`uv tool install rust-just`) drive it:
+You need Docker and the ALE engine at the commit this repository pins, the `vendor/ale`
+submodule; upstream `main` moves on, and a task is gated on the pinned commit. `uv` and
+`just` (`uv tool install rust-just`) drive it. Clone this repository with its submodule (or
+run `git submodule update --init vendor/ale` in an existing clone) and run every `ale` command
+from `vendor/ale`:
 
 ```bash
-git clone https://github.com/AgentsLastExam/ale.git
-cd ale
+git clone --recurse-submodules https://github.com/Grounded-Intelligence-Initiative/agentic-robotics-benchmark.git
+cd agentic-robotics-benchmark/vendor/ale
 just bootstrap
 uv run ale --help
 images/build.sh container-ubuntu22     # the sandbox base image; build it once, it takes a while
@@ -38,39 +42,23 @@ images/build.sh container-ubuntu22     # the sandbox base image; build it once, 
 
 The base image on ghcr.io refuses anonymous pulls, so build it locally from the checkout. If
 your reference method trains, plan for a single GPU of 24 GB or less; training happens only
-in the oracle phase, never during scoring. You do not need a checkout of this repository to
-author a task, only to open the pull request yourself.
+in the oracle phase, never during scoring.
 
 ## 2. Get the template
 
-> **Until the website catches up (2026-10-15).** The website's download is still built from an
-> older template commit (it carries `metadata.direction` and `metadata.metric`); copy
-> `templates/task/` from a checkout instead. The two sources are the same files again once the
-> website's copy is rebuilt.
+Copy [`templates/task/`](../templates/task/) from your checkout to wherever you work. Its
+name in the project's sheet, the folder name and `name` in `task.yaml` are one string that
+stays the task's identity for good: preferably a short `snake_case` name (lowercase letters,
+digits, underscores; the lint accepts `^[a-z0-9][a-z0-9_-]*$`).
 
-Two sources, same files. On the website, sign in (GitHub or Google) and download the
-template from the Contribute page. Maintainers build that zip with
-`uv run python scripts/build_template_zip.py --out <zip> --source-out <SOURCE.json>` from
-[`templates/task/`](../templates/task/) at a pinned commit; it is the committed tree, modes
-included, and unzips to:
-
-```
-agentic-robotics-task-template/   the task folder. Rename it to your slug; this is what you submit.
-GETTING-STARTED.md                the guide, with the exact commands
-TEMPLATE-SOURCE.json              {repo, commit, generated_at, template_path}: provenance
-```
-
-Or, with a checkout of this repository, copy `templates/task/` to wherever you work.
-
-Rename the folder to your slug first and set `name` in `task.yaml` to the same string. If
-your extractor does not keep Unix permissions (Windows, some GUI tools), run
+Rename the folder to that name first and set `name` in `task.yaml` to the same string. If
+your copy does not keep Unix permissions (Windows, some GUI tools), run
 `chmod +x setup/run.sh oracle/run.sh verify/run.sh`; `ale lint` requires the three stage
 entry points to be executable.
 
 The engine admits only `task.yaml`, `instruction.md`, `image/`, `setup/`, `verify/`,
 `oracle/`, `tools/` and `.ale-cache` at a task's top level. Any stray file inside the folder
-fails lint, which is why the download's helper files sit next to it. Keep notes and scratch
-files outside the folder too.
+fails lint, so keep notes and scratch files outside it.
 
 The template validates as shipped, except that its anchor is null (step 6). Start from that
 state and change one thing at a time.
@@ -115,8 +103,8 @@ every reward key (`oracle_not_full` otherwise).
 Nothing you print to stdout is a scoring input. The grader computes the metric under its own
 physics and writes the verdict through a channel your solution cannot pre-create or overwrite.
 
-If you have this repository, `uv run python scripts/lint_domain.py <task_dir>` runs the
-domain lint the pull request CI runs (section 5, plus placement once the folder sits under
+From the repository root, `uv run python scripts/lint_domain.py <task_dir>` runs the domain
+lint the pull request CI runs (section 5, plus placement once the folder sits under
 `tasks/`).
 
 ## 4. What the agent sees, and what it must not
@@ -137,7 +125,7 @@ measures what the agent does inside a blocked-network sandbox that does not cont
 ## 5. Metric discipline
 
 Two mistakes silently corrupt a task. Neither `ale lint` nor `ale validate` checks them; the
-domain lint and the upload precheck do. The metric is declared in `verify/anchor.json` and
+domain lint does, on every pull request. The metric is declared in `verify/anchor.json` and
 nowhere else: `metric` is the key your grader reports, `direction` is `higher` or `lower`.
 
 - The metric is hardware-invariant. Never score wall-clock time, throughput or FPS; they
@@ -174,53 +162,44 @@ printed elsewhere. You cannot know it until you run, so:
    `templates/README.md`.
 4. Repeat until `ale validate` prints `ok  ... untouched={'reward': 0.0}, oracle={'reward': 1.0}`.
 
-## 7. Submit
+## 7. Measure the difficulty
 
-Both ways end as a pull request into this repository that adds exactly one folder,
-`tasks/<platform>/<slug>/`, where `<platform>` is `metadata.platform` from your `task.yaml`,
-one of the keys in `tasks/platforms.json`.
+`ale validate` proves the task runs and scores honestly; it says nothing about difficulty.
+Run frontier models on it with the engine's `ale run` (for example
+`uv run ale run <task_dir> --agent claude-code --model <model> --runs-dir <runs>`) and read
+the verdicts. The task's score is the verdict's `reward` (0 to 1; the capped `ratio` rides
+along in `metrics`), and current frontier models should stay roughly below 0.5 under the
+agreed configuration and run budget. When a model saturates the task, raise the
+engineering or perception challenge and test again; do not suppress scores with arbitrary
+penalties, and keep the task completable by a human expert under the stated conditions.
+Before reading a failed run as a model limitation, fix what is not the task: environment
+failures, missing dependencies, unclear instructions. Keep the run instructions and the
+results for the pull request.
 
-> **Until the website catches up (2026-10-15).** The upload check and bot described below are
-> this repository's form. The website still runs the older one: it requires `metadata.direction`
-> and `metadata.metric`, so an upload made from the current template is refused, and it lands a
-> folder at `tasks/<direction>/<slug>/`, which battery 7 here refuses. Until its update ships,
-> open the pull request yourself.
+Two defects of the `claude-code` harness at the pinned engine commit lower scores without
+any error. Check for both before trusting a run:
 
-**Open the pull request yourself.** Fork the repository, copy your folder to that path on a
-branch, push, and open the pull request. The pull request template asks for the `ok` line of
-your `ale validate` run and a few confirmations. Nothing else belongs in the pull request:
-no notes, no `__pycache__/`, no `.ale-cache/`, no `assets/`.
+- A model stream that is silent for 300 s is cut off, and the episode ends as
+  `API Error: The operation timed out`. For evaluation runs, add
+  `ENV BUN_CONFIG_HTTP_IDLE_TIMEOUT=1800 CLAUDE_STREAM_IDLE_TIMEOUT_MS=1800000` to a copy of
+  the task's `image/Dockerfile` (the variables only reach the harness).
+- The harness sets the agent's `PATH` to its own directories plus `/usr/local/bin:/usr/bin:/bin`,
+  so `/opt/venv/bin` is gone and the agent's `python3` lacks the venv's packages. Say in
+  `instruction.md` that the venv's interpreter is `/opt/venv/bin/python3`, and check the
+  agent's transcript for `ModuleNotFoundError`.
 
-**Upload on the website.** Zip only the task folder: the folder itself, or its contents at
-the zip root. Not `GETTING-STARTED.md`, not `TEMPLATE-SOURCE.json`, not `__pycache__/`, not
-`.ale-cache/`. Never zip the download root; an archive holding the helper files or more than
-one folder is rejected on layout. Upload it on the Contribute page with a title. Limits:
-50 MB total, 256 files, 2 MB per file, no symlinks. From there the server does the rest:
+## 8. Submit
 
-1. It runs the engine's own `ale lint` on the archive and prechecks the rest, and rejects the
-   upload when: the size limits or path safety are broken (a path escapes the folder or uses
-   characters outside `[A-Za-z0-9._-/]`); a required file is missing (`task.yaml`,
-   `instruction.md`, `image/Dockerfile` or an `image.ref`, `setup/run.sh`, `oracle/run.sh`,
-   `verify/run.sh`, `verify/anchor.json`); `task.yaml` does not parse or `name` does not match
-   the folder slug; `metadata.platform` is not one of the keys in `tasks/platforms.json`;
-   `verify/anchor.json` names no `metric`, its `direction` is not `higher` or `lower`, the
-   metric is hardware-dependent, it has no `value > 0`, or its `source` is missing,
-   `TODO`, or cites a paper's number; `full_at` is outside (0, scoring_cap]
-   (`verify/grader_config.json`, 1.5 by default); the Dockerfile has no `FROM`, a privileged
-   flag, or a `COPY`/`ADD` of `verify/`, `oracle/` or anchor material; or the slug is already
-   taken. A failure comes back as a list and nothing is stored; fix and upload again. "Check
-   only" runs the same checks without uploading.
-2. It commits the folder to `tasks/<platform>/<slug>/` on a branch `contrib/<id>` of this
-   repository and opens the pull request, the same shape as one opened by hand, and shows
-   you the link. When the server holds no repository credential the zip is kept for a
-   maintainer instead ("Queued for a maintainer").
+Open a pull request into this repository that adds exactly one folder,
+`tasks/<platform>/<name>/`, where `<platform>` is `metadata.platform` from your `task.yaml`
+(one of the keys in `tasks/platforms.json`) and `<name>` its `name`. Push the branch to this
+repository (the project initiator grants write access after you sign up and send your GitHub
+ID) or to a fork. The pull request
+template asks for the `ok` line of your `ale validate` run, your frontier-model results and a
+few confirmations. Nothing else belongs in the pull request: no notes, no `__pycache__/`, no
+`.ale-cache/`, no `assets/`. To revise the task under review, push to the same branch.
 
-The server does not run `ale validate`; you do, and a maintainer does again before merging.
-Your profile lists every upload with its status and the pull request link. To revise a task
-under review, upload a new zip with the same slug; it becomes a new commit on the same pull
-request. On a pull request you opened yourself, push to your branch.
-
-## 8. What happens on the pull request
+## 9. What happens on the pull request
 
 CI (`.github/workflows/pr-checks.yml`) runs `ale lint` over `tasks/` and `templates/`, the
 domain lint (metric, anchor, visible surface, image hygiene, placement), the kit comparison,
@@ -229,13 +208,10 @@ secrets, so it runs on forks too. It does not build your image or run `ale valid
 
 A maintainer then reads `verify/` and `oracle/`, re-runs `ale lint` and `ale validate` on
 your branch, corrects the anchor on the branch if the measurement disagrees, and merges. The
-task is live at its path from that moment, enters the registry at the maintainers' next
-export, and appears on the website after the registry is installed there.
-
-## 9. What the upload collects
-
-The zip you upload, the title you give it, and the identity you signed in with. Nothing else.
-A pull request you open yourself collects what GitHub collects.
+task is live at its path from that moment and enters the registry at the maintainers' next
+export; the website displays the registry once that export is installed there. Expert
+validation works from a task version (the pull request's branch and commit); the guidelines
+describe that stage and the formal benchmarking runs.
 
 ## Common pitfalls
 

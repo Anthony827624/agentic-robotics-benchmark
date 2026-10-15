@@ -258,6 +258,9 @@ def test_a_passing_oracle_is_built(monkeypatch, tmp_path):
     assert result.metric == "mean_goal_distance" and result.measured == 0.094
     assert result.match_lock_ok is True
     assert result.untouched_zero is True
+    # a green gate proves the task runs, not that it is hard: the next step is the
+    # frontier-model difficulty test
+    assert any("ale run" in step and "0.5" in step for step in result.next_steps)
 
 
 def test_a_null_anchor_is_needs_anchor_with_the_measurement(monkeypatch, tmp_path):
@@ -305,7 +308,7 @@ def test_an_oracle_below_one_is_not_built(monkeypatch, tmp_path):
 
 
 def test_a_grader_reporting_another_metric_is_needs_input(monkeypatch, tmp_path):
-    """The anchor's metric is what the registry publishes and the server's recompute looks up."""
+    """The anchor's metric is what the registry publishes for the task; the grader must report it."""
     result = _gate(monkeypatch, tmp_path, _passes(
         oracle={"reward": 1.0},
         metrics={"ratio": 1.1, "success_rate": 0.9, "anchor_recorded": 1.0, "match_lock_ok": 1.0},

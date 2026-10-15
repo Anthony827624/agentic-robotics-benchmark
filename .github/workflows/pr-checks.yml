@@ -3,9 +3,9 @@
 # Deliberately does NOT build task images or run tasks: those need docker, GPUs and
 # minutes-to-hours, so real builds and `ale validate` stay a maintainer step before merge.
 # CI here is fast, static, needs no secret, and runs on every pull request, including pull
-# requests from forks and the ones the website's bot opens. Both contribution channels land
-# a task folder directly at tasks/<platform>/<slug>/, so every check below runs over that
-# final path; there is no staging area and nothing relocates a task after merge.
+# requests from forks. A contribution lands its task folder directly at
+# tasks/<platform>/<slug>/, so every check below runs over that final path; there is no
+# staging area and nothing relocates a task after merge.
 #
 # What is gated:
 #   - the pinned engine's `ale lint` over tasks/ and templates/;
@@ -16,8 +16,8 @@
 #     tasks/platforms.json and placement at tasks/<platform>/<slug>/);
 #   - the shared verify-stage kit: robotics_grader selftest + canonical-vs-vendored byte
 #     equality (a task that ships a modified kit fails here; nothing re-vendors it later);
-#   - the pytest suite (onboarding gate, exporter, bundle crypto, registry export, skills,
-#     template, domain lint, template zip).
+#   - the pytest suite (onboarding gate, registry export and its schema, skills, template,
+#     domain lint).
 name: pr-checks
 
 on:
@@ -50,8 +50,8 @@ jobs:
       # re-export with the engine's loader into throwaway paths (--allow-dirty never writes
       # the canonical history) and compare identities[0] per task against the first
       # committed record for that slug. A known slug whose identity differs means the task
-      # changed after the last export, and runs against it would land as
-      # task_unknown_version on the server. A slug the history does not know is a NEW task
+      # changed after the last export, so results recorded against the registered identity
+      # no longer describe the tree. A slug the history does not know is a NEW task
       # (a contribution pull request): a notice, not an error; the maintainer exports the
       # registry after the merge, which records the identity.
       - name: "Registry identity cross-check (known slugs: identities[0] == committed history)"
@@ -63,6 +63,8 @@ jobs:
           cd vendor/ale
           VIRTUAL_ENV= uv run python ../../scripts/export_registry.py \
             --tasks ../../tasks --history /tmp/h.json --allow-dirty --out /tmp/r.json
+          # The real export against the registry's contract (the engine venv has jsonschema).
+          VIRTUAL_ENV= uv run python -c 'import json, jsonschema; jsonschema.validate(json.load(open("/tmp/r.json")), json.load(open("../../schemas/task-registry.schema.json"))); print("registry export matches schemas/task-registry.schema.json")'
           cd ../..
           python3 - <<'PY'
           import json, sys

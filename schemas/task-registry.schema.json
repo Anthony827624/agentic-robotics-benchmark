@@ -1,0 +1,125 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/Grounded-Intelligence-Initiative/agentic-robotics-benchmark/blob/main/schemas/task-registry.schema.json",
+  "title": "Agentic Robotics Benchmark task registry (ale-robotics-task-registry/v2)",
+  "description": "The document scripts/export_registry.py writes. This repository owns the contract and tests its own export against it; a consumer such as the website validates what it installs against this file and only displays it. Change the export and this schema in the same commit.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "provenance", "release", "tasks", "platforms"],
+  "properties": {
+    "schema_version": {"const": "ale-robotics-task-registry/v2"},
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source", "tasks_repo", "source_commit", "generated_at", "engine"],
+      "properties": {
+        "source": {"const": "engine_task_loader"},
+        "tasks_repo": {"type": "string", "minLength": 1, "description": "owner/name of the repository the tasks came from"},
+        "source_commit": {"type": "string", "pattern": "^[0-9a-f]{7,64}(-dirty)?$"},
+        "generated_at": {"$ref": "#/definitions/timestamp"},
+        "engine": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["commits", "version", "ale_verify_content_hash"],
+          "properties": {
+            "commits": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+            "version": {"type": ["string", "null"]},
+            "ale_verify_content_hash": {"type": ["string", "null"]}
+          }
+        },
+        "dirty": {"const": true, "description": "present only on a throwaway export (--allow-dirty); never install one"}
+      }
+    },
+    "release": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "version", "status", "aggregation_policy"],
+      "properties": {
+        "name": {"type": "string", "minLength": 1},
+        "version": {"type": "string", "minLength": 1},
+        "status": {"const": "active"},
+        "aggregation_policy": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type", "task_set", "score_cap", "missing_task_policy"],
+          "properties": {
+            "type": {"const": "macro_mean"},
+            "task_set": {"type": "array", "items": {"$ref": "#/definitions/slug"}},
+            "score_cap": {"type": "number", "exclusiveMinimum": 0},
+            "missing_task_policy": {"const": "zero"}
+          }
+        }
+      }
+    },
+    "tasks": {"type": "array", "minItems": 1, "items": {"$ref": "#/definitions/task"}},
+    "platforms": {"type": "array", "minItems": 1, "items": {"$ref": "#/definitions/platform"}}
+  },
+  "definitions": {
+    "slug": {"type": "string", "pattern": "^[a-z0-9][a-z0-9_-]*$"},
+    "timestamp": {"type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"},
+    "digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+    "platform": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["key", "label"],
+      "properties": {
+        "key": {"$ref": "#/definitions/slug"},
+        "label": {"type": "string", "minLength": 1}
+      }
+    },
+    "identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["spec_hash", "content_digest", "since"],
+      "properties": {
+        "spec_hash": {"$ref": "#/definitions/digest"},
+        "content_digest": {"$ref": "#/definitions/digest"},
+        "since": {"$ref": "#/definitions/timestamp"}
+      }
+    },
+    "task": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "slug", "title", "platform", "identities", "score_cap", "resources", "timeouts", "status",
+        "metric_name", "metric_label", "metric_direction",
+        "anchor", "anchor_full_at", "anchor_source", "anchor_image_identity"
+      ],
+      "properties": {
+        "slug": {"$ref": "#/definitions/slug"},
+        "title": {"type": "string", "minLength": 1},
+        "platform": {"$ref": "#/definitions/slug", "description": "one of the document's platforms[].key"},
+        "identities": {"type": "array", "minItems": 1, "items": {"$ref": "#/definitions/identity"}, "description": "newest first; [0] is the current identity"},
+        "score_cap": {"type": "number", "exclusiveMinimum": 0},
+        "resources": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["cpus", "memory_mb", "gpus"],
+          "properties": {
+            "cpus": {"type": ["number", "null"]},
+            "memory_mb": {"type": ["integer", "null"]},
+            "gpus": {"type": ["integer", "null"]}
+          }
+        },
+        "timeouts": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["setup", "agent", "verify"],
+          "properties": {
+            "setup": {"type": ["number", "null"]},
+            "agent": {"type": ["number", "null"]},
+            "verify": {"type": ["number", "null"]}
+          }
+        },
+        "status": {"const": "active"},
+        "metric_name": {"type": "string", "minLength": 1},
+        "metric_label": {"type": "string", "minLength": 1},
+        "metric_direction": {"enum": ["higher_is_better", "lower_is_better"]},
+        "anchor": {"type": ["number", "null"], "exclusiveMinimum": 0, "description": "null while the task is being authored (not admissible yet)"},
+        "anchor_full_at": {"type": "number", "exclusiveMinimum": 0},
+        "anchor_source": {"type": ["string", "null"]},
+        "anchor_image_identity": {"type": ["string", "null"]}
+      }
+    }
+  }
+}

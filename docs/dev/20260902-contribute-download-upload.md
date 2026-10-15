@@ -1,8 +1,16 @@
 # Contribute = download the template, build locally, upload the zip
 
 > Design record, 2026-09-02. Owner decision of 2026-08-18, reaffirmed 2026-09-02.
-> Status: **implemented** on both sides (this repository: the template zip builder and
-> the docs; the website: the upload endpoint, the landing credential, the Contribute page).
+> Status: **retired** (2026-10-15). It was implemented on both sides (this repository: the
+> template zip builder and the docs; the website: the upload endpoint, the landing credential,
+> the Contribute page).
+>
+> **2026-10-15, second update: this design is retired.** The website became a display-only
+> front end. It offers no template download and no upload channel, and its submission page
+> links the project's contribution guidelines (two Google Docs, English and Chinese, linked
+> from `CONTRIBUTING.md`). Contributors copy `templates/task/` from a checkout and open the
+> pull request themselves. `scripts/build_template_zip.py` and its tests are removed. Read
+> what follows as the record of the old path, not as a description of the tree.
 >
 > **2026-10-15 update.** The task taxonomy now lives in this repository: `metadata.platform` is
 > the only metadata field, one of the fixed keys in `tasks/platforms.json`, and a task lands at
