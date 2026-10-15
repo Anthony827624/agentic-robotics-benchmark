@@ -8,7 +8,8 @@ task by task.
 
 Seven batteries:
 
-1. **Hardware-invariant metrics.** A metric naming a wall-clock quantity measures the machine,
+1. **Hardware-invariant metrics.** `verify/anchor.json` names the metric (`metric`) and its
+   `direction` (higher | lower). A metric naming a wall-clock quantity measures the machine,
    not the method — two contributors doing identical work would score differently.
 2. **Positive metric scale.** A non-positive anchor inverts the ratio, so a better result would
    score lower, silently and permanently.
@@ -22,8 +23,10 @@ Seven batteries:
 6. **core/v1 completeness.** The manifest carries `spec_type: core/v1`, a valid slug `name`,
    and a mapping `image:` — cheap static forms of what the engine would reject anyway,
    caught before a container is ever started.
-7. **Placement.** A landed task sits exactly at `tasks/<direction>/<slug>/`: the folder name
-   is the manifest's `name`, the parent folder is `metadata.direction`. Both contribution
+7. **Platform and placement.** `metadata.platform` is one of the benchmark's platforms
+   (`tasks/platforms.json`, owned by this repository), and a landed task sits exactly at
+   `tasks/<platform>/<slug>/`: the folder name is the manifest's `name`, the parent folder is
+   `metadata.platform`. Both contribution
    channels (a pull request opened by hand, a pull request opened by the website's bot) put
    the folder there directly, so this is the check that keeps the tree and the registry in
    agreement.
@@ -47,9 +50,19 @@ DEFAULT_DOMAIN = REPO_ROOT
 #: The collections the lint walks. Never the repository root itself: a bare rglob would
 #: descend into vendor/ale and the venvs.
 COLLECTION_DIRS = ("tasks", "templates")
-#: The slug alphabet a folder name and `metadata.direction` must share (they are path
+#: The slug alphabet a folder name and `metadata.platform` must share (they are path
 #: segments of the landing directory).
 _SEGMENT = re.compile(r"^[a-z0-9][a-z0-9_-]*$")
+
+#: The benchmark's platform vocabulary: the only values `metadata.platform` may take, and so
+#: the only folders directly under tasks/. This repository owns it; the registry export copies
+#: it into the document the website displays.
+PLATFORMS_FILE = REPO_ROOT / "tasks" / "platforms.json"
+
+
+def platform_keys(path: Path = PLATFORMS_FILE) -> tuple[str, ...]:
+    """The registered platform keys, in file order."""
+    return tuple(str(entry["key"]) for entry in json.loads(path.read_text(encoding="utf-8")))
 
 # The kit's default ratio cap (shared/robotics_grader/scoring.py) when a task's
 # verify/grader_config.json declares no positive `scoring_cap`.
@@ -176,23 +189,16 @@ def lint_task(task_dir: Path) -> list[str]:
                         f"environment to run in")
 
     meta = manifest.get("metadata") or {}
-    metric = meta.get("metric") or {}
-    name = str(metric.get("name", ""))
+    platforms = platform_keys()
+    if meta.get("platform") not in platforms:
+        problems.append(f"{rel}: metadata.platform {meta.get('platform')!r} is not one of the "
+                        f"benchmark's platforms ({' | '.join(platforms)}; tasks/platforms.json)")
 
-    if not name or name == "TODO":
-        problems.append(f"{rel}: metadata.metric.name is unset — a task with no named metric "
-                        f"cannot be compared to anything")
-    elif hw_metric_token(name):
-        problems.append(
-            f"{rel}: metric {name!r} is hardware-dependent (token {hw_metric_token(name)!r}). "
-            f"It measures the machine, not the method. Use an outcome metric, or recast a "
-            f"timing headline as a pass/fail real-time threshold")
-    if str(metric.get("direction", "")) not in ("higher", "lower"):
-        problems.append(f"{rel}: metadata.metric.direction must be 'higher' or 'lower'")
-
-    # metadata.genre / metadata.paper are retired (design 20260902 §8): one kind of task,
-    # an agentic robotics task. Nothing here reads or requires them; a task that still
-    # carries them is not wrong, merely stale.
+    # Retired metadata keys: metadata.genre / metadata.paper (design 20260902 §8: one kind of
+    # task, an agentic robotics task) and metadata.direction / metadata.metric (2026-10-15:
+    # platform is the only taxonomy field, and the metric and its direction live in
+    # verify/anchor.json, where the grader reads them). Nothing here reads or requires them;
+    # a task that still carries them is not wrong, merely stale.
 
     if manifest.get("validate") is not None:
         problems.append(f"{rel}: task.yaml carries a `validate:` block — the engine removed "
@@ -201,12 +207,12 @@ def lint_task(task_dir: Path) -> list[str]:
                         f"schema rejects unknown fields. The seed-variance tolerance moved "
                         f"to `full_at` in verify/anchor.json")
 
-    problems += _lint_anchor(task_dir, rel, metric)
+    problems += _lint_anchor(task_dir, rel)
     problems += _lint_visible(task_dir, rel)
     return problems
 
 
-def _lint_anchor(task_dir: Path, rel: str, metric: dict) -> list[str]:
+def _lint_anchor(task_dir: Path, rel: str) -> list[str]:
     path = task_dir / "verify" / "anchor.json"
     if not path.is_file():
         return [f"{rel}: no verify/anchor.json — the ratio has no denominator"]
@@ -216,6 +222,18 @@ def _lint_anchor(task_dir: Path, rel: str, metric: dict) -> list[str]:
         return [f"{rel}: cannot read verify/anchor.json: {exc}"]
 
     problems = []
+    metric = str(anchor.get("metric") or "")
+    if not metric or metric == "TODO":
+        problems.append(f"{rel}: verify/anchor.json names no `metric` — a task with no named "
+                        f"metric cannot be compared to anything")
+    elif hw_metric_token(metric):
+        problems.append(
+            f"{rel}: metric {metric!r} is hardware-dependent (token {hw_metric_token(metric)!r}). "
+            f"It measures the machine, not the method. Use an outcome metric, or recast a "
+            f"timing headline as a pass/fail real-time threshold")
+    if anchor.get("direction") not in ("higher", "lower"):
+        problems.append(f"{rel}: verify/anchor.json `direction` must be 'higher' or 'lower'")
+
     value = anchor.get("value")
     if value is None:
         problems.append(
@@ -226,8 +244,8 @@ def _lint_anchor(task_dir: Path, rel: str, metric: dict) -> list[str]:
             if float(value) <= 0:
                 problems.append(
                     f"{rel}: anchor value {value} is not positive. The ratio inverts, so a "
-                    f"better result would score lower. Report the positive cost and set "
-                    f"`direction: lower`, or shift the metric so 0 is the floor")
+                    f"better result would score lower. Report the positive cost and set the "
+                    f"anchor's `direction` to lower, or shift the metric so 0 is the floor")
         except (TypeError, ValueError):
             problems.append(f"{rel}: anchor value {value!r} is not a number")
 
@@ -256,20 +274,6 @@ def _lint_anchor(task_dir: Path, rel: str, metric: dict) -> list[str]:
         problems.append(f"{rel}: anchor source mentions the paper's number; the anchor must be "
                         f"the reference implementation's own measured value")
 
-    declared = str(metric.get("name", ""))
-    if declared and anchor.get("metric") and anchor["metric"] != declared:
-        problems.append(f"{rel}: anchor metric {anchor['metric']!r} != metadata.metric.name "
-                        f"{declared!r}")
-    # The grader reads `direction` from anchor.json (verify.py derives higher_is_better from
-    # it); the server recompute reads task.yaml's metadata.metric.direction. Two sources of
-    # truth that disagree score the same run differently on the two sides.
-    declared_direction = str(metric.get("direction", ""))
-    anchor_direction = anchor.get("direction")
-    if (declared_direction in ("higher", "lower") and anchor_direction is not None
-            and anchor_direction != declared_direction):
-        problems.append(f"{rel}: anchor direction {anchor_direction!r} != metadata.metric."
-                        f"direction {declared_direction!r} — the grader and the server "
-                        f"recompute would disagree")
     return problems
 
 
@@ -313,15 +317,15 @@ def tasks_root_of(task_dir: Path) -> Path | None:
 
 
 def lint_placement(task_dir: Path, tasks_root: Path) -> list[str]:
-    """Battery 7: ``tasks/<direction>/<slug>/`` with slug == ``name`` and direction ==
-    ``metadata.direction``. Returns the problems; an unreadable manifest is battery 6's."""
+    """Battery 7: ``tasks/<platform>/<slug>/`` with slug == ``name`` and platform ==
+    ``metadata.platform``. Returns the problems; an unreadable manifest is battery 6's."""
     task_dir = task_dir.resolve()
     rel = task_dir.relative_to(tasks_root.resolve())
     shown = f"tasks/{rel.as_posix()}/"
     problems: list[str] = []
     if len(rel.parts) != 2:
         problems.append(f"{task_dir.name}: task folder must sit exactly at "
-                        f"tasks/<direction>/<slug>/ (found {shown})")
+                        f"tasks/<platform>/<slug>/ (found {shown})")
     try:
         manifest = yaml.safe_load((task_dir / "task.yaml").read_text()) or {}
     except (OSError, yaml.YAMLError):
@@ -332,11 +336,11 @@ def lint_placement(task_dir: Path, tasks_root: Path) -> list[str]:
                         f"{name!r} — the engine keys the task by `name`, the tree by folder; "
                         f"rename one so they agree")
     meta = manifest.get("metadata") or {}
-    direction = meta.get("direction")
-    if len(rel.parts) == 2 and isinstance(direction, str) and _SEGMENT.match(direction) \
-            and direction != rel.parts[0]:
-        problems.append(f"{task_dir.name}: folder {shown} does not match metadata.direction "
-                        f"{direction!r} — move the folder to tasks/{direction}/{task_dir.name}/ "
+    platform = meta.get("platform")
+    if len(rel.parts) == 2 and isinstance(platform, str) and _SEGMENT.match(platform) \
+            and platform != rel.parts[0]:
+        problems.append(f"{task_dir.name}: folder {shown} does not match metadata.platform "
+                        f"{platform!r} — move the folder to tasks/{platform}/{task_dir.name}/ "
                         f"or fix the manifest")
     return problems
 
@@ -408,7 +412,7 @@ def lint_paths(paths: list[Path]) -> list[str]:
     task folders.
 
     The single-task form is what a maintainer runs on one contribution
-    (`tasks/<direction>/<slug>/`) before merging; placement is checked whenever the folder
+    (`tasks/<platform>/<slug>/`) before merging; placement is checked whenever the folder
     lives under a `tasks/` root.
     """
     problems: list[str] = []
@@ -420,7 +424,7 @@ def lint_paths(paths: list[Path]) -> list[str]:
         if any((path / name).is_dir() for name in COLLECTION_DIRS):
             problems += lint_domain(path)                # the repository (or a like root)
             continue
-        # A container of task folders (e.g. the tasks/ collection itself, or one direction).
+        # A container of task folders (e.g. the tasks/ collection itself, or one platform folder).
         found = sorted(path.rglob("task.yaml"))
         if not found:
             problems.append(f"{path}: no task.yaml and no tasks/ or templates/ — nothing to lint")

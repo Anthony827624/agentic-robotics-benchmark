@@ -241,7 +241,7 @@ def test_getting_started_is_the_engine_first_guide(fake_repo: Path, tmp_path: Pa
         "https://github.com/Grounded-Intelligence-Initiative/agentic-robotics-benchmark",
         "fork the repository",
         "opens the same pull request",
-        "tasks/<direction>/<slug>/",
+        "tasks/<platform>/<slug>/",
         "upstream ALE engine",
     ):
         assert needle in guide or needle in flat, needle

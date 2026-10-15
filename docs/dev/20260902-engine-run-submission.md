@@ -4,6 +4,12 @@
 > data model / migration, operability, upstream semantics; 44 objections were confirmed against
 > the code and are folded in below). Status: **approved direction, implementation in progress.**
 >
+> **2026-10-15 update.** The registry export now takes `platforms` from this repository's
+> `tasks/platforms.json` (no `--carry-over`, no `directions`, no `category_tree`) and reads
+> `metric_name` / `metric_direction` from `verify/anchor.json`, where the metric is declared;
+> `metadata.direction` and `metadata.metric` are retired. Field lists below that cite task.yaml
+> metadata for direction or the metric describe the 2026-09-02 design. See PROGRESS.md §5.
+>
 > Owner decisions this record implements (2026-09-02):
 > - **B1** — the legacy (pre-ALE) task form and its harness are *archived*, not revived. The
 >   leaderboard is populated from `ale-domain/` tasks run by the upstream ALE engine.
@@ -24,7 +30,7 @@
 > this repository is itself public, and the contribution path is
 > `20260902-contribute-download-upload.md` §11. Everything else here still describes the tree.
 
-Related: [`../../tasks/README.md`](../../tasks/README.md) (task form),
+Related: [`../../templates/README.md`](../../templates/README.md) (task form),
 [`../prompts/20260817-general-robotics-pivot.md`](../prompts/20260817-general-robotics-pivot.md)
 (the pivot memo this record executes), website `docs/` for the ingest side.
 

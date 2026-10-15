@@ -20,7 +20,7 @@ task's top level, and the template must itself lint clean.
 ```
 task/
 ├── task.yaml            strict core/v1; the placeholder `name` is replaced at instantiation;
-│                        metadata{platform, direction, metric}. No admission bar in here.
+│                        metadata{platform}. No admission bar in here.
 ├── instruction.md       the prompt. The only thing the tested agent is told.
 ├── image/Dockerfile     the environment: final stage FROM an official ALE base, py3.12
 │   │                    /opt/venv, agent-UID import self-check
@@ -38,7 +38,7 @@ task/
     ├── run.sh             `exec python3 verify.py`
     ├── verify.py          computes the metric under the grader's own physics, writes the verdict
     ├── env.py             the authoritative environment copy the grader imports
-    ├── anchor.json        the hidden denominator and the saturation point
+    ├── anchor.json        the metric and its direction, the hidden denominator, the saturation point
     ├── grader_config.json grader knobs: episodes, probe_rate, step_timeout_s, scoring_cap
     └── robotics_grader/   the vendored kit (canonical copy: ../shared/; byte-equality in CI)
 ```
@@ -177,8 +177,9 @@ One template; the pattern is an authoring choice inside `verify.py`, not a manif
 
 1. Name. `task.yaml`'s `name` must be a collection-unique slug (`^[a-z0-9][a-z0-9_-]*$`).
    Do it first; the upload precheck compares it with the folder name. `metadata.platform`
-   and `metadata.direction` take the website registry's keys; the platform keys are listed
-   in the manifest's comment. A new key needs a maintainer.
+   is one of the benchmark's platforms (`tasks/platforms.json`, listed in the manifest's
+   comment) and names the `tasks/<platform>/` folder the task lands in. A new key needs a
+   maintainer.
 2. Image. Make `image/Dockerfile` your environment: the simulator and every stable
    dependency, final stage FROM an official ALE base; Python packages go in
    `image/requirements.txt`. Keep the py3.12 `/opt/venv` with a world-traversable
@@ -199,7 +200,8 @@ One template; the pattern is an authoring choice inside `verify.py`, not a manif
    untouched. CI diffs it against the canonical copy and fails the pull request on a difference.
 6. Instruction. Describe the deliverable (what to leave in `/home/user/submission/`) and the
    grading protocol. The anchor is what stays hidden, not the protocol.
-7. Anchor. Leave `value` null and run `ale validate`. It fails (`validation.json` says
+7. Anchor. Set `metric` (the metric key your grader reports) and `direction` (`higher` or
+   `lower`). Leave `value` null and run `ale validate`. It fails (`validation.json` says
    `oracle_not_full`); read the measured value off the oracle record
    (`<runs>/validate-*/<slug>-oracle-*/result.json`, key `metrics`), write it in, run
    several more times to see the spread, set `full_at`, and repeat until validate prints
@@ -207,4 +209,5 @@ One template; the pattern is an authoring choice inside `verify.py`, not a manif
 
 The domain lint (`scripts/lint_domain.py`) enforces what the engine cannot know:
 hardware-invariant metrics, a positive metric scale, `full_at` presence, agent-visible-surface
-isolation, image hygiene, anchor provenance, and the cheap static core/v1 completeness checks.
+isolation, image hygiene, anchor provenance, a registered platform with its
+`tasks/<platform>/` placement, and the cheap static core/v1 completeness checks.

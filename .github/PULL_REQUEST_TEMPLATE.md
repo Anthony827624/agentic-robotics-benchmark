@@ -2,13 +2,13 @@
 
 ## What this pull request adds
 
-One task folder at `tasks/<direction>/<slug>/`. One or two sentences on the robotics problem
+One task folder at `tasks/<platform>/<slug>/`. One or two sentences on the robotics problem
 and the artifact the agent has to leave in `/home/user/submission/`.
 
 ## Checklist
 
-- [ ] The folder sits at `tasks/<direction>/<slug>/`. `<slug>` equals `name` in `task.yaml`
-      and `<direction>` equals `metadata.direction`.
+- [ ] The folder sits at `tasks/<platform>/<slug>/`. `<slug>` equals `name` in `task.yaml`
+      and `<platform>` equals `metadata.platform`.
 - [ ] `ale lint <folder>` passes on the engine commit pinned at `vendor/ale`.
 - [ ] `ale validate <folder>` passes. The `ok` line from my run:
 
@@ -24,7 +24,9 @@ and the artifact the agent has to leave in `/home/user/submission/`.
       the raw metric only.
 - [ ] No `__pycache__`, `.ale-cache`, `assets/` or large binaries in the folder. Large data is
       fetched by `image/Dockerfile` at build time.
-- [ ] If `metadata.platform` or `metadata.direction` is not yet a registry key, I say so below.
+- [ ] `metadata.platform` is one of the keys in `tasks/platforms.json` (a new platform needs a
+      maintainer: say so below), and `verify/anchor.json` declares `metric` and `direction`;
+      the grader reports that metric under the same name (`metric_name=` in `verify/verify.py`).
 
 ## Notes for the maintainers
 

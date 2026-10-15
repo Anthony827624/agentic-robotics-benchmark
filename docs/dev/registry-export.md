@@ -15,7 +15,6 @@ nothing ignored lying around — `content_digest` covers every regular file):
 cd vendor/ale && VIRTUAL_ENV= uv run python ../../scripts/export_registry.py \
     --tasks ../../tasks \
     --history ../../identity-history.json \
-    --carry-over ../../../agentic-robotics-benchmark-website/content/tasks/registry.json \
     --out /tmp/registry.json
 ```
 
@@ -23,27 +22,28 @@ cd vendor/ale && VIRTUAL_ENV= uv run python ../../scripts/export_registry.py \
 script notices `ale` is not importable and re-executes itself via `uv run --project vendor/ale`.
 
 Then install it in the website with `node scripts/sync-benchmark.mjs --manifest /tmp/registry.json`
-(the supported route: it replaces `tasks` and the release block and keeps the website's own
-taxonomy), and commit `identity-history.json` here. Copying the file over
-`content/tasks/registry.json` directly also works, but only with `--carry-over`: without it
-`platforms` / `directions` / `category_tree` are empty and the website's `validate-registry.mjs`
-rejects every task whose platform or direction key is not listed.
+and commit `identity-history.json` here. The document carries the benchmark's own taxonomy:
+`platforms` is `tasks/platforms.json` verbatim and there are no directions, so the website only
+displays what it is given. (Until the website's sync takes `platforms` from the export and stops
+requiring directions, installing this export fails closed: nothing is written. PROGRESS.md,
+Open items.)
 
 | flag | meaning |
 |---|---|
 | `--tasks` | task collection root (default `tasks/`) |
 | `--history` | identity history to merge and write back (default `identity-history.json`; with `--allow-dirty` the default file is read but never written) |
-| `--carry-over` | existing website registry whose `platforms`/`directions`/`category_tree` are copied verbatim (required for a direct copy into the website) |
 | `--release-name` / `--release-version` | release block (defaults `Agentic Robotics Benchmark` / `v0.5`) |
 | `--allow-dirty` | skip the clean-tree check — throwaway exports and tests only. The document is stamped `provenance.source_commit: <sha>-dirty` and `provenance.dirty: true`, and the canonical history file is never written (pass `--history <elsewhere>` for a throwaway copy) |
 | `--out` | output path (2-space JSON, sorted keys, trailing newline) |
 
 ## Where each field comes from
 
-- `slug`, `platform`, `direction`, `metric_*`, `hardware_invariant`, `resources`, `timeouts`:
-  `task.yaml` via the loader (`metadata.metric.direction` `higher|lower` becomes
-  `higher_is_better|lower_is_better`; `metric_label` is `metadata.metric.label` or the
+- `slug`, `platform` (refused unless it is a key of `tasks/platforms.json`), `resources`,
+  `timeouts`: `task.yaml` via the loader.
+- `metric_name`, `metric_direction`, `metric_label`: `verify/anchor.json` keys `metric` and
+  `direction` (`higher|lower` becomes `higher_is_better|lower_is_better`; the label is the
   metric name with underscores as spaces).
+- `platforms` (top level): `tasks/platforms.json`, `[{key, label}]` in file order.
 - `title`: first `# ` heading of `instruction.md`, else the title-cased slug.
 - `anchor`, `anchor_full_at` (default 1.0, must lie in `(0, score_cap]`), `anchor_source`,
   `anchor_image_identity`: `verify/anchor.json` keys `value`, `full_at`, `source`,

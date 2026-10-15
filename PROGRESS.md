@@ -7,8 +7,9 @@
 > before every hand-off. Where it disagrees with the code or `git log`, the code wins: fix
 > this file.
 >
-> Last updated: 2026-09-07 (repository created by the Agentic Robotics Benchmark rebrand;
-> not pushed yet).
+> Last updated: 2026-10-15 (the benchmark owns its taxonomy: platform keys in
+> `tasks/platforms.json`; `metadata.direction` and `metadata.metric` retired, the metric lives in
+> `verify/anchor.json`; the registry export no longer copies anything from the website).
 
 ## 0. 2026-09-07 — created by the rebrand from "ALE Robotics"
 
@@ -62,24 +63,157 @@ and `verify/` included.
   `identity-history.json` byte for byte and the template zip builds (22 entries); ruff reports
   the same nine pre-existing style notes as before (non-blocking in CI).
 
+## 1. 2026-09-08 — pushed; the pending contribution re-opened here
+
+- `main` pushed to `https://github.com/Grounded-Intelligence-Initiative/agentic-robotics-benchmark`
+  after the owner signed off the privacy checklist; the first `pr-checks` run on `main` is
+  green (engine lint over `tasks/` + `templates/`, identity cross-check, static checks).
+- The contribution `fault_adaptive_spacecraft_docking` (old repository PR #14, uploaded on
+  the website by Jiankai-Sun, revision 2) is re-opened here as https://github.com/Grounded-Intelligence-Initiative/agentic-robotics-benchmark/pull/1 on branch
+  `contrib/fault_adaptive_spacecraft_docking`: commit 1 = the 20 uploaded files byte for
+  byte at `tasks/control/fault_adaptive_spacecraft_docking/`; commit 2 = `verify/robotics_grader/`
+  re-vendored from `shared/` (the upload carried the 2026-09-05 kit). Old PR #14 closed with
+  a pointer. Still to do by a maintainer before merge: `ale validate` (the anchor was a
+  dry-run measurement; the oracle runs three hours).
+
+## 2. 2026-09-08 — website live; both channels rehearsed
+
+- The website (`agentic-robotics-benchmark-website`, formerly `ale-robotics-website`) is live
+  on `https://agentic-robotics-benchmark.org` with the two-channel Contribute page, the
+  download built from this repository at `b04359f`, and the registry exported from the same
+  commit; `ale-robotics.org` and its `www` 301 to the new domain.
+- Dress rehearsal with a template-derived task `rehearsal_reach_20260908` (uav/control;
+  anchor `0.0813` measured by `ale validate` on the maintainer's machine, oracle exactly 1.0):
+  channel A (pull request #2, opened by hand) and channel B (pull request #3, opened by the
+  website's bot after the upload precheck) produced byte-identical trees at
+  `tasks/control/rehearsal_reach_20260908/` (20 files, same modes, nothing outside the
+  folder), and `pr-checks.yml` passed on both. Both were closed without merging and their
+  branches deleted, as planned.
+- Website follow-ups found by the rehearsal and fixed the same day: the `www` alias of the
+  new domain (Caddyfile `WWW_DOMAIN`), and a 500 on `POST /api/v1/challenges` caused by the
+  rename creating a second release row (the website's seed now keys the release by version
+  and merges duplicates).
+
+## 3. 2026-09-08 — the paper-onboarding skill link removed
+
+- `.claude/skills/onboard_paper` was a symlink to `skill/`, the paper-reproduction
+  onboarding skill of the project's first months; its target had been deleted long before
+  the rebrand copied the dangling link over. Removed (owner decision: the benchmark is not
+  about reproducing papers, so no replacement). The repository has no `.claude/` directory
+  now; the agent-facing skills are the ones under `skills/onboard-*/`, routed by
+  `skills/onboard-task/SKILL.md`. `docs/research/agentic-robotics-survey.md` pointed at
+  the old `skills/SKILL.md`; it now points at the router.
+
+## 4. 2026-10-12 — `drone_hover` is now `tasks/uav/uav_hover`; tasks are placed by platform
+
+- Owner decisions: `tasks/control/drone_hover` becomes `tasks/uav/uav_hover`
+  (`name: uav_hover`), a dummy task that frontier models complete easily, kept only to show
+  what a task's file structure looks like. This replaces "delete it with the first merged
+  community task". `tasks/README.md` is now one paragraph saying so: there is no open-loop /
+  closed-loop distinction any more.
+- A landed task sits at `tasks/<metadata.platform>/<name>/` (was
+  `tasks/<metadata.direction>/<name>/`). Changed with it: `scripts/lint_domain.py` battery 7,
+  the instantiate target of `harness/ale_onboard.py`, the template download's getting-started
+  text (`scripts/build_template_zip.py`), the comment in `templates/task/task.yaml`, the pull
+  request template, the comments in `pr-checks.yml`, README, README.zh-CN, CONTRIBUTING,
+  CLAUDE.md, docs and skills. The tests now refuse a direction-named folder.
+- Identity: the new `name` gives the task a new `spec_hash` and `content_digest`, so the
+  registry identity cross-check reports `uav_hover` as a new task; `identity-history.json`
+  keeps the `drone_hover` record. `image/` is untouched, so the image identity (and an image
+  already built from it) carries over; its Dockerfile still says `drone-hover` in two log
+  lines and one comment.
+- Verified locally (the `pr-checks.yml` steps): `ale lint ../../tasks` and
+  `../../templates` ok; registry export + identity cross-check ok (`uav_hover` new);
+  `robotics_grader` selftest and the vendored-kit diff ok; `uv run pytest -q` all passed with
+  the engine venv present (the template-zip test, which refuses a dirty tree, passed on a
+  clean throwaway commit); `scripts/lint_domain.py .` ok; ruff reports the same nine
+  pre-existing notes.
+
+## 5. 2026-10-15 — the benchmark owns its taxonomy; `direction` and `metric` metadata retired
+
+- Owner decisions: this repository is self-sustaining, and the website is only a front end
+  that displays what this repository exports. The platform vocabulary is
+  `tasks/platforms.json`, fixed keys `arm` (robotic arm), `hand` (dexterous hand),
+  `quadruped`, `humanoid`, `uav`, `driving` (autonomous driving), `underwater` (UUV/AUV),
+  `space` (space robot), `soft`, `surgical`, `swarm`, `subsystems`. `metadata.direction` is
+  removed: platform is the only taxonomy field. `metadata.metric` is removed: upstream ALE
+  does not define it (its metadata is "optional descriptive values; no runtime behavior"), and
+  the metric and its direction are declared in `verify/anchor.json` only, where the grader
+  reads them.
+- `scripts/lint_domain.py`: battery 7 refuses a `metadata.platform` outside the vocabulary;
+  the metric checks (named, not hardware-dependent, `direction` higher or lower) read
+  `verify/anchor.json`; the two "task.yaml and anchor.json agree" checks are gone; stale
+  `direction` / `metric` metadata is ignored, like `genre` / `paper`.
+- `scripts/export_registry.py`: `platforms` comes from `tasks/platforms.json`; a task whose
+  platform is not a key is refused; `metric_name` / `metric_direction` / `metric_label` come
+  from `verify/anchor.json`; no per-task `direction`, no `directions`, no `category_tree`, no
+  `hardware_invariant` (a self-declaration nothing checked; the lint's token rule is what
+  enforces invariance); `--carry-over` is removed; `tasks/platforms.json` is held to the same
+  clean-tree rule as the task folders, since it goes into the document. `schema_version` stays
+  `ale-robotics-task-registry/v2` on purpose: the website's sync treats any other version as
+  a legacy merge and its seed refuses unknown versions, whereas a v2 document without
+  `direction` fails the website's current schema closed (nothing is written).
+- `harness/ale_onboard.py`: the spec's `platform` must be a key (the `misc` fallback is gone),
+  and the spec's metric name and direction are written into the copied `verify/anchor.json`
+  (a name without a direction is `higher`, never the template's `lower`). The gates check that
+  the grader reports the anchor's metric: an oracle record without it is `needs_input` (the
+  anchor's name is what the export publishes and the server's recompute looks up). An anchor
+  still at `TODO` names no metric, and `needs_anchor` then asks for the name with the value.
+- Template: `metadata: {platform: TODO}` with the key list; the anchor's `metric` is `TODO`
+  (the template grader's `mean_goal_distance` is an example, not a default);
+  `templates/README.md`, the template-zip guide, README, README.zh-CN, CONTRIBUTING,
+  CLAUDE.md, docs and skills follow; the two 2026-09-02 design records carry a dated note. The
+  pointers that called `tasks/README.md` the task contract now point at `templates/README.md`,
+  and the upload docs carry an interim note (the website still runs the old form: open the
+  pull request yourself). The test that read the sibling website checkout is deleted (the
+  dependency pointed the wrong way).
+- `uav_hover`: metadata reduced to `platform: uav`; its anchor gains `"direction": "higher"`
+  (its grader already hard-codes higher), so its `spec_hash` and `content_digest` change again
+  (still not in `identity-history.json`; CI reports it as a new task).
+- Verified locally (the `pr-checks.yml` steps): `ale lint ../../tasks` and `../../templates` ok
+  (`tasks/platforms.json` is invisible to the engine); registry export ok (`platforms` = the 12
+  keys; no `direction`, `directions` or `category_tree`) and identity cross-check ok (`uav_hover`
+  new); `robotics_grader` selftest and the vendored-kit diff ok; `uv run pytest -q` all passed
+  (the template-zip test on a clean throwaway commit); `scripts/lint_domain.py .` ok; ruff the
+  same nine pre-existing notes.
+- Still bound to the website (not changed here, candidates for a later pass): website policy
+  copied into this repository's text (upload URL, size limits, the precheck rule list); the
+  JSON Schemas of the registry and of `ale-engine-run/v1` exist only in the website
+  (`packages/contracts/schemas`); `provenance.tasks_repo` is the clone's directory name; the
+  `episode_id` pattern in `harness/export_run.py` mirrors the server's.
+
 ## Open items
 
-- Push to `https://github.com/Grounded-Intelligence-Initiative/agentic-robotics-benchmark`
-  after the owner signs off the privacy checklist (the repository exists on GitHub, empty).
-- Re-open the pending contribution `fault_adaptive_spacecraft_docking` (old repository
-  PR #14, uploaded by Jiankai-Sun, revision 2) here as a pull request at
-  `tasks/<direction>/fault_adaptive_spacecraft_docking/`, then close PR #14 with a pointer.
-- Website: land uploads at `tasks/<direction>/<slug>/` here, show the pull request link to
-  the uploader, rebuild the template download from this repository, switch the domain.
-- Delete `drone_hover` when the first community task is merged (the registry must not be
-  empty; the website's tests reference the slug).
+- Website, one pull request merged as a single commit (its deploy does not wait for CI):
+  registry schema and types without `directions`, `category_tree` and per-task `direction`;
+  the sync takes `platforms` from the export; a migration dropping `tasks.direction` and the
+  seed that writes it; the upload precheck checks `metadata.platform` against the installed
+  `platforms` and the metric on `verify/anchor.json` (no `metadata.direction` /
+  `metadata.metric`); the bot lands uploads at `tasks/<metadata.platform>/<slug>/`; pages
+  without direction facets and badges, the run command built from the platform; the
+  hardware-invariant badge (the export no longer carries `hardware_invariant`);
+  `validate-registry.mjs`, `sync-benchmark.mjs` and the generated schema enums
+  (`generate-schema-enums.mjs`) without directions; the Contribute page copy, the upload
+  contract docs (`docs/contribution-flow*.md`, `docs/data-model.md`) and the `--carry-over`
+  mentions in its README and `docs/content-sync.md`; tests; then install a fresh export and
+  rebuild the template download. Until then an upload made from the new template is refused
+  by the website's precheck, one made from the old download lands at `tasks/<direction>/<slug>/`
+  and fails battery 7, and installing a new export fails closed.
+- `ale validate` `uav_hover` (the oracle trains PPO for hours), then export the registry and
+  commit `identity-history.json`; installing it in the website waits for the website pull
+  request above.
+- Pull request #1 (`fault_adaptive_spacecraft_docking`, at
+  `tasks/spacecraft/fault_adaptive_spacecraft_docking/` since 5000d45) follows this change on
+  its branch: merge `main`, move the folder to `tasks/space/fault_adaptive_spacecraft_docking/`,
+  reduce its metadata to `{platform: space}` (its anchor already declares the metric and
+  direction). Merge or reject it after `ale validate`.
 
 ## Gotchas
 
 - `export_registry.py` refuses a dirty tree on purpose: `content_digest` covers every
   regular file, ignored `__pycache__/` included. Export from a clean commit; `--allow-dirty`
   is for throwaway exports and never writes the canonical `identity-history.json`.
-- Never run `ale validate` on `drone_hover` casually: its oracle trains PPO for hours. The
+- Never run `ale validate` on `uav_hover` casually: its oracle trains PPO for hours. The
   template validates in seconds.
 - Engine commands run from `vendor/ale` with `VIRTUAL_ENV=` cleared and
   `DOCKER_HOST=unix:///var/run/docker.sock` pinned (two docker contexts on the dev machine).

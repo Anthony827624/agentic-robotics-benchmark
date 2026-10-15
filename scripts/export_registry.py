@@ -6,8 +6,10 @@ is that *task identity comes from the engine*: ``spec_hash`` and ``content_diges
 off ``ale.run.tasksets.manifest.load_tasks`` and never re-implemented here, so the server
 compares a run's ``lock.json`` against exactly the numbers the engine would compute for the
 committed tree. Everything else is assembled from files the task folder already carries
-(``task.yaml`` metadata, ``instruction.md``, ``verify/anchor.json``,
-``verify/grader_config.json``) plus git provenance.
+(``task.yaml``'s ``metadata.platform``, ``instruction.md``, ``verify/anchor.json`` for the
+metric, its direction and the anchor, ``verify/grader_config.json``) plus git provenance. The
+document's ``platforms`` list is this repository's ``tasks/platforms.json``: the benchmark
+owns its taxonomy, and the website displays what this export hands it.
 
 The loader lives in the pinned engine's venv (``vendor/ale``), not in this repo's. When
 ``ale`` is not importable the script re-executes itself through ``uv run`` in that venv, so
@@ -16,8 +18,7 @@ The loader lives in the pinned engine's venv (``vendor/ale``), not in this repo'
 Usage (from the repository root)::
 
     cd vendor/ale && VIRTUAL_ENV= uv run python ../../scripts/export_registry.py \\
-        --tasks ../../tasks --history ../../identity-history.json \\
-        --carry-over <website>/content/tasks/registry.json --out registry.json
+        --tasks ../../tasks --history ../../identity-history.json --out registry.json
 
 ``--allow-dirty`` is for throwaway exports (CI cross-checks, tests): the document is stamped
 ``provenance.source_commit = "<sha>-dirty"`` plus ``provenance.dirty: true`` so nobody can
@@ -43,6 +44,8 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 ENGINE_DIR = REPO_ROOT / "vendor" / "ale"
 DEFAULT_TASKS = REPO_ROOT / "tasks"
 DEFAULT_HISTORY = REPO_ROOT / "identity-history.json"
+#: The platform vocabulary (``metadata.platform`` keys, labels), exported as ``platforms``.
+PLATFORMS_FILE = REPO_ROOT / "tasks" / "platforms.json"
 
 SCHEMA_VERSION = "ale-robotics-task-registry/v2"
 #: The server reads the cap from ``metadata_json``; this default mirrors the kit's
@@ -64,6 +67,7 @@ _HEADING = re.compile(r"^#[ \t]+(.+?)[ \t]*$", re.MULTILINE)
 #: block is a shell comment, not a heading.
 _FENCED_BLOCK = re.compile(r"^[ \t]*(```|~~~).*?^[ \t]*\1[ \t]*$", re.MULTILINE | re.DOTALL)
 _METRIC_DIRECTION = {"higher": "higher_is_better", "lower": "lower_is_better"}
+_PLATFORM_KEY = re.compile(r"^[a-z0-9][a-z0-9_-]*$")
 
 
 class RegistryError(RuntimeError):
@@ -143,17 +147,13 @@ def read_score_cap(task_dir: Path) -> float:
     return float(cap)
 
 
-def read_anchor(
-    task_dir: Path, score_cap: float, metric_direction: str | None = None
-) -> dict[str, Any]:
+def read_anchor(task_dir: Path, score_cap: float) -> dict[str, Any]:
     """``verify/anchor.json`` → the four ``anchor*`` registry fields.
 
     ``full_at`` defaults to 1.0 and must lie in ``(0, cap]`` and ``value`` must be positive —
     the same rules the kit applies at grading time, so a registry that disagrees with the
     grader is impossible to export. A ``null`` value is allowed: it is the authoring state
-    ("not admissible yet") and the server simply cannot score such a task. When the anchor
-    declares a ``direction`` it must agree with ``task.yaml``'s ``metadata.metric.direction``
-    (``metric_direction``): the grader reads the former, the server recompute the latter.
+    ("not admissible yet") and the server simply cannot score such a task.
     """
     path = task_dir / "verify" / "anchor.json"
     if not path.is_file():
@@ -166,12 +166,6 @@ def read_anchor(
         raise RegistryError(
             f"{path}: anchor value must be > 0, got {value!r} (the kit refuses a non-positive "
             "anchor: the ratio would invert)"
-        )
-    declared = anchor.get("direction")
-    if declared is not None and metric_direction is not None and declared != metric_direction:
-        raise RegistryError(
-            f"{path}: direction {declared!r} contradicts task.yaml metadata.metric.direction "
-            f"{metric_direction!r}; the grader and the server recompute would disagree"
         )
     full_at = anchor.get("full_at", DEFAULT_FULL_AT)
     if (
@@ -190,21 +184,26 @@ def read_anchor(
     }
 
 
-def metric_fields(metadata: dict[str, Any], slug: str) -> dict[str, Any]:
-    """``metadata.metric`` → ``metric_name``/``metric_label``/``metric_direction``/``hardware_invariant``."""
-    metric = metadata.get("metric") or {}
-    name = metric.get("name")
-    if not isinstance(name, str) or not name:
-        raise RegistryError(f"{slug}: task.yaml metadata.metric.name is required")
-    direction = _METRIC_DIRECTION.get(str(metric.get("direction", "higher")))
+def metric_fields(task_dir: Path, slug: str) -> dict[str, Any]:
+    """``verify/anchor.json``'s ``metric``/``direction`` → ``metric_name``/``metric_label``/``metric_direction``.
+
+    The anchor is the one place a task declares its metric: the grader reads it there, and
+    the server's recompute reads the copy this export puts in the registry.
+    """
+    path = task_dir / "verify" / "anchor.json"
+    if not path.is_file():
+        raise RegistryError(f"{slug}: missing verify/anchor.json")
+    anchor = json.loads(path.read_text(encoding="utf-8"))
+    name = anchor.get("metric")
+    if not isinstance(name, str) or not name or name == "TODO":
+        raise RegistryError(f"{slug}: verify/anchor.json `metric` is required")
+    direction = _METRIC_DIRECTION.get(str(anchor.get("direction")))
     if direction is None:
-        raise RegistryError(f"{slug}: metadata.metric.direction must be higher|lower")
-    label = metric.get("label") or name.replace("_", " ").capitalize()
+        raise RegistryError(f"{slug}: verify/anchor.json `direction` must be higher|lower")
     return {
         "metric_name": name,
-        "metric_label": label,
+        "metric_label": name.replace("_", " ").capitalize(),
         "metric_direction": direction,
-        "hardware_invariant": bool(metric.get("hardware_invariant", False)),
     }
 
 
@@ -215,15 +214,29 @@ def _integral(value: Any) -> Any:
     return value
 
 
-def task_entry(task: LoadedTask, identities: list[dict[str, Any]]) -> dict[str, Any]:
-    """One ``tasks[]`` element; ``identities`` already carries the current identity first."""
-    metadata = task.metadata
+def task_entry(
+    task: LoadedTask,
+    identities: list[dict[str, Any]],
+    platform_keys: frozenset[str] | None = None,
+) -> dict[str, Any]:
+    """One ``tasks[]`` element; ``identities`` already carries the current identity first.
+
+    ``metadata.platform`` must be one of ``platform_keys`` (default: ``tasks/platforms.json``).
+    """
+    platform = task.metadata.get("platform")
+    keys = platform_keys if platform_keys is not None else frozenset(
+        entry["key"] for entry in load_platforms()
+    )
+    if platform not in keys:
+        raise RegistryError(
+            f"{task.slug}: metadata.platform {platform!r} is not one of the benchmark's "
+            f"platforms (tasks/platforms.json)"
+        )
     score_cap = read_score_cap(task.root)
     entry: dict[str, Any] = {
         "slug": task.slug,
         "title": read_title(task.root, task.slug),
-        "platform": metadata.get("platform"),
-        "direction": metadata.get("direction"),
+        "platform": platform,
         "identities": identities,
         "score_cap": score_cap,
         "resources": {
@@ -234,9 +247,8 @@ def task_entry(task: LoadedTask, identities: list[dict[str, Any]]) -> dict[str, 
         },
         "status": "active",
     }
-    entry.update(metric_fields(metadata, task.slug))
-    metric_direction = str((metadata.get("metric") or {}).get("direction", "higher"))
-    entry.update(read_anchor(task.root, score_cap, metric_direction))
+    entry.update(metric_fields(task.root, task.slug))
+    entry.update(read_anchor(task.root, score_cap))
     return entry
 
 
@@ -321,18 +333,20 @@ def _git(args: list[str], cwd: Path) -> str:
     return result.stdout
 
 
-def require_clean(task_dir: Path) -> None:
-    """Refuse a task folder with any uncommitted or ignored file.
+def require_clean(path: Path) -> None:
+    """Refuse a task folder (or one input file) with any uncommitted or ignored content.
 
     ``content_digest`` covers every regular file in the folder, so an ignored
-    ``__pycache__`` or an unstaged edit would register an identity no commit reproduces.
+    ``__pycache__`` or an unstaged edit would register an identity no commit reproduces;
+    ``tasks/platforms.json`` goes into the document as ``platforms`` and is held to the same rule.
     """
     status = _git(
-        ["status", "--porcelain", "--ignored", "--", str(task_dir)], cwd=task_dir
+        ["status", "--porcelain", "--ignored", "--", str(path)],
+        cwd=path if path.is_dir() else path.parent,
     ).strip()
     if status:
         raise RegistryError(
-            f"{task_dir} is not clean; commit or remove these before exporting "
+            f"{path} is not clean; commit or remove these before exporting "
             f"(or pass --allow-dirty for a throwaway export):\n{status}"
         )
 
@@ -369,19 +383,25 @@ def engine_provenance(engine_dir: Path) -> dict[str, Any]:
     }
 
 
-def carry_over(existing: Path | None) -> dict[str, Any]:
-    """``platforms``/``directions``/``category_tree`` copied verbatim from the current registry.
+def load_platforms(path: Path = PLATFORMS_FILE) -> list[dict[str, str]]:
+    """``tasks/platforms.json`` → the document's ``platforms`` (``[{key, label}]``, file order).
 
-    The website file is the only copy of the taxonomy; this repository carries none.
+    This repository owns the taxonomy: the domain lint holds every ``metadata.platform`` to
+    these keys, and the website displays the list exactly as exported.
     """
-    if existing is None:
-        return {"platforms": [], "directions": [], "category_tree": {}}
-    loaded = json.loads(existing.read_text(encoding="utf-8"))
-    return {
-        "platforms": loaded.get("platforms", []),
-        "directions": loaded.get("directions", []),
-        "category_tree": loaded.get("category_tree", {}),
-    }
+    entries = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(entries, list) or not entries:
+        raise RegistryError(f"{path}: must be a non-empty list of {{key, label}} records")
+    seen: set[str] = set()
+    for index, entry in enumerate(entries):
+        key = entry.get("key") if isinstance(entry, dict) else None
+        label = entry.get("label") if isinstance(entry, dict) else None
+        if not isinstance(key, str) or not _PLATFORM_KEY.match(key) or key in seen:
+            raise RegistryError(f"{path}: record {index} needs a unique slug `key`, got {key!r}")
+        if not isinstance(label, str) or not label:
+            raise RegistryError(f"{path}: record {index} ({key}) needs a non-empty `label`")
+        seen.add(key)
+    return [{"key": entry["key"], "label": entry["label"]} for entry in entries]
 
 
 def release_block(name: str, version: str, task_set: list[str]) -> dict[str, Any]:
@@ -409,7 +429,8 @@ def build_registry(
     now: str,
     source_commit_sha: str,
     engine: dict[str, Any],
-    carried: dict[str, Any],
+    platforms: list[dict[str, str]] | None = None,
+    platforms_file: Path = PLATFORMS_FILE,
     release_name: str = DEFAULT_RELEASE_NAME,
     release_version: str = DEFAULT_RELEASE_VERSION,
     allow_dirty: bool = False,
@@ -420,6 +441,11 @@ def build_registry(
     ``source_commit`` gets a ``-dirty`` suffix and ``dirty: true`` is set, so a throwaway
     export can never pass for a release one (the website's validator can refuse it).
     """
+    if platforms is None:
+        if not allow_dirty:
+            require_clean(platforms_file)
+        platforms = load_platforms(platforms_file)
+    platform_keys = frozenset(entry["key"] for entry in platforms)
     base_tasks = sorted(
         (task for task in tasks if task.variant == REGISTERED_VARIANT), key=lambda t: t.slug
     )
@@ -430,7 +456,7 @@ def build_registry(
         if not allow_dirty:
             require_clean(task.root)
         history, identities = merge_history(history, task, now)
-        entries.append(task_entry(task, identities))
+        entries.append(task_entry(task, identities, platform_keys))
     provenance: dict[str, Any] = {
         "source": "engine_task_loader",
         "tasks_repo": REPO_ROOT.name,
@@ -447,7 +473,7 @@ def build_registry(
             release_name, release_version, [entry["slug"] for entry in entries]
         ),
         "tasks": entries,
-        **carried,
+        "platforms": platforms,
     }
     return registry, history
 
@@ -483,10 +509,6 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         "--history", type=Path, default=None,
         help=f"identity-history.json to merge and write back (default: {DEFAULT_HISTORY}; "
              "with --allow-dirty the default file is read but never written)",
-    )
-    parser.add_argument(
-        "--carry-over", type=Path, default=None,
-        help="existing website registry.json whose platforms/directions/category_tree are copied",
     )
     parser.add_argument("--out", type=Path, required=True, help="where to write the registry")
     parser.add_argument("--release-name", default=DEFAULT_RELEASE_NAME)
@@ -546,7 +568,6 @@ def main(argv: list[str] | None = None) -> int:
             now=utc_now(),
             source_commit_sha=source_commit(REPO_ROOT),
             engine=engine_provenance(ENGINE_DIR),
-            carried=carry_over(args.carry_over),
             release_name=args.release_name,
             release_version=args.release_version,
             allow_dirty=args.allow_dirty,

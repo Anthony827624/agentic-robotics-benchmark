@@ -1,4 +1,4 @@
-"""Practice grader for drone_hover (AGENT-VISIBLE self-test).
+"""Practice grader for uav_hover (AGENT-VISIBLE self-test).
 
 Runs a short local rollout of your submission's solver against HoverAviary on
 FIXED, non-hidden seeds and prints the raw mean_episode_reward it observes. This

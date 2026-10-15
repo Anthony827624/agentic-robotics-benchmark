@@ -1,5 +1,6 @@
 {
   "metric": "mean_episode_reward",
+  "direction": "higher",
   "value": 472.07,
   "source": "oracle implementation (oracle/run.sh, PPO on HoverAviary at the pinned gym-pybullet-drones commit): real graded run over hidden per-run seeds, never a published figure",
   "example_commit": "9bc12bc583fa3b28807b2f90a8cadf09fb06e1ff",

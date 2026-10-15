@@ -1,7 +1,7 @@
 # Contributing a task
 
 The path: get the engine, start from the template, build the task locally, validate it, then
-get a pull request open that adds your folder at `tasks/<direction>/<slug>/`. Two ways to
+get a pull request open that adds your folder at `tasks/<platform>/<slug>/`. Two ways to
 open that pull request, one result: open it yourself, or upload the zipped folder on the
 website and let its bot open it for you. A maintainer reviews it the same way either way.
 The short version is the repository's [`CONTRIBUTING.md`](../CONTRIBUTING.md); the design
@@ -12,10 +12,9 @@ What a task is and the bar it has to clear are the engine's own specs. Read them
 - Task authoring: https://github.com/AgentsLastExam/ale/blob/main/docs/specs/task-authoring.md
 - Task quality standard: https://github.com/AgentsLastExam/ale/blob/main/docs/specs/task-quality-standard.md
 
-What the robotics domain adds is in [`tasks/README.md`](../tasks/README.md). The
-file-by-file tour of the template and the "Turning it into your task" checklist are in
-[`templates/README.md`](../templates/README.md). Where this page disagrees with those, they
-win.
+What the robotics domain adds, the file-by-file tour of the template and the "Turning it
+into your task" checklist are in [`templates/README.md`](../templates/README.md). Where this
+page disagrees with it, it wins.
 
 A robotics task here is an agentic problem an autonomous agent solves inside a sealed
 sandbox. It is handed an `instruction.md` and an environment image, works however it likes
@@ -43,6 +42,11 @@ in the oracle phase, never during scoring. You do not need a checkout of this re
 author a task, only to open the pull request yourself.
 
 ## 2. Get the template
+
+> **Until the website catches up (2026-10-15).** The website's download is still built from an
+> older template commit (it carries `metadata.direction` and `metadata.metric`); copy
+> `templates/task/` from a checkout instead. The two sources are the same files again once the
+> website's copy is rebuilt.
 
 Two sources, same files. On the website, sign in (GitHub or Google) and download the
 template from the Contribute page. Maintainers build that zip with
@@ -133,14 +137,16 @@ measures what the agent does inside a blocked-network sandbox that does not cont
 ## 5. Metric discipline
 
 Two mistakes silently corrupt a task. Neither `ale lint` nor `ale validate` checks them; the
-domain lint and the upload precheck do.
+domain lint and the upload precheck do. The metric is declared in `verify/anchor.json` and
+nowhere else: `metric` is the key your grader reports, `direction` is `higher` or `lower`.
 
 - The metric is hardware-invariant. Never score wall-clock time, throughput or FPS; they
   depend on the machine. Use outcome metrics (success rate, collision rate, SPL, ATE, episode
   reward). If the natural headline of your problem is a time, convert it to a pass/fail
   real-time threshold.
 - The metric is on a positive scale. A negative anchor inverts the ratio, so a better result
-  scores lower. Report a negative reward as a positive cost with `direction: lower`.
+  scores lower. Report a negative reward as a positive cost with the anchor's `direction` set
+  to `lower`.
 
 ## 6. The anchor bootstrap
 
@@ -171,7 +177,14 @@ printed elsewhere. You cannot know it until you run, so:
 ## 7. Submit
 
 Both ways end as a pull request into this repository that adds exactly one folder,
-`tasks/<direction>/<slug>/`, where `<direction>` is `metadata.direction` from your `task.yaml`.
+`tasks/<platform>/<slug>/`, where `<platform>` is `metadata.platform` from your `task.yaml`,
+one of the keys in `tasks/platforms.json`.
+
+> **Until the website catches up (2026-10-15).** The upload check and bot described below are
+> this repository's form. The website still runs the older one: it requires `metadata.direction`
+> and `metadata.metric`, so an upload made from the current template is refused, and it lands a
+> folder at `tasks/<direction>/<slug>/`, which battery 7 here refuses. Until its update ships,
+> open the pull request yourself.
 
 **Open the pull request yourself.** Fork the repository, copy your folder to that path on a
 branch, push, and open the pull request. The pull request template asks for the `ok` line of
@@ -189,15 +202,15 @@ one folder is rejected on layout. Upload it on the Contribute page with a title.
    characters outside `[A-Za-z0-9._-/]`); a required file is missing (`task.yaml`,
    `instruction.md`, `image/Dockerfile` or an `image.ref`, `setup/run.sh`, `oracle/run.sh`,
    `verify/run.sh`, `verify/anchor.json`); `task.yaml` does not parse or `name` does not match
-   the folder slug; `metadata.platform`, `metadata.direction`, `metadata.metric.name` or
-   `metadata.metric.direction` is empty or still `TODO`, or the metric is
-   hardware-dependent; `verify/anchor.json` has no `value > 0`, or its `source` is missing,
+   the folder slug; `metadata.platform` is not one of the keys in `tasks/platforms.json`;
+   `verify/anchor.json` names no `metric`, its `direction` is not `higher` or `lower`, the
+   metric is hardware-dependent, it has no `value > 0`, or its `source` is missing,
    `TODO`, or cites a paper's number; `full_at` is outside (0, scoring_cap]
    (`verify/grader_config.json`, 1.5 by default); the Dockerfile has no `FROM`, a privileged
    flag, or a `COPY`/`ADD` of `verify/`, `oracle/` or anchor material; or the slug is already
    taken. A failure comes back as a list and nothing is stored; fix and upload again. "Check
    only" runs the same checks without uploading.
-2. It commits the folder to `tasks/<direction>/<slug>/` on a branch `contrib/<id>` of this
+2. It commits the folder to `tasks/<platform>/<slug>/` on a branch `contrib/<id>` of this
    repository and opens the pull request, the same shape as one opened by hand, and shows
    you the link. When the server holds no repository credential the zip is kept for a
    maintainer instead ("Queued for a maintainer").
@@ -233,5 +246,5 @@ A pull request you open yourself collects what GitHub collects.
   is a lint error. Grader knobs go in `verify/grader_config.json`, not `params`.
 - `ale validate` does not print a stage's stderr. It is in `trace.execution.jsonl`.
 - Do not edit run outputs to make a task pass. Author the inputs; the verdict is computed.
-- The folder name, `name` in `task.yaml` and the `tasks/<direction>/` parent must agree; the
+- The folder name, `name` in `task.yaml` and the `tasks/<platform>/` parent must agree; the
   domain lint refuses a pull request where they do not.

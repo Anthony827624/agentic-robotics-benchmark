@@ -11,8 +11,8 @@ orchestration / planning / self-improvement layer is what does).
 Compiled 2026-07 from a multi-source, adversarially-verified survey (each factual claim
 confirmed 3-0 against primary sources unless noted). This is a **shortlist for future
 onboarding**, not a decision to onboard any of these. When onboarding, follow
-`skills/SKILL.md` — a paper only becomes a task after a real example-impl run produces a
-hidden anchor and the pipeline is green.
+`skills/onboard-task/SKILL.md` — a candidate only becomes a task after a real reference
+run produces its anchor and every gate is green.
 
 ## Two flavors of "agentic" (both in scope)
 

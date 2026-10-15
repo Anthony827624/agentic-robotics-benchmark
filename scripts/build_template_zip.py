@@ -106,8 +106,8 @@ clear is the quality standard:
 https://github.com/AgentsLastExam/ale/blob/main/docs/specs/task-quality-standard.md. Read both once.
 A robotics task here adds five rules:
 
-- The metric is an outcome on a positive scale (success rate, reward, path cost), never wall-clock
-  time, throughput or frame rate. `metadata.metric` in `task.yaml` declares it.
+- The metric is an outcome on a positive scale (success rate, path cost), never wall-clock time or
+  throughput. `verify/anchor.json` declares it (`metric`, `direction`); `metric_name=` must match.
 - The anchor (`verify/anchor.json` `value`) is your reference solution's own measured value from a
   real run, never a published figure. `full_at` is the ratio where the reward saturates to 1; size
   it from the metric's spread over several oracle runs.
@@ -149,7 +149,7 @@ ratio you see, and repeat until the result line starts with `ok`.
 ## 6. Submit the task
 
 Two ways, one result: a pull request into https://github.com/Grounded-Intelligence-Initiative/agentic-robotics-benchmark
-that adds your folder at `tasks/<direction>/<slug>/` (`<direction>` is `metadata.direction` in `task.yaml`).
+that adds your folder at `tasks/<platform>/<slug>/` (`<platform>` is `metadata.platform` in `task.yaml`).
 
 Open it yourself: fork the repository, copy the folder to that path, push a branch and open the pull
 request. CI runs `ale lint`, the robotics lint and the kit comparison on it.
@@ -165,7 +165,7 @@ on a rejection, or opens the same pull request for you and shows you the link.
 ## What happens next
 
 A maintainer reads `verify/` and `oracle/`, re-runs `ale validate`, and merges. The task is then live at
-`tasks/<direction>/<slug>/` and enters the registry at the next export. To revise a task under review,
+`tasks/<platform>/<slug>/` and enters the registry at the next export. To revise a task under review,
 push to your branch, or upload a new zip with the same slug.
 """
 

@@ -2,8 +2,8 @@
 
 These are the rehearsal findings of 2026-09-02, pinned: the probe wire is indistinguishable
 (step index `t`, never a probe marker), the two environment copies are byte-identical,
-`setup/run.sh` stages `payload/` without naming its files, the manifest's platform hints
-are the registry's real keys, no contributor-facing file points at the maintainers'
+`setup/run.sh` stages `payload/` without naming its files, the manifest's platform hint
+lists the benchmark's own platform keys, no contributor-facing file points at the maintainers'
 harness, and the instruction states what the kit actually enforces (cwd, READY deadline,
 repeated-`t` semantics, saturation).
 """
@@ -11,7 +11,6 @@ repeated-`t` semantics, saturation).
 from __future__ import annotations
 
 import json
-import os
 import re
 from pathlib import Path
 
@@ -21,16 +20,9 @@ import yaml
 REPO_ROOT = Path(__file__).resolve().parent.parent
 TEMPLATE = REPO_ROOT / "templates" / "task"
 KIT = REPO_ROOT / "shared" / "robotics_grader"
-# The website's registry: the sibling checkout inside the integration workspace, or
-# wherever ARB_WEBSITE_REGISTRY points (the cross-check skips when neither exists).
-REGISTRY = Path(os.environ.get(
-    "ARB_WEBSITE_REGISTRY",
-    REPO_ROOT.parent / "agentic-robotics-benchmark-website" / "content" / "tasks" / "registry.json"))
-
-# The website registry's platform keys as of 2026-09-02 (cross-checked against the live
-# file below when the website checkout is present).
-PLATFORM_KEYS = ["humanoid", "manipulation", "multirobot", "quadruped", "soft", "spacecraft",
-                 "surgical", "uav", "underwater", "vehicle"]
+# The benchmark's platform keys: this repository's own vocabulary, not the website's.
+PLATFORM_KEYS = [entry["key"] for entry in
+                 json.loads((REPO_ROOT / "tasks" / "platforms.json").read_text(encoding="utf-8"))]
 
 CONTRIBUTOR_FACING = ["task.yaml", "instruction.md", "verify/verify.py", "verify/anchor.json",
                       "verify/env.py", "setup/run.sh", "oracle/run.sh", "oracle/solver.py",
@@ -122,22 +114,15 @@ def test_setup_stages_payload_without_naming_its_files():
 # --------------------------------------------------------------------------- #
 # the manifest's hints and the maintainers' tooling
 # --------------------------------------------------------------------------- #
-def test_task_yaml_platform_hint_lists_the_registry_keys_verbatim():
+def test_task_yaml_platform_hint_lists_the_platform_keys():
     text = _text("task.yaml")
     listed = [k for k in PLATFORM_KEYS if re.search(rf"\b{k}\b", text)]
     assert listed == PLATFORM_KEYS, set(PLATFORM_KEYS) - set(listed)
     assert "drone" not in text
-    assert "registry.json" in text and "directions[]" in text
+    assert "tasks/platforms.json" in text
     assert "needs a maintainer" in text
     manifest = yaml.safe_load(text)
-    assert manifest["metadata"]["platform"] == "TODO"
-    assert manifest["metadata"]["direction"] == "TODO"
-
-
-@pytest.mark.skipif(not REGISTRY.is_file(), reason="website checkout not present")
-def test_platform_keys_match_the_live_registry():
-    registry = json.loads(REGISTRY.read_text())
-    assert sorted(p["key"] for p in registry["platforms"]) == PLATFORM_KEYS
+    assert manifest["metadata"] == {"platform": "TODO"}   # direction and metric are retired
 
 
 def test_no_contributor_facing_file_points_at_the_maintainers_harness():
