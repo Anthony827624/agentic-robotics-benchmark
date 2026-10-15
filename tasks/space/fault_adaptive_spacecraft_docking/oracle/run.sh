@@ -23,7 +23,7 @@ cat > "$SUB/run.sh" <<'SH'
 #!/usr/bin/env bash
 set -euo pipefail
 cd "$(dirname "$0")"
-exec python3 solver.py
+exec /opt/venv/bin/python3 solver.py
 SH
 chmod +x "$SUB/run.sh"
 

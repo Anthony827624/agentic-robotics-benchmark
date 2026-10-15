@@ -15,7 +15,7 @@ two physical nozzles retain different fractions of their authority. The two degr
 nozzles are not the only nonlinear effect: after each bus event every physical nozzle
 also receives an independent hidden duty exponent. Its realized thrust fraction is
 `duty ** exponent`, with exponent between 0.65 and 1.60. The exponent set is replaced
-independently at the second re-key. A single-amplitude probe therefore cannot separate
+independently at the re-key. A single-amplitude probe therefore cannot separate
 degradation scale from duty curvature. The two degraded nozzles form a hysteretic
 protection relay, armed when each bus event begins. A duty above 0.78 on the more
 severely degraded nozzle while the relay is armed reverses the rotor direction after that
@@ -54,7 +54,8 @@ Episode randomization is fixed to these ranges:
   exceeds 1.35, in its current direction;
 - after the first event one physical nozzle retains 35% to 50% authority and a
   distinct second nozzle retains 55% to 70% authority;
-- after the second event a newly selected pair retains 45% to 60% and 65% to 80%;
+- after the second event a second pair, drawn independently of the first (it may share a
+  nozzle with it), retains 45% to 60% and 65% to 80%;
 - after each event every physical nozzle has an independent duty exponent from
   0.65 to 1.60; commanded duty still controls fuel use, stride, and relay logic,
   while realized thrust uses the nonlinear exponent;
@@ -64,7 +65,7 @@ Episode randomization is fixed to these ranges:
   (checked first within a command); the cycle repeats;
 - IMU linear axes have an unknown rotation in [-pi, pi] and may be mirrored;
 - the IMU yaw-acceleration channel has unknown polarity;
-- at the second re-key, the already hidden IMU frame is further rotated by a
+- at the re-key, the already hidden IMU frame is further rotated by a
   nonzero 0.43 or 0.79 rad in either direction and may be mirrored, while yaw
   polarity independently stays or flips;
 - the first bus remapping and degradation event occurs between steps 58 and 103;
@@ -111,14 +112,14 @@ simulator's source documents the nominal six nozzle geometries and every randomi
 range, but each episode's values are hidden: the initial wiring, the continuous column
 errors, the bias, both rotor orderings with their offsets and directions, both degraded
 pairs and their scales, both exponent sets, the first event's step, the re-key's arming
-step, proximity threshold and deadline, and both IMU mountings. The bus supplies no
-explicit event flag.
+step, proximity threshold and deadline, the target's slew speed after the re-key, both IMU
+mountings, and the blackout schedule. The bus supplies no explicit event flag.
 
-The circular target body has radius 0.82 and the docking port is at radius 1.14. Entering
-the body or leaving the radius-6.2 operating region terminates the episode with zero
+The circular target body has radius 0.82 m and the docking port is at radius 1.14 m.
+Entering the body or leaving the radius-6.2 m operating region terminates the episode with zero
 quality. Successful docking requires position error < 0.105 m, translational velocity
 error < 0.075 m/s, yaw error < 0.025 rad, and yaw-rate error < 0.020 rad/s for twenty
-consecutive steps after the second re-key has occurred. In addition, the relay must have
+consecutive steps after the re-key has occurred. In addition, the relay must have
 reversed the rotor at least once after each bus event (it starts armed, so the first
 trigger counts); merely capping duty below the trigger and bypassing the documented
 fault mode does not qualify. Reaching the port earlier
@@ -136,7 +137,8 @@ that aborts (a missed deadline, a protocol error, or a malformed action) scores 
 still counts in the mean. Your score compares that mean with a reference controller's
 real measured value on hidden seeds. Full credit is reached somewhat below the
 reference's level, where the reward saturates, which leaves room for seed-to-seed
-variance; the reference value itself is not disclosed. The grader also checks that your
+variance; the verdict also records the plain ratio to the reference, capped at 1.5. The
+reference value itself is not disclosed. The grader also checks that your
 actions depend on the observation they were given: if fewer than 35% of the repeated-`t`
 answer pairs (see the wire contract) differ by more than 1e-4, the score is 0 regardless
 of the metric.
@@ -158,9 +160,13 @@ more than once with different observations in a hidden order; only the reply to 
 observation is applied. Always calculate the action from the observation in that
 request; repeated queries do not advance the simulation.
 
-The whole grading run has 30 minutes for all 48 episodes, about 15,000 requests, so
-answer in well under 0.1 s per request on average. A controller that runs out that time
-gets no score, even if every single reply met its 30-second limit.
+If an episode aborts, the grader stops the process and starts `bash run.sh` again before
+the next episode; it must print READY again within 120 seconds. If it cannot, every
+remaining episode aborts.
+
+The whole grading run has 30 minutes for all 48 episodes, about 15,000 requests, restarts
+included, so answer in well under 0.1 s per request on average. A controller that runs out
+that time scores 0, even if every single reply met its 30-second limit.
 
 ## Development check
 
