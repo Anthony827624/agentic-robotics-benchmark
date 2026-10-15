@@ -6,8 +6,7 @@ that passes a constant policy, a ratio that ignores its cap, an anchor that read
 
 The solver tests spawn real subprocesses over the real wire, but through `_LocalSolver`,
 which skips the `runuser` UID drop — the drop needs two accounts and root. The drop itself
-is covered by `ale validate` on a real task, where a solver that cannot be spawned aborts
-every episode.
+is covered by `ale validate` on a real task, where a solver that cannot be spawned scores 0.
 """
 
 import json
@@ -47,6 +46,12 @@ def test_seeds():
 
     rng = seeds.seed_rng(entropy=99)
     check("seeds fit gymnasium's range", all(0 <= s < 2 ** 31 for s in rng.seeds(200)))
+    for bad in (0, 65):
+        try:
+            seeds.seed_rng(entropy=1).seed(bits=bad)
+            check("seed bits outside 1..64 are refused (%d)" % bad, False, "no exception")
+        except ValueError:
+            check("seed bits outside 1..64 are refused (%d)" % bad, True)
     wide = seeds.seed_rng(entropy=99).seeds(200, bits=64)
     check("64-bit seeds use the high bits", max(wide) >= 2 ** 62 and all(0 <= s < 2 ** 64 for s in wide))
     floats = [seeds.seed_rng(entropy=i).random() for i in range(200)]
@@ -282,6 +287,19 @@ def test_probe_lock():
     check("nested actions flatten before comparison",
           lock.record([[0.1, 0.2]], [[0.9, 0.2]]))
 
+    deep = [0.5]
+    for _ in range(5000):                      # deeper than the recursion limit
+        deep = [deep]
+    lock = solver_mod.ProbeLock(seeds.seed_rng(entropy=7))
+    check("deeply nested actions do not crash the grader", lock.record(deep, [0.4]))
+
+    lock = solver_mod.ProbeLock(seeds.seed_rng(entropy=7))
+    try:
+        lock.record(["ab"], [0.5])
+        check("a non-numeric action aborts the episode", False, "no exception")
+    except solver_mod.SolverAborted:
+        check("a non-numeric action aborts the episode", True)
+
 
 # --------------------------------------------------------------------------- #
 # solver wire (real subprocesses; UID drop excluded — see the module docstring)
@@ -377,8 +395,41 @@ for line in sys.stdin:
         print(json.dumps({"ok": True}), flush=True); continue
     if not os.path.exists(marker):
         open(marker, "w").close()
-        time.sleep(1.0)
+        time.sleep(2.0)
     print(json.dumps({"action": [req["t"]]}), flush=True)
+'''
+
+# Prints one stray JSON object before its first act reply, then behaves: the stray line
+# answers the act, the real reply would answer the next request.
+_STRAY_ONCE_SOLVER = '''\
+import json, os, sys
+marker = os.path.join(os.path.dirname(os.path.abspath(__file__)), "stray-once")
+print("READY", flush=True)
+for line in sys.stdin:
+    req = json.loads(line.strip() or "{}")
+    if req.get("type") == "close":
+        print(json.dumps({"ok": True}), flush=True); break
+    if req.get("type") == "reset":
+        print(json.dumps({"ok": True}), flush=True); continue
+    if not os.path.exists(marker):
+        open(marker, "w").close()
+        print(json.dumps({"status": "warming up"}), flush=True)
+    print(json.dumps({"action": [req["t"]]}), flush=True)
+'''
+
+# Starts a helper that outlives it (records its pid), then exits on the first act request.
+_HELPER_SOLVER = '''\
+import json, os, subprocess, sys
+here = os.path.dirname(os.path.abspath(__file__))
+helper = subprocess.Popen([sys.executable, "-c", "import time; time.sleep(120)"])
+with open(os.path.join(here, "helper.pid"), "a") as handle:
+    handle.write("%d\\n" % helper.pid)
+print("READY", flush=True)
+for line in sys.stdin:
+    req = json.loads(line.strip() or "{}")
+    if req.get("type") == "reset":
+        print(json.dumps({"ok": True}), flush=True); continue
+    raise SystemExit(5)
 '''
 
 # Exits on its first act request; every later launch never prints READY.
@@ -423,6 +474,25 @@ for line in sys.stdin:
         print(json.dumps({"ok": True}), flush=True); continue
     time.sleep(30)
 '''
+
+
+def _replies_after_reset(solver, steps):
+    """`reset()` then one `act` per step; a raised abort is a failed check, not a traceback."""
+    try:
+        solver.reset()
+        return [solver.act(t, [0.0]) for t in steps]
+    except solver_mod.SolverAborted as exc:
+        return "aborted: {}".format(exc)
+
+
+def _alive(pid):
+    """Running, as opposed to gone or a zombie waiting for its reaper."""
+    try:
+        with open("/proc/{}/status".format(pid)) as handle:
+            state = [line for line in handle if line.startswith("State:")][0]
+        return "Z" not in state.split()[1]
+    except (OSError, IndexError):
+        return False
 
 
 def _write(tmp, body, name="solver.py"):
@@ -478,20 +548,69 @@ def test_solver_wire():
                 check("a stalled step aborts on its deadline", True)
 
     with tempfile.TemporaryDirectory() as tmp:
-        with _LocalSolver(_write(tmp, _LATE_ONCE_SOLVER), step_timeout=0.25) as solver:
+        with _LocalSolver(_write(tmp, _LATE_ONCE_SOLVER), step_timeout=0.5) as solver:
             solver.reset()
             try:
                 solver.act(0, [0.0])
                 check("a late reply aborts its episode", False, "no exception")
             except solver_mod.SolverAborted:
                 check("a late reply aborts its episode", True)
-            time.sleep(1.2)                  # the late reply is now on the old wire
-            solver.reset()                   # restarts the solver first
+            time.sleep(2.2)                  # the late reply is now on the old wire
+            replies = _replies_after_reset(solver, [5, 6])
             check("after an aborted episode the next one gets its own replies",
-                  solver.act(5, [0.0]) == [5] and solver.act(6, [0.0]) == [6])
+                  replies == [[5], [6]], str(replies))
+            check("the restart is counted", solver.restarts == 1, str(solver.restarts))
 
     with tempfile.TemporaryDirectory() as tmp:
-        with _LocalSolver(_write(tmp, _DIES_FOR_GOOD_SOLVER), step_timeout=0.25) as solver:
+        with _LocalSolver(_write(tmp, _STRAY_ONCE_SOLVER), step_timeout=2.0) as solver:
+            solver.reset()
+            try:
+                solver.act(0, [0.0])
+                check("a reply without an action aborts its episode", False, "no exception")
+            except solver_mod.SolverAborted:
+                check("a reply without an action aborts its episode", True)
+            replies = _replies_after_reset(solver, [3, 4])
+            check("a stray line costs one episode, not the run",
+                  replies == [[3], [4]], str(replies))
+
+    with tempfile.TemporaryDirectory() as tmp:
+        with _LocalSolver(_write(tmp, _STALL_SOLVER), step_timeout=0.3) as solver:
+            outcomes = []
+            for _ in range(5):
+                try:
+                    solver.reset()
+                    solver.act(0, [0.0])
+                    outcomes.append("ok")
+                except solver_mod.SolverAborted:
+                    outcomes.append("aborted")
+            began = time.time()
+            try:
+                solver.reset()
+                check("past max_restarts every later episode aborts at once", False, "no exception")
+            except solver_mod.SolverAborted:
+                check("past max_restarts every later episode aborts at once",
+                      time.time() - began < 0.2 and solver.restarts == 3,
+                      "restarts=%d took %.2fs" % (solver.restarts, time.time() - began))
+            check("a solver that stalls every episode is never scored", outcomes == ["aborted"] * 5,
+                  str(outcomes))
+
+    with tempfile.TemporaryDirectory() as tmp:
+        solver = _LocalSolver(_write(tmp, _HELPER_SOLVER), step_timeout=2.0)
+        solver.reset()
+        try:
+            solver.act(0, [0.0])
+        except solver_mod.SolverAborted:
+            pass
+        solver.reset()                       # restart: the first helper must be gone
+        solver.close()
+        solver.close()                       # twice is fine
+        with open(os.path.join(tmp, "helper.pid")) as handle:
+            pids = [int(line) for line in handle if line.strip()]
+        check("stopping a solver stops the helpers it started",
+              len(pids) == 2 and not any(_alive(pid) for pid in pids), str(pids))
+
+    with tempfile.TemporaryDirectory() as tmp:
+        with _LocalSolver(_write(tmp, _DIES_FOR_GOOD_SOLVER), step_timeout=0.5) as solver:
             solver.reset()
             try:
                 solver.act(0, [0.0])

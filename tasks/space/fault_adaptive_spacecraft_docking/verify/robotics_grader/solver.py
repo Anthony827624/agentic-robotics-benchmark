@@ -31,24 +31,28 @@ asks a probed step twice with the SAME `t` — once with the real observation, o
 perturbed copy, in an order the solver cannot predict — and applies only the real reply
 to the simulator. A repeated `t` is therefore an ordinary event the instruction tells the
 agent about ("a step may be queried more than once; repeated queries do not advance the
-episode; count steps by `t`, not by requests"), and a solver cannot tell which of the two
-requests is the probe. The old design flagged probes with `"probe": true`, which let a
-canned policy pass the lock by reacting only to flagged requests. The lock catches a
-policy that ignores its input; it is not a proof of honesty, because a solver that notices
-a repeated `t` can vary its answer on purpose. Isolation, not the lock, keeps a score
-honest.
+episode; count steps by `t`, not by requests"), and nothing on the wire tells the solver
+which of the two requests is the probe. The old design flagged probes with `"probe": true`,
+which let a canned policy pass the lock by reacting only to flagged requests. The lock
+catches a policy that ignores its input; it is not a proof of honesty, because a solver
+that notices a repeated `t` can vary its answer on purpose. Isolation, not the lock, keeps
+a score honest.
 
 **An aborted episode does not take the rest of the run with it.** After a timeout, a
-crash or a protocol error the wire may still hold a late reply that would answer the next
-request, so the next `reset` restarts the solver process before the next episode. A solver
-that cannot restart (no `READY` again) aborts every remaining episode at once instead of
-waiting out one `READY` deadline per episode.
+crash, a protocol error or a reply without an action, the wire may still hold a line meant
+for an earlier request, so the next `reset` stops the solver (its whole process group) and
+starts `run.sh` again, which must print `READY` again. At most `max_restarts` restarts
+happen in a run (3 by default); after that, or after a restart that fails, every remaining
+episode aborts at once instead of costing another deadline. The instruction must say so,
+because a solver that keeps a PID file, a fixed port or a lock file has to survive being
+started twice.
 """
 
 import json
 import os
 import signal
 import subprocess
+import time
 
 try:  # py3
     import queue
@@ -92,17 +96,23 @@ class Solver(object):
     """The agent's `run.sh`, running as the agent, spoken to over stdio.
 
     Launched as `bash run.sh` with the working directory set to the submission folder
-    (`<agent home>/submission` unless `submission=` says otherwise).
+    (`<agent home>/submission` unless `submission=` says otherwise), in its own process
+    group: stopping the solver stops everything `run.sh` started, unless a process left the
+    group on purpose (`setsid`).
     """
 
-    def __init__(self, step_timeout=30.0, submission=None, entry="run.sh"):
+    def __init__(self, step_timeout=30.0, submission=None, entry="run.sh", max_restarts=3):
         self.submission = submission or os.path.join(agent_home(), "submission")
         if not os.path.isfile(os.path.join(self.submission, entry)):
             raise SolverMissing("no submission at {}/{}".format(self.submission, entry))
         self.step_timeout = float(step_timeout)
         self.entry = entry
+        self.max_restarts = int(max_restarts)
+        self.restarts = 0
+        self.proc = None
         self._broken = False   # the wire may be out of step: restart before the next episode
-        self._dead = False     # a restart failed: every later episode aborts at once
+        self._dead = False     # no more restarts: every later episode aborts at once
+        self._closed = False
         self._start()
 
     # -- process ------------------------------------------------------------- #
@@ -125,30 +135,47 @@ class Solver(object):
         # One queue per process: a late line from a killed process lands in the old queue.
         self._lines = queue.Queue()
         threading.Thread(target=self._pump, args=(self.proc, self._lines), daemon=True).start()
-        self._await_ready()
+        try:
+            self._await_ready()
+        except SolverAborted:
+            self._stop(grace=0)        # never leave a solver that did not come up running
+            raise
 
     def _restart(self):
+        if self.restarts >= self.max_restarts:
+            self._dead = True
+            raise SolverAborted(
+                "solver already restarted {} times (max_restarts); the remaining episodes "
+                "abort".format(self.restarts))
+        self.restarts += 1
         self._stop(grace=0)
         try:
             self._start()
-        except SolverAborted:
+        except (SolverAborted, OSError) as exc:
             self._dead = True
-            raise
+            raise SolverAborted("solver could not be restarted: {}".format(exc))
         self._broken = False
 
     def _stop(self, grace):
+        """Stop the solver and its whole process group; idempotent."""
+        if self.proc is None:
+            return
         try:
             self.proc.stdin.close()
-        except (IOError, OSError):
+        except (IOError, OSError, ValueError):
             pass
         try:
             self.proc.wait(timeout=grace)
         except Exception:  # noqa: BLE001 — TimeoutExpired on py3.3+, anything else is moot
-            try:
-                os.killpg(self.proc.pid, signal.SIGKILL)
-            except (OSError, ProcessLookupError):
-                self.proc.kill()
-            self.proc.wait()
+            pass
+        # Always, not only on a timeout: after a crash `run.sh` is gone but a helper it
+        # started (a model server, say) may still hold a port, GPU memory or a lock file.
+        _kill_group(self.proc.pid)
+        try:
+            self.proc.wait(timeout=10)
+        except Exception:  # noqa: BLE001
+            self.proc.kill()
+        _await_group_exit(self.proc.pid)
 
     # -- wire ---------------------------------------------------------------- #
     @staticmethod
@@ -157,18 +184,19 @@ class Solver(object):
             lines.put(line)
         lines.put(None)  # EOF
 
-    def _readline(self, timeout):
+    def _readline(self, timeout, what="step"):
         try:
             line = self._lines.get(timeout=timeout)
         except queue.Empty:
-            raise SolverAborted("solver exceeded its {}s step deadline".format(timeout))
+            raise SolverAborted("solver exceeded its {}s {} deadline".format(timeout, what))
         if line is None:
             raise SolverAborted("solver closed its stdout")
         return line
 
     def _await_ready(self):
         for _ in range(MAX_PRE_READY_LINES):
-            if self._readline(self.step_timeout * READY_TIMEOUT_FACTOR).strip() == "READY":
+            line = self._readline(self.step_timeout * READY_TIMEOUT_FACTOR, what="READY")
+            if line.strip() == "READY":
                 return
         raise SolverAborted("solver never printed READY")
 
@@ -185,7 +213,7 @@ class Solver(object):
         try:
             self.proc.stdin.write(json.dumps(message) + "\n")
             self.proc.stdin.flush()
-        except (IOError, OSError):
+        except (IOError, OSError, ValueError):
             raise SolverAborted("solver stdin closed")
         while True:
             line = self._readline(self.step_timeout).strip()
@@ -214,20 +242,29 @@ class Solver(object):
         """One action for step `t` of the current episode, from observation `obs`.
 
         The request is exactly `{"type": "act", "t": t, "obs": obs}` — no other key, ever.
-        The same `t` may be asked more than once (see `ProbeLock.probe`); the solver cannot
-        tell which of those requests the simulator will apply, and that is the point.
+        The same `t` may be asked more than once (see `ProbeLock.probe`); nothing on the
+        wire says which of those requests the simulator will apply, and that is the point.
         """
         reply = self.request({"type": "act", "t": int(t), "obs": obs})
         if "action" not in reply:
+            # Possibly a stray line answering the wrong request: resynchronise next episode.
+            self._broken = True
             raise SolverAborted("solver error: {}".format(reply.get("error", "no action")))
         return reply["action"]
 
     def close(self):
-        try:
-            self.proc.stdin.write(json.dumps({"type": "close"}) + "\n")
-            self.proc.stdin.flush()
-        except (IOError, OSError):
-            pass
+        """Ask the solver to exit, then stop its process group. Safe to call twice."""
+        if self._closed:
+            return
+        self._closed = True
+        if self.proc is None:
+            return
+        if self.proc.poll() is None:
+            try:
+                self.proc.stdin.write(json.dumps({"type": "close"}) + "\n")
+                self.proc.stdin.flush()
+            except (IOError, OSError, ValueError):
+                pass
         self._stop(grace=10)
 
     def __enter__(self):
@@ -236,6 +273,25 @@ class Solver(object):
     def __exit__(self, *_exc):
         self.close()
         return False
+
+
+def _kill_group(pgid):
+    try:
+        os.killpg(pgid, signal.SIGKILL)
+    except (OSError, ProcessLookupError):  # already gone (ESRCH), or never ours
+        pass
+
+
+def _await_group_exit(pgid, timeout=5.0):
+    """Wait (bounded) until no process is left in the group, so a restart never races a
+    dying helper for its port or lock file."""
+    deadline = time.time() + timeout
+    while time.time() < deadline:
+        try:
+            os.killpg(pgid, 0)
+        except (OSError, ProcessLookupError):
+            return
+        time.sleep(0.05)
 
 
 class ProbeLock(object):
@@ -297,10 +353,16 @@ class ProbeLock(object):
         return action_real
 
     def record(self, action_probe, action_real):
-        """Score one probe pair. Returns True if this pair showed sensitivity."""
+        """Score one probe pair. Returns True if this pair showed sensitivity.
+
+        A reply that is not a nest of numbers is a protocol error: the episode aborts.
+        """
         self.total += 1
-        a = [float(x) for x in _flatten(action_probe)]
-        b = [float(x) for x in _flatten(action_real)]
+        try:
+            a = [float(x) for x in _flatten(action_probe)]
+            b = [float(x) for x in _flatten(action_real)]
+        except (TypeError, ValueError, OverflowError):
+            raise SolverAborted("solver action is not numeric")
         moved = len(a) != len(b) or max(
             [abs(x - y) for x, y in zip(a, b)] or [0.0]
         ) > self.tolerance
@@ -327,11 +389,15 @@ class ProbeLock(object):
 
 
 def _flatten(value):
-    if isinstance(value, (list, tuple)):
-        out = []
-        for item in value:
-            out.extend(_flatten(item))
-        return out
-    if hasattr(value, "ravel"):  # numpy array, without importing numpy
-        return [float(x) for x in value.ravel().tolist()]
-    return [value]
+    """Leaves of a nested list, depth-first, without recursion: `json.loads` accepts deeper
+    nesting than the interpreter's recursion limit on some versions."""
+    out, stack = [], [value]
+    while stack:
+        item = stack.pop()
+        if isinstance(item, (list, tuple)):
+            stack.extend(reversed(item))
+        elif hasattr(item, "ravel"):  # numpy array, without importing numpy
+            out.extend(float(x) for x in item.ravel().tolist())
+        else:
+            out.append(item)
+    return out

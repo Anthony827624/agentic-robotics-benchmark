@@ -160,9 +160,10 @@ more than once with different observations in a hidden order; only the reply to 
 observation is applied. Always calculate the action from the observation in that
 request; repeated queries do not advance the simulation.
 
-If an episode aborts, the grader stops the process and starts `bash run.sh` again before
-the next episode; it must print READY again within 120 seconds. If it cannot, every
-remaining episode aborts.
+If an episode aborts, the grader stops the process (and everything it started) and runs
+`bash run.sh` again before the next episode; it must print READY again within 120 seconds.
+If it cannot, or after three such restarts, every remaining episode aborts. So `run.sh`
+has to work when started a second time: no fixed ports, PID files or locks left behind.
 
 The whole grading run has 30 minutes for all 48 episodes, about 15,000 requests, restarts
 included, so answer in well under 0.1 s per request on average. A controller that runs out

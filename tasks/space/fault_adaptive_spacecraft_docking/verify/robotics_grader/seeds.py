@@ -52,7 +52,9 @@ class _SeedStream(object):
         Use `bits=64` when the agent holds a copy of the simulator: then a 31-bit seed can
         be found by brute force from an episode's first observations.
         """
-        return self._next() & ((1 << bits) - 1)
+        if not 1 <= int(bits) <= 64:
+            raise ValueError("seed bits must be 1 to 64, got {!r}".format(bits))
+        return self._next() & ((1 << int(bits)) - 1)
 
     def seeds(self, count, bits=31):
         return [self.seed(bits) for _ in range(count)]
@@ -65,6 +67,8 @@ class _SeedStream(object):
         return low + (high - low) * self.random()
 
     def choice(self, items):
+        if not items:
+            raise IndexError("choice from an empty sequence")
         return items[self._next() % len(items)]
 
 
