@@ -1,9 +1,9 @@
 {
   "metric": "mean_docking_quality",
   "direction": "higher",
-  "value": 0.7148503788394464,
-  "full_at": 0.9,
-  "source": "Six ALE Engine oracle runs 11437ad5, 283b14f6, 87fc48bc, 9771e7b2, b3ed78e8, and c6e3b591 in run 45b5665f on 2026-10-14 UTC",
-  "reference_commit": "sha256:694e8fd98ee5771d91cacd8056cbd618f088e3bb6d0de0a11e99fdcb0923ab49",
-  "note": "The six fresh 48-episode runs measured 0.6574317033111760-0.7588138490758124 (32-37 docks), with mean 0.7148503788394464 and ratios 0.919677-1.061500 against that mean. full_at 0.90 is below the observed reference tail while retaining score resolution for weaker controllers."
+  "value": 0.7439689926883749,
+  "full_at": 0.75,
+  "source": "Mean of 40 fresh ALE Engine oracle runs (run space-v2-oracle-n40, engine 90a7c1c, 48 episodes each) on 2026-10-15, after the switch to 64-bit keyed-hash seeding",
+  "reference_commit": "4f6d24e",
+  "note": "The 40 runs measured 0.6174-0.9195 (30-45 docks of 48), mean 0.7440, standard deviation 0.0630; ratios against this anchor 0.830-1.236. With the previous full_at 0.90, 2 of 31 runs on the previous generator fell below a full reward and failed `ale validate`. full_at 0.75 clears the worst observed ratio (0.83) by about one standard deviation of the ratio (0.085)."
 }
