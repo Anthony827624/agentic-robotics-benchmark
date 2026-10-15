@@ -1,0 +1,13 @@
+spec_type: core/v1
+
+name: fault_adaptive_spacecraft_docking
+
+image: {kind: container}
+
+resources: {cpus: 2, memory_mb: 4096}
+network: {mode: block}
+timeouts: {setup: 120, agent: 10800, verify: 1800}
+artifacts: [/home/user/submission]
+
+metadata:
+  platform: space

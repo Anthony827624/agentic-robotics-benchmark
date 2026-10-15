@@ -1,0 +1,9 @@
+{
+  "metric": "mean_docking_quality",
+  "direction": "higher",
+  "value": 0.7439689926883749,
+  "full_at": 0.75,
+  "source": "Mean of 40 fresh ALE Engine oracle runs (run space-v2-oracle-n40, engine 90a7c1c, 48 episodes each) on 2026-10-15, after the switch to 64-bit keyed-hash seeding",
+  "reference_commit": "4f6d24e",
+  "note": "The 40 runs measured 0.6174-0.9195 (30-45 docks of 48), mean 0.7440, standard deviation 0.0630; ratios against this anchor 0.830-1.236. With the previous full_at 0.90, 2 of 31 runs on the previous generator fell below a full reward and failed `ale validate`. full_at 0.75 clears the worst observed ratio (0.83) by about one standard deviation of the ratio (0.085)."
+}
