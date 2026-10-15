@@ -15,6 +15,7 @@ import os
 import subprocess
 import sys
 import tempfile
+import time
 
 from . import scoring, seeds, solver as solver_mod, stage
 
@@ -46,6 +47,8 @@ def test_seeds():
 
     rng = seeds.seed_rng(entropy=99)
     check("seeds fit gymnasium's range", all(0 <= s < 2 ** 31 for s in rng.seeds(200)))
+    wide = seeds.seed_rng(entropy=99).seeds(200, bits=64)
+    check("64-bit seeds use the high bits", max(wide) >= 2 ** 62 and all(0 <= s < 2 ** 64 for s in wide))
     floats = [seeds.seed_rng(entropy=i).random() for i in range(200)]
     check("random() stays in [0, 1)", all(0.0 <= f < 1.0 for f in floats))
     lows = [seeds.seed_rng(entropy=i).uniform(-0.4, 0.4) for i in range(200)]
@@ -287,21 +290,16 @@ class _LocalSolver(solver_mod.Solver):
     """Same wire, spawned in-process instead of through `runuser`."""
 
     def __init__(self, script, step_timeout=5.0):
-        self.submission = os.path.dirname(script)
-        self.step_timeout = float(step_timeout)
-        self.proc = subprocess.Popen(
-            [sys.executable, script],
-            stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
-            universal_newlines=True, bufsize=1,
+        super(_LocalSolver, self).__init__(
+            step_timeout, submission=os.path.dirname(script), entry=os.path.basename(script)
         )
-        try:
-            import queue as _q
-        except ImportError:  # pragma: no cover
-            import Queue as _q  # type: ignore[no-redef]
-        import threading
-        self._lines = _q.Queue()
-        threading.Thread(target=self._pump, daemon=True).start()
-        self._await_ready()
+
+    def _spawn(self):
+        return subprocess.Popen(
+            [sys.executable, self.entry], cwd=self.submission,
+            stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
+            universal_newlines=True, bufsize=1, start_new_session=True,
+        )
 
 
 _ECHO_SOLVER = '''\
@@ -362,6 +360,50 @@ for line in sys.stdin:
     if req.get("type") == "reset":
         print(json.dumps({"ok": True}), flush=True); continue
     print(json.dumps({"action": [0.5, -0.5]}), flush=True)
+'''
+
+# Answers its first-ever act request late (after the test's step deadline), then behaves.
+# Without a restart, the late reply would answer the next request and every later
+# episode would read the reply meant for the request before it.
+_LATE_ONCE_SOLVER = '''\
+import json, os, sys, time
+marker = os.path.join(os.path.dirname(os.path.abspath(__file__)), "late-once")
+print("READY", flush=True)
+for line in sys.stdin:
+    req = json.loads(line.strip() or "{}")
+    if req.get("type") == "close":
+        print(json.dumps({"ok": True}), flush=True); break
+    if req.get("type") == "reset":
+        print(json.dumps({"ok": True}), flush=True); continue
+    if not os.path.exists(marker):
+        open(marker, "w").close()
+        time.sleep(1.0)
+    print(json.dumps({"action": [req["t"]]}), flush=True)
+'''
+
+# Exits on its first act request; every later launch never prints READY.
+_DIES_FOR_GOOD_SOLVER = '''\
+import json, os, sys, time
+marker = os.path.join(os.path.dirname(os.path.abspath(__file__)), "started-once")
+if os.path.exists(marker):
+    time.sleep(60)
+open(marker, "w").close()
+print("READY", flush=True)
+for line in sys.stdin:
+    req = json.loads(line.strip() or "{}")
+    if req.get("type") == "reset":
+        print(json.dumps({"ok": True}), flush=True); continue
+    raise SystemExit(4)
+'''
+
+_NESTED_SOLVER = '''\
+import json, sys
+print("READY", flush=True)
+for line in sys.stdin:
+    req = json.loads(line.strip() or "{}")
+    if req.get("type") == "reset":
+        print(json.dumps({"ok": True}), flush=True); continue
+    print("[" * 200000 + "]" * 200000, flush=True)
 '''
 
 _SILENT_SOLVER = 'import time\ntime.sleep(60)\n'
@@ -434,6 +476,49 @@ def test_solver_wire():
                 check("a stalled step aborts on its deadline", False, "no exception")
             except solver_mod.SolverAborted:
                 check("a stalled step aborts on its deadline", True)
+
+    with tempfile.TemporaryDirectory() as tmp:
+        with _LocalSolver(_write(tmp, _LATE_ONCE_SOLVER), step_timeout=0.25) as solver:
+            solver.reset()
+            try:
+                solver.act(0, [0.0])
+                check("a late reply aborts its episode", False, "no exception")
+            except solver_mod.SolverAborted:
+                check("a late reply aborts its episode", True)
+            time.sleep(1.2)                  # the late reply is now on the old wire
+            solver.reset()                   # restarts the solver first
+            check("after an aborted episode the next one gets its own replies",
+                  solver.act(5, [0.0]) == [5] and solver.act(6, [0.0]) == [6])
+
+    with tempfile.TemporaryDirectory() as tmp:
+        with _LocalSolver(_write(tmp, _DIES_FOR_GOOD_SOLVER), step_timeout=0.25) as solver:
+            solver.reset()
+            try:
+                solver.act(0, [0.0])
+                check("a solver that exits mid-episode aborts it", False, "no exception")
+            except solver_mod.SolverAborted:
+                check("a solver that exits mid-episode aborts it", True)
+            try:
+                solver.reset()
+                check("a failed restart aborts", False, "no exception")
+            except solver_mod.SolverAborted:
+                check("a failed restart aborts", True)
+            began = time.time()
+            try:
+                solver.reset()
+                check("after a failed restart later episodes abort at once", False, "no exception")
+            except solver_mod.SolverAborted:
+                check("after a failed restart later episodes abort at once",
+                      time.time() - began < 0.2, "took %.2fs" % (time.time() - began))
+
+    with tempfile.TemporaryDirectory() as tmp:
+        with _LocalSolver(_write(tmp, _NESTED_SOLVER), step_timeout=5.0) as solver:
+            solver.reset()
+            try:
+                solver.act(0, [0.0])
+                check("absurdly nested JSON aborts the episode", False, "no exception")
+            except solver_mod.SolverAborted:
+                check("absurdly nested JSON aborts the episode", True)
 
     with tempfile.TemporaryDirectory() as tmp:
         os.environ["ALE_HOME"] = tmp

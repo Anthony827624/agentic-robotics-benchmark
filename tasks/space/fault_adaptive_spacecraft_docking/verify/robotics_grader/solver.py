@@ -31,13 +31,23 @@ asks a probed step twice with the SAME `t` — once with the real observation, o
 perturbed copy, in an order the solver cannot predict — and applies only the real reply
 to the simulator. A repeated `t` is therefore an ordinary event the instruction tells the
 agent about ("a step may be queried more than once; repeated queries do not advance the
-episode; count steps by `t`, not by requests"), and a solver that wanted to answer probes
-differently has nothing to key on. The old design flagged probes with `"probe": true`,
-which let a canned policy pass the lock by reacting only to flagged requests.
+episode; count steps by `t`, not by requests"), and a solver cannot tell which of the two
+requests is the probe. The old design flagged probes with `"probe": true`, which let a
+canned policy pass the lock by reacting only to flagged requests. The lock catches a
+policy that ignores its input; it is not a proof of honesty, because a solver that notices
+a repeated `t` can vary its answer on purpose. Isolation, not the lock, keeps a score
+honest.
+
+**An aborted episode does not take the rest of the run with it.** After a timeout, a
+crash or a protocol error the wire may still hold a late reply that would answer the next
+request, so the next `reset` restarts the solver process before the next episode. A solver
+that cannot restart (no `READY` again) aborts every remaining episode at once instead of
+waiting out one `READY` deadline per episode.
 """
 
 import json
 import os
+import signal
 import subprocess
 
 try:  # py3
@@ -90,24 +100,62 @@ class Solver(object):
         if not os.path.isfile(os.path.join(self.submission, entry)):
             raise SolverMissing("no submission at {}/{}".format(self.submission, entry))
         self.step_timeout = float(step_timeout)
-        self.proc = deprivileged(
-            ["bash", entry],
+        self.entry = entry
+        self._broken = False   # the wire may be out of step: restart before the next episode
+        self._dead = False     # a restart failed: every later episode aborts at once
+        self._start()
+
+    # -- process ------------------------------------------------------------- #
+    def _spawn(self):
+        return deprivileged(
+            ["bash", self.entry],
             cwd=self.submission,
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             stderr=subprocess.DEVNULL,
             universal_newlines=True,
             bufsize=1,
+            # Its own process group, so stopping it also stops what `run.sh` started:
+            # `runuser` does not forward a kill to its child.
+            start_new_session=True,
         )
+
+    def _start(self):
+        self.proc = self._spawn()
+        # One queue per process: a late line from a killed process lands in the old queue.
         self._lines = queue.Queue()
-        threading.Thread(target=self._pump, daemon=True).start()
+        threading.Thread(target=self._pump, args=(self.proc, self._lines), daemon=True).start()
         self._await_ready()
 
+    def _restart(self):
+        self._stop(grace=0)
+        try:
+            self._start()
+        except SolverAborted:
+            self._dead = True
+            raise
+        self._broken = False
+
+    def _stop(self, grace):
+        try:
+            self.proc.stdin.close()
+        except (IOError, OSError):
+            pass
+        try:
+            self.proc.wait(timeout=grace)
+        except Exception:  # noqa: BLE001 — TimeoutExpired on py3.3+, anything else is moot
+            try:
+                os.killpg(self.proc.pid, signal.SIGKILL)
+            except (OSError, ProcessLookupError):
+                self.proc.kill()
+            self.proc.wait()
+
     # -- wire ---------------------------------------------------------------- #
-    def _pump(self):
-        for line in self.proc.stdout:
-            self._lines.put(line)
-        self._lines.put(None)  # EOF
+    @staticmethod
+    def _pump(proc, lines):
+        for line in proc.stdout:
+            lines.put(line)
+        lines.put(None)  # EOF
 
     def _readline(self, timeout):
         try:
@@ -125,6 +173,15 @@ class Solver(object):
         raise SolverAborted("solver never printed READY")
 
     def request(self, message):
+        if self._dead:
+            raise SolverAborted("solver could not be restarted after an earlier abort")
+        try:
+            return self._exchange(message)
+        except SolverAborted:
+            self._broken = True
+            raise
+
+    def _exchange(self, message):
         try:
             self.proc.stdin.write(json.dumps(message) + "\n")
             self.proc.stdin.flush()
@@ -136,7 +193,7 @@ class Solver(object):
                 continue
             try:
                 reply = json.loads(line)
-            except ValueError:
+            except (ValueError, RecursionError):  # RecursionError: absurdly nested JSON
                 raise SolverAborted(
                     "solver wrote non-JSON on the wire: {!r}".format(line[:120])
                 )
@@ -146,6 +203,11 @@ class Solver(object):
 
     # -- protocol ------------------------------------------------------------ #
     def reset(self):
+        """Start an episode. After an aborted one, this first restarts the solver."""
+        if self._dead:
+            raise SolverAborted("solver could not be restarted after an earlier abort")
+        if self._broken:
+            self._restart()
         self.request({"type": "reset"})
 
     def act(self, t, obs):
@@ -166,10 +228,7 @@ class Solver(object):
             self.proc.stdin.flush()
         except (IOError, OSError):
             pass
-        try:
-            self.proc.wait(timeout=10)
-        except Exception:  # noqa: BLE001 — TimeoutExpired on py3.3+, anything else is moot
-            self.proc.kill()
+        self._stop(grace=10)
 
     def __enter__(self):
         return self

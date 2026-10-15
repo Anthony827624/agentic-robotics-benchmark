@@ -2,15 +2,24 @@
 
 The grader owns this copy. An identical development copy is staged for the agent.
 Each episode randomizes the wiring and continuous effectiveness of six coupled
-unidirectional thrusters. Two silent in-flight bus events install independent hidden
-six-nozzle rotor orders, advance them by an action-dependent stride, and degrade two
-physical nozzles asymmetrically. A hysteretic protection relay reverses the rotor on
-each armed high command to that nozzle, while high aggregate duty advances it an extra
-slot. The second re-key also reverses the target's slew. Pose is delayed and can
-disappear in bursts; the ambiguously mounted IMU remains current.
+unidirectional thrusters. Two silent in-flight bus events each install an independent
+hidden six-nozzle rotor order, advance it by an action-dependent stride, degrade two
+physical nozzles asymmetrically and give every nozzle a hidden duty exponent. A
+hysteretic protection relay reverses the rotor on an armed high command to the more
+degraded nozzle, while high aggregate duty advances it an extra slot. The second event
+(the re-key) fires once the approach is within a hidden distance of the port, or at a
+hidden deadline; it also reverses the target's slew, remounts the IMU and starts a pose
+blackout. Pose is delayed and can disappear in bursts; the ambiguously mounted IMU
+remains current.
+
+An episode is defined by its 64-bit seed through a keyed hash (`_RNG`), so this source can
+be shared with the agent: knowing it and any number of draws reveals neither the seed nor
+the hidden draws.
 """
 
+import hashlib
 import math
+import struct
 
 __all__ = ["FaultAdaptiveDocking"]
 
@@ -42,14 +51,19 @@ def _wrap(angle):
 
 
 class _RNG(object):
-    """Small cross-version deterministic generator; an episode is seed-defined."""
+    """Deterministic per seed and opaque: each draw is a BLAKE2b block keyed by the 64-bit
+    episode seed (counter mode). The agent holds this code, so a generator whose outputs
+    reveal its state (an LCG, say) would let the observations give away the seed and with
+    it every hidden draw of the episode."""
 
     def __init__(self, seed):
-        self.state = (int(seed) ^ 0x9E3779B97F4A7C15) & _MASK
+        self._key = struct.pack("<Q", int(seed) & _MASK)
+        self._counter = 0
 
     def random(self):
-        self.state = (self.state * 6364136223846793005 + 1442695040888963407) & _MASK
-        return ((self.state >> 11) & ((1 << 53) - 1)) / float(1 << 53)
+        self._counter += 1
+        block = hashlib.blake2b(struct.pack("<Q", self._counter), key=self._key, digest_size=8)
+        return (struct.unpack("<Q", block.digest())[0] >> 11) / float(1 << 53)
 
     def uniform(self, low, high):
         return low + (high - low) * self.random()
@@ -140,8 +154,8 @@ class FaultAdaptiveDocking(object):
         self.rekey_blackout_duration = 30 + (
             (self.failure_step + self.rekey_deadline) % 13
         )
-        # Until the event fires this exposes the conservative latest time only
-        # to verifier-side diagnostics. It is never part of the observation.
+        # Until the event fires this holds the deadline. It is never part of the
+        # observation; the event blackout reads it only once the re-key is active.
         self.rekey_step = self.rekey_deadline
         self.rekey_initial_shift = self.rng.integer(1, 6)
         self.rekey_direction = -1 if self.rng.random() < 0.5 else 1

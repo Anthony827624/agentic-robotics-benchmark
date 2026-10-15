@@ -22,8 +22,7 @@ ENV UV_PYTHON_INSTALL_DIR=/opt/uv-python
 ENV UV_PROJECT_ENVIRONMENT=/opt/venv
 ENV VIRTUAL_ENV=/opt/venv
 ENV PATH=/opt/venv/bin:$PATH
-# requirements.txt is the ONE list of Python dependencies: this image and the local
-# dry-run (`_tools/dryrun.py`) both install from it.
+# requirements.txt is the ONE list of Python dependencies; this image installs it.
 COPY requirements.txt /tmp/requirements.txt
 RUN uv venv /opt/venv --python 3.12 \
     && uv pip install --python /opt/venv -r /tmp/requirements.txt \

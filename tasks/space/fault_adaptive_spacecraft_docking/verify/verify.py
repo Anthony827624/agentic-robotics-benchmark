@@ -1,5 +1,6 @@
 """Hidden grader for fault-adaptive spacecraft docking."""
 
+import math
 import os
 import sys
 
@@ -24,13 +25,13 @@ def perturbed_observation(obs, rng):
     changed = list(obs)
     changed[0] += rng.uniform(-0.28, 0.28)
     changed[1] += rng.uniform(-0.28, 0.28)
-    yaw = __import__("math").atan2(changed[3], changed[2]) + rng.uniform(-0.18, 0.18)
-    changed[2], changed[3] = __import__("math").cos(yaw), __import__("math").sin(yaw)
+    yaw = math.atan2(changed[3], changed[2]) + rng.uniform(-0.18, 0.18)
+    changed[2], changed[3] = math.cos(yaw), math.sin(yaw)
     return changed
 
 
 def run_episodes(config, rng):
-    episodes = int(config.get("episodes", 60))
+    episodes = int(config.get("episodes", 48))
     lock = ProbeLock(
         rng,
         rate=config.get("probe_rate", 0.06),
@@ -39,6 +40,7 @@ def run_episodes(config, rng):
     )
     qualities = []
     successes = collisions = aborted = 0
+    # Raises SolverMissing (no run.sh) or SolverAborted (it never comes up); main() scores both 0.
     solver = Solver(step_timeout=config.get("step_timeout_s", 30))
     try:
         for episode in range(episodes):
@@ -46,7 +48,9 @@ def run_episodes(config, rng):
             quality = 0.0
             info = {"success": False, "collision": False, "failure_reason": "not_started"}
             try:
-                obs = env.reset(rng.seed())
+                # 64-bit: the agent holds this simulator's source, so a 31-bit seed could
+                # be found by brute force from the first observations.
+                obs = env.reset(rng.seed(bits=64))
                 solver.reset()
                 for t in range(env.max_steps):
                     if lock.due():
@@ -85,7 +89,8 @@ def main():
     anchor, anchor_meta = read_anchor()
     try:
         qualities, successes, collisions, aborted, lock = run_episodes(config, rng)
-    except SolverMissing as exc:
+    except (SolverMissing, SolverAborted) as exc:
+        # A missing submission, or one that never comes up, is a real zero, not a broken task.
         write_verdict(zero_verdict(reason=str(exc), anchored=anchor is not None))
         return
 

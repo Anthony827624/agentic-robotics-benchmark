@@ -2,6 +2,7 @@
 
 import argparse
 import json
+import math
 import os
 import queue
 import random
@@ -104,7 +105,6 @@ def episode(wire, seed, rng, stats):
             changed = list(obs)
             changed[0] += rng.uniform(-0.28, 0.28)
             changed[1] += rng.uniform(-0.28, 0.28)
-            import math
             yaw = math.atan2(changed[3], changed[2]) + rng.uniform(-0.18, 0.18)
             changed[2], changed[3] = math.cos(yaw), math.sin(yaw)
             if rng.random() < 0.5:

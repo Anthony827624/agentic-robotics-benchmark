@@ -1,7 +1,5 @@
 # The task image's Python dependencies — the ONE list. image/Dockerfile installs it into
-# the py3.12 /opt/venv, and the local dry-run (`_tools/dryrun.py`, shipped beside the
-# template) installs the same file into a host venv, so the two can never drift. Pin what
-# your grader and reference implementation import; the simulator itself belongs here too
-# when it is pip-installable (otherwise install it in the Dockerfile and keep this list for
-# the rest).
+# the py3.12 /opt/venv. Pin what your grader and reference implementation import; the
+# simulator itself belongs here too when it is pip-installable (otherwise install it in
+# the Dockerfile and keep this list for the rest).
 numpy>=1.26,<3

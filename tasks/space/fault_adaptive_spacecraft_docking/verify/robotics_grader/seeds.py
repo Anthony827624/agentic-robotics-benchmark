@@ -8,38 +8,50 @@ evaluation".
 A stage script gets an integer stream from `seed_rng` and nothing else. There is no
 seed file, no environment variable carrying the seed, and no derivation from anything the
 agent could have observed.
+
+The stream must also be unpredictable from its own outputs. One grader process draws the
+episode seeds, the probe schedule and the probe perturbations from it, and the agent's
+solver sees the perturbations: at a probed step it receives the real and the perturbed
+observation, and their difference is a draw. A stream whose outputs reveal its state
+(splitmix64, any LCG or Mersenne Twister) would let a solver reconstruct it from a few
+probes and compute the next episode's seed. So every draw is a keyed BLAKE2b block: the
+key is fresh OS entropy, and past outputs say nothing about the key or about later draws.
 """
 
+import hashlib
 import os
 import struct
 
 __all__ = ["seed_rng"]
 
-_MASK = (1 << 64) - 1
-
 
 class _SeedStream(object):
-    """A small deterministic-per-instance, unpredictable-across-runs integer source.
+    """A deterministic-per-instance, unpredictable integer source.
 
-    Seeded from OS entropy, so two runs of the same task score different worlds; drawn by
-    a fixed algorithm, so one grader process can reproduce its own stream if it needs to
-    replay an episode within the run. stdlib only — a kit cannot assume numpy.
+    Keyed from OS entropy, so two runs of the same task score different worlds and no
+    output predicts another; drawn by a fixed algorithm (BLAKE2b in counter mode), so one
+    grader process can reproduce its own stream if it needs to replay an episode within
+    the run. stdlib only — a kit cannot assume numpy.
     """
 
     def __init__(self, entropy=None):
-        raw = entropy if entropy is not None else struct.unpack("<Q", os.urandom(8))[0]
-        self._state = raw & _MASK or 0x9E3779B97F4A7C15
+        if entropy is None:
+            self._key = os.urandom(32)
+        else:  # the self-test's reproducible streams
+            self._key = hashlib.blake2b(repr(int(entropy)).encode("ascii"), digest_size=32).digest()
+        self._counter = 0
 
     def _next(self):
-        # splitmix64: one multiply-xor round, good enough to hand seeds to a real RNG.
-        self._state = (self._state + 0x9E3779B97F4A7C15) & _MASK
-        z = self._state
-        z = ((z ^ (z >> 30)) * 0xBF58476D1CE4E5B9) & _MASK
-        z = ((z ^ (z >> 27)) * 0x94D049BB133111EB) & _MASK
-        return z ^ (z >> 31)
+        self._counter += 1
+        block = hashlib.blake2b(struct.pack("<Q", self._counter), key=self._key, digest_size=8)
+        return struct.unpack("<Q", block.digest())[0]
 
     def seed(self, bits=31):
-        """One seed, sized for the consumer (gymnasium wants < 2**31)."""
+        """One seed, sized for the consumer (gymnasium wants < 2**31).
+
+        Use `bits=64` when the agent holds a copy of the simulator: then a 31-bit seed can
+        be found by brute force from an episode's first observations.
+        """
         return self._next() & ((1 << bits) - 1)
 
     def seeds(self, count, bits=31):
