@@ -26,7 +26,12 @@ _MASK = (1 << 64) - 1
 
 def _lcg(state):
     """One step of a 64-bit LCG. Stdlib-only and identical on every interpreter, so an
-    episode is defined by its seed alone — which is what makes hidden seeds meaningful."""
+    episode is defined by its seed alone — which is what makes hidden seeds meaningful.
+
+    An LCG is fine HERE only because the seed decides nothing the first observation does not
+    already show (start and goal). If your simulator draws hidden parameters, an agent that
+    holds its source can recover them from an LCG's outputs: draw them from a keyed hash
+    (e.g. `hashlib.blake2b(counter, key=seed)`) and seed with 64 bits."""
     return (state * 6364136223846793005 + 1442695040888963407) & _MASK
 
 
