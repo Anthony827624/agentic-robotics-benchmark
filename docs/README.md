@@ -23,4 +23,3 @@ cover everything around it.
   The pre-ALE task form and the pre-rebrand repositories are archived on GitHub
   (`ale-robotics-benchmark-private`, tag `legacy-harness-final`; `ale-robotics-benchmark`,
   tag `legacy-v0.5-final`); nothing here revives them.
-- [`research/`](research/) — the agentic-robotics survey.

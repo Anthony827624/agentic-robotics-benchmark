@@ -102,7 +102,8 @@ and `verify/` included.
   about reproducing papers, so no replacement). The repository has no `.claude/` directory
   now; the agent-facing skills are the ones under `skills/onboard-*/`, routed by
   `skills/onboard-task/SKILL.md`. `docs/research/agentic-robotics-survey.md` pointed at
-  the old `skills/SKILL.md`; it now points at the router.
+  the old `skills/SKILL.md`; it then pointed at the router (the survey left this repository
+  on 2026-10-17).
 
 ## 4. 2026-10-12 — `drone_hover` is now `tasks/uav/uav_hover`; tasks are placed by platform
 
