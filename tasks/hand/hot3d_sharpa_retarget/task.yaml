@@ -1,0 +1,9 @@
+spec_type: core/v1
+name: hot3d_sharpa_retarget
+image: {kind: container}
+resources: {cpus: 8, memory_mb: 65536, gpus: 1}
+network: {mode: block}
+timeouts: {setup: 120, agent: 10800, verify: 2700}
+artifacts: [/home/user/submission]
+metadata:
+  platform: hand

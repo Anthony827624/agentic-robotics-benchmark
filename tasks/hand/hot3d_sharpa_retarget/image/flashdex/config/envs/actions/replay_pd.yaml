@@ -1,0 +1,16 @@
+# @package _global_
+
+# Absolute-PD replay action term: no normalized clip, no scale/offset, no LPF.
+# Selected via: --overrides envs/actions@actions=replay_pd
+# The term key stays "residual" so obs/reward lookups are unchanged.
+actions:
+  name: "residual"
+  _target_: "envs.actions.direct_pd.DirectPDActionCfg"
+
+  entity_name: ${robot.entity_name}
+  command_name: ${commands.name}
+
+  actuator_names:
+    wrist_trans: ${robot.joint_names.wrist_trans}
+    wrist_rot: ${robot.joint_names.wrist_rot}
+    finger: ${robot.joint_names.finger}

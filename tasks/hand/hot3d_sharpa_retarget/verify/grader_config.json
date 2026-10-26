@@ -1,0 +1,112 @@
+{
+  "action_dim": 56,
+  "control_dt": 0.016666666666666666,
+  "dt_tolerance": 1e-06,
+  "limit_tolerance": 1e-06,
+  "seed": 42,
+  "grace_steps": 15,
+  "threshold_ks": [
+    0.5,
+    1.0,
+    2.0
+  ],
+  "thresholds": {
+    "obj_trans": 0.03,
+    "tip_trans": 0.06,
+    "obj_rot_deg": 30.0,
+    "joint_trans": 0.08
+  },
+  "protocol": "assets/control_bounds.json",
+  "isaac_python": "/opt/isaac-venv/bin/python",
+  "replay_timeout_s": 900,
+  "scoring_cap": 1.5,
+  "clips": [
+    {
+      "clip": "P0002_016222d1_seg016",
+      "source_motion_id": 147,
+      "local_motion_id": 0,
+      "frames": 164,
+      "scene": "assets/scene_plate_bamboo/motion.pt",
+      "static_obj_trans": 0.256665
+    },
+    {
+      "clip": "P0002_016222d1_seg019",
+      "source_motion_id": 150,
+      "local_motion_id": 0,
+      "frames": 182,
+      "scene": "assets/scene_can_parmesan/motion.pt",
+      "static_obj_trans": 0.789068
+    },
+    {
+      "clip": "P0001_9b6feab7_seg003",
+      "source_motion_id": 78,
+      "local_motion_id": 0,
+      "frames": 166,
+      "scene": "assets/scene_keyboard/motion.pt",
+      "static_obj_trans": 0.30311
+    },
+    {
+      "clip": "P0002_2ea9af5b_seg013",
+      "source_motion_id": 184,
+      "local_motion_id": 0,
+      "frames": 206,
+      "scene": "assets/scene_can_tomato_sauce/motion.pt",
+      "static_obj_trans": 0.562923
+    },
+    {
+      "clip": "P0001_624f2ba9_seg009",
+      "source_motion_id": 43,
+      "local_motion_id": 0,
+      "frames": 174,
+      "scene": "assets/scene_bowl/motion.pt",
+      "static_obj_trans": 0.40834
+    },
+    {
+      "clip": "P0001_8d136980_seg005",
+      "source_motion_id": 59,
+      "local_motion_id": 0,
+      "frames": 252,
+      "scene": "assets/scene_puzzle_toy/motion.pt",
+      "static_obj_trans": 0.406801
+    },
+    {
+      "clip": "P0001_624f2ba9_seg013",
+      "source_motion_id": 47,
+      "local_motion_id": 0,
+      "frames": 310,
+      "scene": "assets/scene_food_vegetables/motion.pt",
+      "static_obj_trans": 0.333235
+    },
+    {
+      "clip": "P0002_016222d1_seg018",
+      "source_motion_id": 149,
+      "local_motion_id": 0,
+      "frames": 196,
+      "scene": "assets/scene_bottle_ranch/motion.pt",
+      "static_obj_trans": 0.684581
+    },
+    {
+      "clip": "P0009_37e30628_seg023",
+      "source_motion_id": 606,
+      "local_motion_id": 0,
+      "frames": 214,
+      "scene": "assets/scene_vase/motion.pt",
+      "static_obj_trans": 0.584111
+    }
+  ],
+  "replay_copies": 4,
+  "score_zero_at_ratio": 4.0,
+  "progress_full": 0.85,
+  "perturbation": {
+    "seed": 20261025,
+    "unperturbed_first": true,
+    "wrist_trans_m": 0.001,
+    "joint_rad": 0.005,
+    "obj_xy_m": 0.001
+  },
+  "hand_criteria": [
+    "tip_trans",
+    "joint_trans"
+  ],
+  "hand_only_credit": 0.2
+}
