@@ -1,0 +1,156 @@
+{
+ "C": {
+  "attempt": 6,
+  "bus_zero_deg": {
+   "base_yaw": 23.907,
+   "elbow_pitch": -50.292,
+   "jaw": 36.448,
+   "shoulder_pitch": 12.979,
+   "wrist_pitch": -12.284,
+   "wrist_roll": -48.701
+  },
+  "limit_shrink_deg": {
+   "base_yaw": [
+    4.66,
+    2.808
+   ],
+   "elbow_pitch": [
+    7.628,
+    4.708
+   ],
+   "jaw": [
+    4.797,
+    5.793
+   ],
+   "shoulder_pitch": [
+    3.615,
+    1.465
+   ],
+   "wrist_pitch": [
+    2.496,
+    1.895
+   ],
+   "wrist_roll": [
+    2.749,
+    7.949
+   ]
+  },
+  "profile": "asm",
+  "sign": {
+   "base_yaw": 1,
+   "elbow_pitch": 1,
+   "jaw": 1,
+   "shoulder_pitch": 1,
+   "wrist_pitch": -1,
+   "wrist_roll": 1
+  }
+ },
+ "G": {
+  "attempt": 57,
+  "colour": "signal_orange",
+  "f_part": {
+   "P01": 0.97022,
+   "P02": 1.01985,
+   "P03": 0.97889,
+   "P04": 0.95341,
+   "P05": 1.01806,
+   "P06": 1.03538,
+   "P07": 1.04862,
+   "P08": 0.96614,
+   "P09": 1.00705,
+   "P10": 1.00992
+  },
+  "features": [
+   {
+    "kind": "F-window",
+    "length": 15.173,
+    "orient": 1,
+    "part": "P05",
+    "u": 0.7274,
+    "v": 0.7648,
+    "width": 5.657
+   },
+   {
+    "kind": "F-window",
+    "length": 17.97,
+    "orient": 1,
+    "part": "P05",
+    "u": 0.4543,
+    "v": 0.6481,
+    "width": 5.492
+   },
+   {
+    "kind": "F-window",
+    "length": 15.143,
+    "orient": 0,
+    "part": "P06",
+    "u": 0.2483,
+    "v": 0.703,
+    "width": 7.13
+   },
+   {
+    "kind": "F-window",
+    "length": 26.657,
+    "orient": 0,
+    "part": "P06",
+    "u": 0.4301,
+    "v": 0.4731,
+    "width": 6.505
+   },
+   {
+    "kind": "F-slot",
+    "length": 6.457,
+    "orient": 1,
+    "part": "P02",
+    "u": 0.2656,
+    "v": 0.8316,
+    "width": 3.294
+   },
+   {
+    "kind": "F-slot",
+    "length": 8.906,
+    "orient": 0,
+    "part": "P07",
+    "u": 0.6861,
+    "v": 0.7171,
+    "width": 4.79
+   }
+  ],
+  "print_yaw_deg": {
+   "P01": 149.815,
+   "P02": 26.989,
+   "P03": 86.343,
+   "P04": 315.554,
+   "P05": 108.588,
+   "P06": 294.318,
+   "P07": 334.155,
+   "P08": 84.728,
+   "P09": 323.909,
+   "P10": 47.057
+  },
+  "profile": "asm",
+  "rho_inst": 432.283,
+  "sites": {
+   "S-base": 6.024,
+   "S-finger": -3.784,
+   "S-fore": 14.57,
+   "S-offset": 0.0,
+   "S-shoulder": 7.295,
+   "S-upper": 8.17,
+   "S-wrist": 7.663
+  },
+  "spacers": {
+   "S3": 2.866,
+   "S4": 0.0
+  }
+ },
+ "U": {
+  "profile": "none"
+ },
+ "family": "arm_family_v1",
+ "generator": "gt-arm/1.1.0",
+ "id": "H_asm2",
+ "role": "hidden",
+ "seed": 248912646590491,
+ "task": "asm"
+}

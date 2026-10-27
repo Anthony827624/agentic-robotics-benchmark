@@ -1,0 +1,2078 @@
+{
+  "handoff_version": "arm-chain-handoff/1.0.0",
+  "adapter": "A2-info (information-tier GT arm; bus-zero design, slide-in analysis at the public calibrated zero)",
+  "cell_version": "arm-assembly-cell-six/1.0.0",
+  "units": {
+    "length": "mm",
+    "angle": "rad",
+    "mass": "kg"
+  },
+  "source": {
+    "design_digest": {
+      "parts/base.stl": "b4a0bc1e2c665357d5824fd401830c8d2ecdf7f898994408cc8a7d2b1d65d6f7",
+      "parts/base_clamp.stl": "1628220094290fb2d20c70de7c71eaf3363a419f9e95cf4befc294155efd0f5c",
+      "parts/shoulder.stl": "748a4594b5c7e87f45c146cdebc623ac70fd9cd0e1a3d456e4ccac55e5e18fd9",
+      "parts/shoulder_clamp.stl": "a1dab6cf0ac273537158fe26cd2a0b63a3842288885edcd4f654f16605c25fcd",
+      "parts/upper_arm.stl": "e23efa7998525e20d1a90362cba8779184045b74f53873a2e438e24286e38ff5",
+      "parts/forearm.stl": "9a8cff8e8b581a1ee449f467ed718fd547ff70c44bbd19c48fd557168b980fb7",
+      "parts/wrist_clamp.stl": "80941b6c98690105c83d590c394eb37f4e31fc60db229a267c44249d0e89b2d2",
+      "parts/wrist.stl": "6d1f920850d092d696f6f198312ca6423f9c62c3c8817cce9be0ddbe23c303a1",
+      "parts/gripper.stl": "7f27cba195531758f81c5ec3748e9c3d034af48a13f16fef528cb779d1b77b28",
+      "parts/jaw.stl": "105754488b96e7d4912abb65022bd338473d03130e24b46c8d56fa0b7ec15dc2"
+    },
+    "assembly_json_sha256": "bef06f2c809b381951e037c1fa4758365b044909ef60cc858215dea882f8bad9",
+    "servo_model_sha256": "2c76b9a0a161c7e91c13f362c25547ecd79a27d086700dd22f136c698fe81448"
+  },
+  "tessellation": {
+    "note": "the design's part meshes are used as delivered (CAD export); no re-tessellation"
+  },
+  "collision": {
+    "method": "coacd",
+    "max_pieces_per_part": 96,
+    "threshold": 0.01,
+    "servo_model": "one box per servo (the case incl. bottom cover), horn and rear boss visual-only",
+    "links_shrink_mm": 0.0
+  },
+  "parts": [
+    {
+      "name": "base",
+      "kind": "printed",
+      "part_file": "parts/base.stl",
+      "mesh_visual": "meshes/visual/base.stl",
+      "mesh_collision": [
+        "meshes/collision/base_00.stl",
+        "meshes/collision/base_01.stl",
+        "meshes/collision/base_02.stl",
+        "meshes/collision/base_03.stl",
+        "meshes/collision/base_04.stl",
+        "meshes/collision/base_05.stl",
+        "meshes/collision/base_06.stl",
+        "meshes/collision/base_07.stl",
+        "meshes/collision/base_08.stl",
+        "meshes/collision/base_09.stl",
+        "meshes/collision/base_10.stl",
+        "meshes/collision/base_11.stl",
+        "meshes/collision/base_12.stl",
+        "meshes/collision/base_13.stl",
+        "meshes/collision/base_14.stl",
+        "meshes/collision/base_15.stl",
+        "meshes/collision/base_16.stl",
+        "meshes/collision/base_17.stl",
+        "meshes/collision/base_18.stl",
+        "meshes/collision/base_19.stl",
+        "meshes/collision/base_20.stl",
+        "meshes/collision/base_21.stl",
+        "meshes/collision/base_22.stl",
+        "meshes/collision/base_23.stl",
+        "meshes/collision/base_24.stl",
+        "meshes/collision/base_25.stl",
+        "meshes/collision/base_26.stl",
+        "meshes/collision/base_27.stl",
+        "meshes/collision/base_28.stl",
+        "meshes/collision/base_29.stl",
+        "meshes/collision/base_30.stl",
+        "meshes/collision/base_31.stl",
+        "meshes/collision/base_32.stl",
+        "meshes/collision/base_33.stl",
+        "meshes/collision/base_34.stl",
+        "meshes/collision/base_35.stl",
+        "meshes/collision/base_36.stl",
+        "meshes/collision/base_37.stl",
+        "meshes/collision/base_38.stl",
+        "meshes/collision/base_39.stl",
+        "meshes/collision/base_40.stl",
+        "meshes/collision/base_41.stl",
+        "meshes/collision/base_42.stl",
+        "meshes/collision/base_43.stl",
+        "meshes/collision/base_44.stl",
+        "meshes/collision/base_45.stl",
+        "meshes/collision/base_46.stl",
+        "meshes/collision/base_47.stl",
+        "meshes/collision/base_48.stl",
+        "meshes/collision/base_49.stl",
+        "meshes/collision/base_50.stl",
+        "meshes/collision/base_51.stl",
+        "meshes/collision/base_52.stl",
+        "meshes/collision/base_53.stl",
+        "meshes/collision/base_54.stl",
+        "meshes/collision/base_55.stl",
+        "meshes/collision/base_56.stl",
+        "meshes/collision/base_57.stl",
+        "meshes/collision/base_58.stl",
+        "meshes/collision/base_59.stl",
+        "meshes/collision/base_60.stl",
+        "meshes/collision/base_61.stl",
+        "meshes/collision/base_62.stl",
+        "meshes/collision/base_63.stl",
+        "meshes/collision/base_64.stl",
+        "meshes/collision/base_65.stl",
+        "meshes/collision/base_66.stl",
+        "meshes/collision/base_67.stl",
+        "meshes/collision/base_68.stl",
+        "meshes/collision/base_69.stl",
+        "meshes/collision/base_70.stl",
+        "meshes/collision/base_71.stl",
+        "meshes/collision/base_72.stl",
+        "meshes/collision/base_73.stl",
+        "meshes/collision/base_74.stl",
+        "meshes/collision/base_75.stl",
+        "meshes/collision/base_76.stl",
+        "meshes/collision/base_77.stl",
+        "meshes/collision/base_78.stl",
+        "meshes/collision/base_79.stl",
+        "meshes/collision/base_80.stl",
+        "meshes/collision/base_81.stl",
+        "meshes/collision/base_82.stl",
+        "meshes/collision/base_83.stl",
+        "meshes/collision/base_84.stl",
+        "meshes/collision/base_85.stl",
+        "meshes/collision/base_86.stl",
+        "meshes/collision/base_87.stl",
+        "meshes/collision/base_88.stl",
+        "meshes/collision/base_89.stl",
+        "meshes/collision/base_90.stl",
+        "meshes/collision/base_91.stl",
+        "meshes/collision/base_92.stl",
+        "meshes/collision/base_93.stl",
+        "meshes/collision/base_94.stl",
+        "meshes/collision/base_95.stl"
+      ],
+      "mass_kg": 0.06503917,
+      "com_mm": [
+        0.00699,
+        -28.97739,
+        22.709304
+      ],
+      "inertia_kg_mm2": [
+        [
+          60.469011753,
+          0.012658437,
+          -0.003650959
+        ],
+        [
+          0.012658437,
+          75.437059586,
+          9.643206012
+        ],
+        [
+          -0.003650959,
+          9.643206012,
+          81.040198448
+        ]
+      ],
+      "bbox_mm": [
+        [
+          -55.462502,
+          -61.200008,
+          0.0
+        ],
+        [
+          55.462502,
+          25.79999,
+          78.024002
+        ]
+      ],
+      "volume_mm3": 155073.209687,
+      "material": {
+        "id": "PLA",
+        "density_kg_m3": "T14 (outer-shell volume x rho_inst x f_part)",
+        "colour": "signal_orange"
+      },
+      "servo_occurrences": [
+        "S1"
+      ],
+      "link": "base"
+    },
+    {
+      "name": "base_clamp",
+      "kind": "printed",
+      "part_file": "parts/base_clamp.stl",
+      "mesh_visual": "meshes/visual/base_clamp.stl",
+      "mesh_collision": [
+        "meshes/collision/base_clamp_00.stl",
+        "meshes/collision/base_clamp_01.stl",
+        "meshes/collision/base_clamp_02.stl",
+        "meshes/collision/base_clamp_03.stl",
+        "meshes/collision/base_clamp_04.stl",
+        "meshes/collision/base_clamp_05.stl",
+        "meshes/collision/base_clamp_06.stl",
+        "meshes/collision/base_clamp_07.stl",
+        "meshes/collision/base_clamp_08.stl",
+        "meshes/collision/base_clamp_09.stl",
+        "meshes/collision/base_clamp_10.stl",
+        "meshes/collision/base_clamp_11.stl",
+        "meshes/collision/base_clamp_12.stl",
+        "meshes/collision/base_clamp_13.stl",
+        "meshes/collision/base_clamp_14.stl",
+        "meshes/collision/base_clamp_15.stl",
+        "meshes/collision/base_clamp_16.stl",
+        "meshes/collision/base_clamp_17.stl",
+        "meshes/collision/base_clamp_18.stl",
+        "meshes/collision/base_clamp_19.stl",
+        "meshes/collision/base_clamp_20.stl",
+        "meshes/collision/base_clamp_21.stl",
+        "meshes/collision/base_clamp_22.stl",
+        "meshes/collision/base_clamp_23.stl",
+        "meshes/collision/base_clamp_24.stl",
+        "meshes/collision/base_clamp_25.stl",
+        "meshes/collision/base_clamp_26.stl",
+        "meshes/collision/base_clamp_27.stl",
+        "meshes/collision/base_clamp_28.stl",
+        "meshes/collision/base_clamp_29.stl",
+        "meshes/collision/base_clamp_30.stl",
+        "meshes/collision/base_clamp_31.stl",
+        "meshes/collision/base_clamp_32.stl",
+        "meshes/collision/base_clamp_33.stl",
+        "meshes/collision/base_clamp_34.stl",
+        "meshes/collision/base_clamp_35.stl",
+        "meshes/collision/base_clamp_36.stl",
+        "meshes/collision/base_clamp_37.stl",
+        "meshes/collision/base_clamp_38.stl",
+        "meshes/collision/base_clamp_39.stl",
+        "meshes/collision/base_clamp_40.stl",
+        "meshes/collision/base_clamp_41.stl",
+        "meshes/collision/base_clamp_42.stl",
+        "meshes/collision/base_clamp_43.stl",
+        "meshes/collision/base_clamp_44.stl",
+        "meshes/collision/base_clamp_45.stl",
+        "meshes/collision/base_clamp_46.stl",
+        "meshes/collision/base_clamp_47.stl",
+        "meshes/collision/base_clamp_48.stl",
+        "meshes/collision/base_clamp_49.stl",
+        "meshes/collision/base_clamp_50.stl",
+        "meshes/collision/base_clamp_51.stl",
+        "meshes/collision/base_clamp_52.stl",
+        "meshes/collision/base_clamp_53.stl",
+        "meshes/collision/base_clamp_54.stl",
+        "meshes/collision/base_clamp_55.stl",
+        "meshes/collision/base_clamp_56.stl",
+        "meshes/collision/base_clamp_57.stl",
+        "meshes/collision/base_clamp_58.stl",
+        "meshes/collision/base_clamp_59.stl",
+        "meshes/collision/base_clamp_60.stl",
+        "meshes/collision/base_clamp_61.stl",
+        "meshes/collision/base_clamp_62.stl",
+        "meshes/collision/base_clamp_63.stl",
+        "meshes/collision/base_clamp_64.stl",
+        "meshes/collision/base_clamp_65.stl",
+        "meshes/collision/base_clamp_66.stl",
+        "meshes/collision/base_clamp_67.stl",
+        "meshes/collision/base_clamp_68.stl",
+        "meshes/collision/base_clamp_69.stl",
+        "meshes/collision/base_clamp_70.stl",
+        "meshes/collision/base_clamp_71.stl",
+        "meshes/collision/base_clamp_72.stl",
+        "meshes/collision/base_clamp_73.stl",
+        "meshes/collision/base_clamp_74.stl",
+        "meshes/collision/base_clamp_75.stl",
+        "meshes/collision/base_clamp_76.stl",
+        "meshes/collision/base_clamp_77.stl",
+        "meshes/collision/base_clamp_78.stl",
+        "meshes/collision/base_clamp_79.stl",
+        "meshes/collision/base_clamp_80.stl",
+        "meshes/collision/base_clamp_81.stl",
+        "meshes/collision/base_clamp_82.stl",
+        "meshes/collision/base_clamp_83.stl",
+        "meshes/collision/base_clamp_84.stl",
+        "meshes/collision/base_clamp_85.stl",
+        "meshes/collision/base_clamp_86.stl",
+        "meshes/collision/base_clamp_87.stl",
+        "meshes/collision/base_clamp_88.stl",
+        "meshes/collision/base_clamp_89.stl",
+        "meshes/collision/base_clamp_90.stl",
+        "meshes/collision/base_clamp_91.stl",
+        "meshes/collision/base_clamp_92.stl",
+        "meshes/collision/base_clamp_93.stl",
+        "meshes/collision/base_clamp_94.stl",
+        "meshes/collision/base_clamp_95.stl"
+      ],
+      "mass_kg": 0.010410128,
+      "com_mm": [
+        0.257858,
+        -32.540207,
+        57.501739
+      ],
+      "inertia_kg_mm2": [
+        [
+          7.877417528,
+          0.206593716,
+          0.014010356
+        ],
+        [
+          0.206593716,
+          3.689730931,
+          0.788374706
+        ],
+        [
+          0.014010356,
+          0.788374706,
+          10.085028918
+        ]
+      ],
+      "bbox_mm": [
+        [
+          -25.197975,
+          -66.000008,
+          44.124001
+        ],
+        [
+          22.449432,
+          14.19999,
+          75.524002
+        ]
+      ],
+      "volume_mm3": 23611.413306,
+      "material": {
+        "id": "PLA",
+        "density_kg_m3": "T14 (outer-shell volume x rho_inst x f_part)",
+        "colour": "signal_orange"
+      },
+      "role": "bracket",
+      "attached_to": "base",
+      "designed_pose_in_link": {
+        "xyz": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "rpy": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "name": "shoulder",
+      "kind": "printed",
+      "part_file": "parts/shoulder.stl",
+      "mesh_visual": "meshes/visual/shoulder.stl",
+      "mesh_collision": [
+        "meshes/collision/shoulder_00.stl",
+        "meshes/collision/shoulder_01.stl",
+        "meshes/collision/shoulder_02.stl",
+        "meshes/collision/shoulder_03.stl",
+        "meshes/collision/shoulder_04.stl",
+        "meshes/collision/shoulder_05.stl",
+        "meshes/collision/shoulder_06.stl",
+        "meshes/collision/shoulder_07.stl",
+        "meshes/collision/shoulder_08.stl",
+        "meshes/collision/shoulder_09.stl",
+        "meshes/collision/shoulder_10.stl",
+        "meshes/collision/shoulder_11.stl",
+        "meshes/collision/shoulder_12.stl",
+        "meshes/collision/shoulder_13.stl",
+        "meshes/collision/shoulder_14.stl",
+        "meshes/collision/shoulder_15.stl",
+        "meshes/collision/shoulder_16.stl",
+        "meshes/collision/shoulder_17.stl",
+        "meshes/collision/shoulder_18.stl",
+        "meshes/collision/shoulder_19.stl",
+        "meshes/collision/shoulder_20.stl",
+        "meshes/collision/shoulder_21.stl",
+        "meshes/collision/shoulder_22.stl",
+        "meshes/collision/shoulder_23.stl",
+        "meshes/collision/shoulder_24.stl",
+        "meshes/collision/shoulder_25.stl",
+        "meshes/collision/shoulder_26.stl",
+        "meshes/collision/shoulder_27.stl",
+        "meshes/collision/shoulder_28.stl",
+        "meshes/collision/shoulder_29.stl",
+        "meshes/collision/shoulder_30.stl",
+        "meshes/collision/shoulder_31.stl",
+        "meshes/collision/shoulder_32.stl",
+        "meshes/collision/shoulder_33.stl",
+        "meshes/collision/shoulder_34.stl",
+        "meshes/collision/shoulder_35.stl",
+        "meshes/collision/shoulder_36.stl",
+        "meshes/collision/shoulder_37.stl",
+        "meshes/collision/shoulder_38.stl",
+        "meshes/collision/shoulder_39.stl",
+        "meshes/collision/shoulder_40.stl",
+        "meshes/collision/shoulder_41.stl",
+        "meshes/collision/shoulder_42.stl",
+        "meshes/collision/shoulder_43.stl",
+        "meshes/collision/shoulder_44.stl",
+        "meshes/collision/shoulder_45.stl",
+        "meshes/collision/shoulder_46.stl",
+        "meshes/collision/shoulder_47.stl",
+        "meshes/collision/shoulder_48.stl",
+        "meshes/collision/shoulder_49.stl",
+        "meshes/collision/shoulder_50.stl",
+        "meshes/collision/shoulder_51.stl",
+        "meshes/collision/shoulder_52.stl",
+        "meshes/collision/shoulder_53.stl",
+        "meshes/collision/shoulder_54.stl",
+        "meshes/collision/shoulder_55.stl",
+        "meshes/collision/shoulder_56.stl",
+        "meshes/collision/shoulder_57.stl",
+        "meshes/collision/shoulder_58.stl",
+        "meshes/collision/shoulder_59.stl",
+        "meshes/collision/shoulder_60.stl",
+        "meshes/collision/shoulder_61.stl",
+        "meshes/collision/shoulder_62.stl",
+        "meshes/collision/shoulder_63.stl",
+        "meshes/collision/shoulder_64.stl",
+        "meshes/collision/shoulder_65.stl",
+        "meshes/collision/shoulder_66.stl",
+        "meshes/collision/shoulder_67.stl",
+        "meshes/collision/shoulder_68.stl",
+        "meshes/collision/shoulder_69.stl",
+        "meshes/collision/shoulder_70.stl",
+        "meshes/collision/shoulder_71.stl",
+        "meshes/collision/shoulder_72.stl",
+        "meshes/collision/shoulder_73.stl",
+        "meshes/collision/shoulder_74.stl",
+        "meshes/collision/shoulder_75.stl",
+        "meshes/collision/shoulder_76.stl",
+        "meshes/collision/shoulder_77.stl",
+        "meshes/collision/shoulder_78.stl",
+        "meshes/collision/shoulder_79.stl",
+        "meshes/collision/shoulder_80.stl",
+        "meshes/collision/shoulder_81.stl",
+        "meshes/collision/shoulder_82.stl",
+        "meshes/collision/shoulder_83.stl",
+        "meshes/collision/shoulder_84.stl",
+        "meshes/collision/shoulder_85.stl",
+        "meshes/collision/shoulder_86.stl",
+        "meshes/collision/shoulder_87.stl",
+        "meshes/collision/shoulder_88.stl",
+        "meshes/collision/shoulder_89.stl",
+        "meshes/collision/shoulder_90.stl",
+        "meshes/collision/shoulder_91.stl",
+        "meshes/collision/shoulder_92.stl",
+        "meshes/collision/shoulder_93.stl",
+        "meshes/collision/shoulder_94.stl",
+        "meshes/collision/shoulder_95.stl"
+      ],
+      "mass_kg": 0.032640592,
+      "com_mm": [
+        0.123974,
+        31.426328,
+        -3.548263
+      ],
+      "inertia_kg_mm2": [
+        [
+          25.409095844,
+          -0.001198691,
+          -0.163824815
+        ],
+        [
+          -0.001198691,
+          23.454924592,
+          -2.377106049
+        ],
+        [
+          -0.163824815,
+          -2.377106049,
+          9.441104085
+        ]
+      ],
+      "bbox_mm": [
+        [
+          -23.022242,
+          -12.2008,
+          -46.200001
+        ],
+        [
+          22.977758,
+          47.599201,
+          45.294998
+        ]
+      ],
+      "volume_mm3": 77073.684669,
+      "material": {
+        "id": "PLA",
+        "density_kg_m3": "T14 (outer-shell volume x rho_inst x f_part)",
+        "colour": "signal_orange"
+      },
+      "servo_occurrences": [
+        "S2"
+      ],
+      "link": "shoulder"
+    },
+    {
+      "name": "shoulder_clamp",
+      "kind": "printed",
+      "part_file": "parts/shoulder_clamp.stl",
+      "mesh_visual": "meshes/visual/shoulder_clamp.stl",
+      "mesh_collision": [
+        "meshes/collision/shoulder_clamp_00.stl",
+        "meshes/collision/shoulder_clamp_01.stl",
+        "meshes/collision/shoulder_clamp_02.stl",
+        "meshes/collision/shoulder_clamp_03.stl",
+        "meshes/collision/shoulder_clamp_04.stl",
+        "meshes/collision/shoulder_clamp_05.stl",
+        "meshes/collision/shoulder_clamp_06.stl",
+        "meshes/collision/shoulder_clamp_07.stl",
+        "meshes/collision/shoulder_clamp_08.stl",
+        "meshes/collision/shoulder_clamp_09.stl",
+        "meshes/collision/shoulder_clamp_10.stl",
+        "meshes/collision/shoulder_clamp_11.stl",
+        "meshes/collision/shoulder_clamp_12.stl",
+        "meshes/collision/shoulder_clamp_13.stl",
+        "meshes/collision/shoulder_clamp_14.stl",
+        "meshes/collision/shoulder_clamp_15.stl",
+        "meshes/collision/shoulder_clamp_16.stl",
+        "meshes/collision/shoulder_clamp_17.stl",
+        "meshes/collision/shoulder_clamp_18.stl",
+        "meshes/collision/shoulder_clamp_19.stl",
+        "meshes/collision/shoulder_clamp_20.stl",
+        "meshes/collision/shoulder_clamp_21.stl",
+        "meshes/collision/shoulder_clamp_22.stl",
+        "meshes/collision/shoulder_clamp_23.stl",
+        "meshes/collision/shoulder_clamp_24.stl",
+        "meshes/collision/shoulder_clamp_25.stl",
+        "meshes/collision/shoulder_clamp_26.stl",
+        "meshes/collision/shoulder_clamp_27.stl",
+        "meshes/collision/shoulder_clamp_28.stl",
+        "meshes/collision/shoulder_clamp_29.stl",
+        "meshes/collision/shoulder_clamp_30.stl",
+        "meshes/collision/shoulder_clamp_31.stl",
+        "meshes/collision/shoulder_clamp_32.stl",
+        "meshes/collision/shoulder_clamp_33.stl",
+        "meshes/collision/shoulder_clamp_34.stl",
+        "meshes/collision/shoulder_clamp_35.stl",
+        "meshes/collision/shoulder_clamp_36.stl",
+        "meshes/collision/shoulder_clamp_37.stl",
+        "meshes/collision/shoulder_clamp_38.stl",
+        "meshes/collision/shoulder_clamp_39.stl",
+        "meshes/collision/shoulder_clamp_40.stl",
+        "meshes/collision/shoulder_clamp_41.stl",
+        "meshes/collision/shoulder_clamp_42.stl",
+        "meshes/collision/shoulder_clamp_43.stl",
+        "meshes/collision/shoulder_clamp_44.stl",
+        "meshes/collision/shoulder_clamp_45.stl",
+        "meshes/collision/shoulder_clamp_46.stl",
+        "meshes/collision/shoulder_clamp_47.stl",
+        "meshes/collision/shoulder_clamp_48.stl",
+        "meshes/collision/shoulder_clamp_49.stl",
+        "meshes/collision/shoulder_clamp_50.stl",
+        "meshes/collision/shoulder_clamp_51.stl",
+        "meshes/collision/shoulder_clamp_52.stl",
+        "meshes/collision/shoulder_clamp_53.stl",
+        "meshes/collision/shoulder_clamp_54.stl",
+        "meshes/collision/shoulder_clamp_55.stl",
+        "meshes/collision/shoulder_clamp_56.stl",
+        "meshes/collision/shoulder_clamp_57.stl",
+        "meshes/collision/shoulder_clamp_58.stl",
+        "meshes/collision/shoulder_clamp_59.stl",
+        "meshes/collision/shoulder_clamp_60.stl",
+        "meshes/collision/shoulder_clamp_61.stl",
+        "meshes/collision/shoulder_clamp_62.stl",
+        "meshes/collision/shoulder_clamp_63.stl",
+        "meshes/collision/shoulder_clamp_64.stl",
+        "meshes/collision/shoulder_clamp_65.stl",
+        "meshes/collision/shoulder_clamp_66.stl",
+        "meshes/collision/shoulder_clamp_67.stl",
+        "meshes/collision/shoulder_clamp_68.stl",
+        "meshes/collision/shoulder_clamp_69.stl",
+        "meshes/collision/shoulder_clamp_70.stl",
+        "meshes/collision/shoulder_clamp_71.stl",
+        "meshes/collision/shoulder_clamp_72.stl",
+        "meshes/collision/shoulder_clamp_73.stl",
+        "meshes/collision/shoulder_clamp_74.stl",
+        "meshes/collision/shoulder_clamp_75.stl",
+        "meshes/collision/shoulder_clamp_76.stl",
+        "meshes/collision/shoulder_clamp_77.stl",
+        "meshes/collision/shoulder_clamp_78.stl",
+        "meshes/collision/shoulder_clamp_79.stl",
+        "meshes/collision/shoulder_clamp_80.stl",
+        "meshes/collision/shoulder_clamp_81.stl",
+        "meshes/collision/shoulder_clamp_82.stl",
+        "meshes/collision/shoulder_clamp_83.stl",
+        "meshes/collision/shoulder_clamp_84.stl",
+        "meshes/collision/shoulder_clamp_85.stl",
+        "meshes/collision/shoulder_clamp_86.stl",
+        "meshes/collision/shoulder_clamp_87.stl",
+        "meshes/collision/shoulder_clamp_88.stl",
+        "meshes/collision/shoulder_clamp_89.stl",
+        "meshes/collision/shoulder_clamp_90.stl",
+        "meshes/collision/shoulder_clamp_91.stl",
+        "meshes/collision/shoulder_clamp_92.stl",
+        "meshes/collision/shoulder_clamp_93.stl",
+        "meshes/collision/shoulder_clamp_94.stl",
+        "meshes/collision/shoulder_clamp_95.stl"
+      ],
+      "mass_kg": 0.006994281,
+      "com_mm": [
+        1.141202,
+        31.624871,
+        27.480398
+      ],
+      "inertia_kg_mm2": [
+        [
+          1.99082023,
+          0.061335241,
+          0.004479272
+        ],
+        [
+          0.061335241,
+          3.16121295,
+          0.011497947
+        ],
+        [
+          0.004479272,
+          0.011497947,
+          3.707432335
+        ]
+      ],
+      "bbox_mm": [
+        [
+          -28.702684,
+          12.502144,
+          10.000008
+        ],
+        [
+          26.37776,
+          50.599201,
+          45.295006
+        ]
+      ],
+      "volume_mm3": 16965.219811,
+      "material": {
+        "id": "PLA",
+        "density_kg_m3": "T14 (outer-shell volume x rho_inst x f_part)",
+        "colour": "signal_orange"
+      },
+      "role": "bracket",
+      "attached_to": "shoulder",
+      "designed_pose_in_link": {
+        "xyz": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "rpy": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "name": "upper_arm",
+      "kind": "printed",
+      "part_file": "parts/upper_arm.stl",
+      "mesh_visual": "meshes/visual/upper_arm.stl",
+      "mesh_collision": [
+        "meshes/collision/upper_arm_00.stl",
+        "meshes/collision/upper_arm_01.stl",
+        "meshes/collision/upper_arm_02.stl",
+        "meshes/collision/upper_arm_03.stl",
+        "meshes/collision/upper_arm_04.stl",
+        "meshes/collision/upper_arm_05.stl",
+        "meshes/collision/upper_arm_06.stl",
+        "meshes/collision/upper_arm_07.stl",
+        "meshes/collision/upper_arm_08.stl",
+        "meshes/collision/upper_arm_09.stl",
+        "meshes/collision/upper_arm_10.stl",
+        "meshes/collision/upper_arm_11.stl",
+        "meshes/collision/upper_arm_12.stl",
+        "meshes/collision/upper_arm_13.stl",
+        "meshes/collision/upper_arm_14.stl",
+        "meshes/collision/upper_arm_15.stl",
+        "meshes/collision/upper_arm_16.stl",
+        "meshes/collision/upper_arm_17.stl",
+        "meshes/collision/upper_arm_18.stl",
+        "meshes/collision/upper_arm_19.stl",
+        "meshes/collision/upper_arm_20.stl",
+        "meshes/collision/upper_arm_21.stl",
+        "meshes/collision/upper_arm_22.stl",
+        "meshes/collision/upper_arm_23.stl",
+        "meshes/collision/upper_arm_24.stl",
+        "meshes/collision/upper_arm_25.stl",
+        "meshes/collision/upper_arm_26.stl",
+        "meshes/collision/upper_arm_27.stl",
+        "meshes/collision/upper_arm_28.stl",
+        "meshes/collision/upper_arm_29.stl",
+        "meshes/collision/upper_arm_30.stl",
+        "meshes/collision/upper_arm_31.stl",
+        "meshes/collision/upper_arm_32.stl",
+        "meshes/collision/upper_arm_33.stl",
+        "meshes/collision/upper_arm_34.stl",
+        "meshes/collision/upper_arm_35.stl",
+        "meshes/collision/upper_arm_36.stl",
+        "meshes/collision/upper_arm_37.stl",
+        "meshes/collision/upper_arm_38.stl",
+        "meshes/collision/upper_arm_39.stl",
+        "meshes/collision/upper_arm_40.stl",
+        "meshes/collision/upper_arm_41.stl",
+        "meshes/collision/upper_arm_42.stl",
+        "meshes/collision/upper_arm_43.stl",
+        "meshes/collision/upper_arm_44.stl",
+        "meshes/collision/upper_arm_45.stl",
+        "meshes/collision/upper_arm_46.stl",
+        "meshes/collision/upper_arm_47.stl",
+        "meshes/collision/upper_arm_48.stl",
+        "meshes/collision/upper_arm_49.stl",
+        "meshes/collision/upper_arm_50.stl",
+        "meshes/collision/upper_arm_51.stl",
+        "meshes/collision/upper_arm_52.stl",
+        "meshes/collision/upper_arm_53.stl",
+        "meshes/collision/upper_arm_54.stl",
+        "meshes/collision/upper_arm_55.stl",
+        "meshes/collision/upper_arm_56.stl",
+        "meshes/collision/upper_arm_57.stl",
+        "meshes/collision/upper_arm_58.stl",
+        "meshes/collision/upper_arm_59.stl",
+        "meshes/collision/upper_arm_60.stl",
+        "meshes/collision/upper_arm_61.stl",
+        "meshes/collision/upper_arm_62.stl",
+        "meshes/collision/upper_arm_63.stl",
+        "meshes/collision/upper_arm_64.stl",
+        "meshes/collision/upper_arm_65.stl",
+        "meshes/collision/upper_arm_66.stl",
+        "meshes/collision/upper_arm_67.stl",
+        "meshes/collision/upper_arm_68.stl",
+        "meshes/collision/upper_arm_69.stl",
+        "meshes/collision/upper_arm_70.stl",
+        "meshes/collision/upper_arm_71.stl",
+        "meshes/collision/upper_arm_72.stl",
+        "meshes/collision/upper_arm_73.stl",
+        "meshes/collision/upper_arm_74.stl",
+        "meshes/collision/upper_arm_75.stl",
+        "meshes/collision/upper_arm_76.stl",
+        "meshes/collision/upper_arm_77.stl",
+        "meshes/collision/upper_arm_78.stl",
+        "meshes/collision/upper_arm_79.stl",
+        "meshes/collision/upper_arm_80.stl",
+        "meshes/collision/upper_arm_81.stl",
+        "meshes/collision/upper_arm_82.stl",
+        "meshes/collision/upper_arm_83.stl",
+        "meshes/collision/upper_arm_84.stl",
+        "meshes/collision/upper_arm_85.stl",
+        "meshes/collision/upper_arm_86.stl",
+        "meshes/collision/upper_arm_87.stl",
+        "meshes/collision/upper_arm_88.stl",
+        "meshes/collision/upper_arm_89.stl",
+        "meshes/collision/upper_arm_90.stl",
+        "meshes/collision/upper_arm_91.stl",
+        "meshes/collision/upper_arm_92.stl",
+        "meshes/collision/upper_arm_93.stl",
+        "meshes/collision/upper_arm_94.stl",
+        "meshes/collision/upper_arm_95.stl"
+      ],
+      "mass_kg": 0.05577835,
+      "com_mm": [
+        -18.601135,
+        -16.617222,
+        63.041423
+      ],
+      "inertia_kg_mm2": [
+        [
+          78.538738582,
+          0.084825295,
+          -0.41327943
+        ],
+        [
+          0.084825295,
+          92.203013425,
+          18.7011043
+        ],
+        [
+          -0.41327943,
+          18.7011043,
+          29.023243339
+        ]
+      ],
+      "bbox_mm": [
+        [
+          -53.799999,
+          -45.454517,
+          -11.988559
+        ],
+        [
+          13.5,
+          11.999928,
+          136.690796
+        ]
+      ],
+      "volume_mm3": 126706.6152,
+      "material": {
+        "id": "PLA",
+        "density_kg_m3": "T14 (outer-shell volume x rho_inst x f_part)",
+        "colour": "signal_orange"
+      },
+      "servo_occurrences": [
+        "S3"
+      ],
+      "link": "upper_arm"
+    },
+    {
+      "name": "forearm",
+      "kind": "printed",
+      "part_file": "parts/forearm.stl",
+      "mesh_visual": "meshes/visual/forearm.stl",
+      "mesh_collision": [
+        "meshes/collision/forearm_00.stl",
+        "meshes/collision/forearm_01.stl",
+        "meshes/collision/forearm_02.stl",
+        "meshes/collision/forearm_03.stl",
+        "meshes/collision/forearm_04.stl",
+        "meshes/collision/forearm_05.stl",
+        "meshes/collision/forearm_06.stl",
+        "meshes/collision/forearm_07.stl",
+        "meshes/collision/forearm_08.stl",
+        "meshes/collision/forearm_09.stl",
+        "meshes/collision/forearm_10.stl",
+        "meshes/collision/forearm_11.stl",
+        "meshes/collision/forearm_12.stl",
+        "meshes/collision/forearm_13.stl",
+        "meshes/collision/forearm_14.stl",
+        "meshes/collision/forearm_15.stl",
+        "meshes/collision/forearm_16.stl",
+        "meshes/collision/forearm_17.stl",
+        "meshes/collision/forearm_18.stl",
+        "meshes/collision/forearm_19.stl",
+        "meshes/collision/forearm_20.stl",
+        "meshes/collision/forearm_21.stl",
+        "meshes/collision/forearm_22.stl",
+        "meshes/collision/forearm_23.stl",
+        "meshes/collision/forearm_24.stl",
+        "meshes/collision/forearm_25.stl",
+        "meshes/collision/forearm_26.stl",
+        "meshes/collision/forearm_27.stl",
+        "meshes/collision/forearm_28.stl",
+        "meshes/collision/forearm_29.stl",
+        "meshes/collision/forearm_30.stl",
+        "meshes/collision/forearm_31.stl",
+        "meshes/collision/forearm_32.stl",
+        "meshes/collision/forearm_33.stl",
+        "meshes/collision/forearm_34.stl",
+        "meshes/collision/forearm_35.stl",
+        "meshes/collision/forearm_36.stl",
+        "meshes/collision/forearm_37.stl",
+        "meshes/collision/forearm_38.stl",
+        "meshes/collision/forearm_39.stl",
+        "meshes/collision/forearm_40.stl",
+        "meshes/collision/forearm_41.stl",
+        "meshes/collision/forearm_42.stl",
+        "meshes/collision/forearm_43.stl",
+        "meshes/collision/forearm_44.stl",
+        "meshes/collision/forearm_45.stl",
+        "meshes/collision/forearm_46.stl",
+        "meshes/collision/forearm_47.stl",
+        "meshes/collision/forearm_48.stl",
+        "meshes/collision/forearm_49.stl",
+        "meshes/collision/forearm_50.stl",
+        "meshes/collision/forearm_51.stl",
+        "meshes/collision/forearm_52.stl",
+        "meshes/collision/forearm_53.stl",
+        "meshes/collision/forearm_54.stl",
+        "meshes/collision/forearm_55.stl",
+        "meshes/collision/forearm_56.stl",
+        "meshes/collision/forearm_57.stl",
+        "meshes/collision/forearm_58.stl",
+        "meshes/collision/forearm_59.stl",
+        "meshes/collision/forearm_60.stl",
+        "meshes/collision/forearm_61.stl",
+        "meshes/collision/forearm_62.stl",
+        "meshes/collision/forearm_63.stl",
+        "meshes/collision/forearm_64.stl",
+        "meshes/collision/forearm_65.stl",
+        "meshes/collision/forearm_66.stl",
+        "meshes/collision/forearm_67.stl",
+        "meshes/collision/forearm_68.stl",
+        "meshes/collision/forearm_69.stl",
+        "meshes/collision/forearm_70.stl",
+        "meshes/collision/forearm_71.stl",
+        "meshes/collision/forearm_72.stl",
+        "meshes/collision/forearm_73.stl",
+        "meshes/collision/forearm_74.stl",
+        "meshes/collision/forearm_75.stl",
+        "meshes/collision/forearm_76.stl",
+        "meshes/collision/forearm_77.stl",
+        "meshes/collision/forearm_78.stl",
+        "meshes/collision/forearm_79.stl",
+        "meshes/collision/forearm_80.stl",
+        "meshes/collision/forearm_81.stl",
+        "meshes/collision/forearm_82.stl",
+        "meshes/collision/forearm_83.stl",
+        "meshes/collision/forearm_84.stl",
+        "meshes/collision/forearm_85.stl",
+        "meshes/collision/forearm_86.stl",
+        "meshes/collision/forearm_87.stl",
+        "meshes/collision/forearm_88.stl",
+        "meshes/collision/forearm_89.stl",
+        "meshes/collision/forearm_90.stl",
+        "meshes/collision/forearm_91.stl",
+        "meshes/collision/forearm_92.stl",
+        "meshes/collision/forearm_93.stl",
+        "meshes/collision/forearm_94.stl",
+        "meshes/collision/forearm_95.stl"
+      ],
+      "mass_kg": 0.044157855,
+      "com_mm": [
+        -17.783264,
+        2.53992,
+        64.08196
+      ],
+      "inertia_kg_mm2": [
+        [
+          55.733569352,
+          0.012756181,
+          -0.074007435
+        ],
+        [
+          0.012756181,
+          69.014166534,
+          -2.627663667
+        ],
+        [
+          -0.074007435,
+          -2.627663667,
+          17.538422356
+        ]
+      ],
+      "bbox_mm": [
+        [
+          -52.400002,
+          -11.998201,
+          -11.99419
+        ],
+        [
+          12.0,
+          16.522026,
+          133.502197
+        ]
+      ],
+      "volume_mm3": 98630.093024,
+      "material": {
+        "id": "PLA",
+        "density_kg_m3": "T14 (outer-shell volume x rho_inst x f_part)",
+        "colour": "signal_orange"
+      },
+      "servo_occurrences": [
+        "S4"
+      ],
+      "link": "forearm"
+    },
+    {
+      "name": "wrist_clamp",
+      "kind": "printed",
+      "part_file": "parts/wrist_clamp.stl",
+      "mesh_visual": "meshes/visual/wrist_clamp.stl",
+      "mesh_collision": [
+        "meshes/collision/wrist_clamp_00.stl",
+        "meshes/collision/wrist_clamp_01.stl",
+        "meshes/collision/wrist_clamp_02.stl",
+        "meshes/collision/wrist_clamp_03.stl",
+        "meshes/collision/wrist_clamp_04.stl",
+        "meshes/collision/wrist_clamp_05.stl",
+        "meshes/collision/wrist_clamp_06.stl",
+        "meshes/collision/wrist_clamp_07.stl",
+        "meshes/collision/wrist_clamp_08.stl",
+        "meshes/collision/wrist_clamp_09.stl",
+        "meshes/collision/wrist_clamp_10.stl",
+        "meshes/collision/wrist_clamp_11.stl",
+        "meshes/collision/wrist_clamp_12.stl",
+        "meshes/collision/wrist_clamp_13.stl",
+        "meshes/collision/wrist_clamp_14.stl",
+        "meshes/collision/wrist_clamp_15.stl",
+        "meshes/collision/wrist_clamp_16.stl",
+        "meshes/collision/wrist_clamp_17.stl",
+        "meshes/collision/wrist_clamp_18.stl",
+        "meshes/collision/wrist_clamp_19.stl",
+        "meshes/collision/wrist_clamp_20.stl",
+        "meshes/collision/wrist_clamp_21.stl",
+        "meshes/collision/wrist_clamp_22.stl",
+        "meshes/collision/wrist_clamp_23.stl",
+        "meshes/collision/wrist_clamp_24.stl",
+        "meshes/collision/wrist_clamp_25.stl",
+        "meshes/collision/wrist_clamp_26.stl",
+        "meshes/collision/wrist_clamp_27.stl",
+        "meshes/collision/wrist_clamp_28.stl",
+        "meshes/collision/wrist_clamp_29.stl",
+        "meshes/collision/wrist_clamp_30.stl",
+        "meshes/collision/wrist_clamp_31.stl",
+        "meshes/collision/wrist_clamp_32.stl",
+        "meshes/collision/wrist_clamp_33.stl",
+        "meshes/collision/wrist_clamp_34.stl",
+        "meshes/collision/wrist_clamp_35.stl",
+        "meshes/collision/wrist_clamp_36.stl",
+        "meshes/collision/wrist_clamp_37.stl",
+        "meshes/collision/wrist_clamp_38.stl",
+        "meshes/collision/wrist_clamp_39.stl",
+        "meshes/collision/wrist_clamp_40.stl",
+        "meshes/collision/wrist_clamp_41.stl",
+        "meshes/collision/wrist_clamp_42.stl",
+        "meshes/collision/wrist_clamp_43.stl",
+        "meshes/collision/wrist_clamp_44.stl",
+        "meshes/collision/wrist_clamp_45.stl",
+        "meshes/collision/wrist_clamp_46.stl",
+        "meshes/collision/wrist_clamp_47.stl",
+        "meshes/collision/wrist_clamp_48.stl",
+        "meshes/collision/wrist_clamp_49.stl",
+        "meshes/collision/wrist_clamp_50.stl",
+        "meshes/collision/wrist_clamp_51.stl",
+        "meshes/collision/wrist_clamp_52.stl",
+        "meshes/collision/wrist_clamp_53.stl",
+        "meshes/collision/wrist_clamp_54.stl",
+        "meshes/collision/wrist_clamp_55.stl",
+        "meshes/collision/wrist_clamp_56.stl",
+        "meshes/collision/wrist_clamp_57.stl",
+        "meshes/collision/wrist_clamp_58.stl",
+        "meshes/collision/wrist_clamp_59.stl",
+        "meshes/collision/wrist_clamp_60.stl",
+        "meshes/collision/wrist_clamp_61.stl",
+        "meshes/collision/wrist_clamp_62.stl",
+        "meshes/collision/wrist_clamp_63.stl",
+        "meshes/collision/wrist_clamp_64.stl",
+        "meshes/collision/wrist_clamp_65.stl",
+        "meshes/collision/wrist_clamp_66.stl",
+        "meshes/collision/wrist_clamp_67.stl",
+        "meshes/collision/wrist_clamp_68.stl",
+        "meshes/collision/wrist_clamp_69.stl",
+        "meshes/collision/wrist_clamp_70.stl",
+        "meshes/collision/wrist_clamp_71.stl",
+        "meshes/collision/wrist_clamp_72.stl",
+        "meshes/collision/wrist_clamp_73.stl",
+        "meshes/collision/wrist_clamp_74.stl",
+        "meshes/collision/wrist_clamp_75.stl",
+        "meshes/collision/wrist_clamp_76.stl",
+        "meshes/collision/wrist_clamp_77.stl",
+        "meshes/collision/wrist_clamp_78.stl",
+        "meshes/collision/wrist_clamp_79.stl",
+        "meshes/collision/wrist_clamp_80.stl",
+        "meshes/collision/wrist_clamp_81.stl",
+        "meshes/collision/wrist_clamp_82.stl",
+        "meshes/collision/wrist_clamp_83.stl",
+        "meshes/collision/wrist_clamp_84.stl",
+        "meshes/collision/wrist_clamp_85.stl",
+        "meshes/collision/wrist_clamp_86.stl",
+        "meshes/collision/wrist_clamp_87.stl",
+        "meshes/collision/wrist_clamp_88.stl",
+        "meshes/collision/wrist_clamp_89.stl",
+        "meshes/collision/wrist_clamp_90.stl",
+        "meshes/collision/wrist_clamp_91.stl",
+        "meshes/collision/wrist_clamp_92.stl",
+        "meshes/collision/wrist_clamp_93.stl",
+        "meshes/collision/wrist_clamp_94.stl",
+        "meshes/collision/wrist_clamp_95.stl"
+      ],
+      "mass_kg": 0.006244895,
+      "com_mm": [
+        -18.254589,
+        -0.283753,
+        119.314958
+      ],
+      "inertia_kg_mm2": [
+        [
+          1.525104436,
+          0.028248404,
+          -0.000602716
+        ],
+        [
+          0.028248404,
+          2.666459679,
+          0.019052533
+        ],
+        [
+          -0.000602716,
+          0.019052533,
+          3.372266221
+        ]
+      ],
+      "bbox_mm": [
+        [
+          -48.190964,
+          -18.161163,
+          104.719421
+        ],
+        [
+          8.2,
+          19.589752,
+          133.950745
+        ]
+      ],
+      "volume_mm3": 13770.15476,
+      "material": {
+        "id": "PLA",
+        "density_kg_m3": "T14 (outer-shell volume x rho_inst x f_part)",
+        "colour": "signal_orange"
+      },
+      "role": "bracket",
+      "attached_to": "forearm",
+      "designed_pose_in_link": {
+        "xyz": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "rpy": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "name": "wrist",
+      "kind": "printed",
+      "part_file": "parts/wrist.stl",
+      "mesh_visual": "meshes/visual/wrist.stl",
+      "mesh_collision": [
+        "meshes/collision/wrist_00.stl",
+        "meshes/collision/wrist_01.stl",
+        "meshes/collision/wrist_02.stl",
+        "meshes/collision/wrist_03.stl",
+        "meshes/collision/wrist_04.stl",
+        "meshes/collision/wrist_05.stl",
+        "meshes/collision/wrist_06.stl",
+        "meshes/collision/wrist_07.stl",
+        "meshes/collision/wrist_08.stl",
+        "meshes/collision/wrist_09.stl",
+        "meshes/collision/wrist_10.stl",
+        "meshes/collision/wrist_11.stl",
+        "meshes/collision/wrist_12.stl",
+        "meshes/collision/wrist_13.stl",
+        "meshes/collision/wrist_14.stl",
+        "meshes/collision/wrist_15.stl",
+        "meshes/collision/wrist_16.stl",
+        "meshes/collision/wrist_17.stl",
+        "meshes/collision/wrist_18.stl",
+        "meshes/collision/wrist_19.stl",
+        "meshes/collision/wrist_20.stl",
+        "meshes/collision/wrist_21.stl",
+        "meshes/collision/wrist_22.stl",
+        "meshes/collision/wrist_23.stl",
+        "meshes/collision/wrist_24.stl",
+        "meshes/collision/wrist_25.stl",
+        "meshes/collision/wrist_26.stl",
+        "meshes/collision/wrist_27.stl",
+        "meshes/collision/wrist_28.stl",
+        "meshes/collision/wrist_29.stl",
+        "meshes/collision/wrist_30.stl",
+        "meshes/collision/wrist_31.stl",
+        "meshes/collision/wrist_32.stl",
+        "meshes/collision/wrist_33.stl",
+        "meshes/collision/wrist_34.stl",
+        "meshes/collision/wrist_35.stl",
+        "meshes/collision/wrist_36.stl",
+        "meshes/collision/wrist_37.stl",
+        "meshes/collision/wrist_38.stl",
+        "meshes/collision/wrist_39.stl",
+        "meshes/collision/wrist_40.stl",
+        "meshes/collision/wrist_41.stl",
+        "meshes/collision/wrist_42.stl",
+        "meshes/collision/wrist_43.stl",
+        "meshes/collision/wrist_44.stl",
+        "meshes/collision/wrist_45.stl",
+        "meshes/collision/wrist_46.stl",
+        "meshes/collision/wrist_47.stl",
+        "meshes/collision/wrist_48.stl",
+        "meshes/collision/wrist_49.stl",
+        "meshes/collision/wrist_50.stl",
+        "meshes/collision/wrist_51.stl",
+        "meshes/collision/wrist_52.stl",
+        "meshes/collision/wrist_53.stl",
+        "meshes/collision/wrist_54.stl",
+        "meshes/collision/wrist_55.stl",
+        "meshes/collision/wrist_56.stl",
+        "meshes/collision/wrist_57.stl",
+        "meshes/collision/wrist_58.stl",
+        "meshes/collision/wrist_59.stl",
+        "meshes/collision/wrist_60.stl",
+        "meshes/collision/wrist_61.stl",
+        "meshes/collision/wrist_62.stl",
+        "meshes/collision/wrist_63.stl",
+        "meshes/collision/wrist_64.stl",
+        "meshes/collision/wrist_65.stl",
+        "meshes/collision/wrist_66.stl",
+        "meshes/collision/wrist_67.stl",
+        "meshes/collision/wrist_68.stl",
+        "meshes/collision/wrist_69.stl",
+        "meshes/collision/wrist_70.stl",
+        "meshes/collision/wrist_71.stl",
+        "meshes/collision/wrist_72.stl",
+        "meshes/collision/wrist_73.stl",
+        "meshes/collision/wrist_74.stl",
+        "meshes/collision/wrist_75.stl",
+        "meshes/collision/wrist_76.stl",
+        "meshes/collision/wrist_77.stl",
+        "meshes/collision/wrist_78.stl",
+        "meshes/collision/wrist_79.stl",
+        "meshes/collision/wrist_80.stl",
+        "meshes/collision/wrist_81.stl",
+        "meshes/collision/wrist_82.stl",
+        "meshes/collision/wrist_83.stl",
+        "meshes/collision/wrist_84.stl",
+        "meshes/collision/wrist_85.stl",
+        "meshes/collision/wrist_86.stl",
+        "meshes/collision/wrist_87.stl",
+        "meshes/collision/wrist_88.stl",
+        "meshes/collision/wrist_89.stl",
+        "meshes/collision/wrist_90.stl",
+        "meshes/collision/wrist_91.stl",
+        "meshes/collision/wrist_92.stl",
+        "meshes/collision/wrist_93.stl",
+        "meshes/collision/wrist_94.stl",
+        "meshes/collision/wrist_95.stl"
+      ],
+      "mass_kg": 0.015256407,
+      "com_mm": [
+        -20.181236,
+        -0.389279,
+        31.094322
+      ],
+      "inertia_kg_mm2": [
+        [
+          7.747163156,
+          -0.025614084,
+          0.809620129
+        ],
+        [
+          -0.025614084,
+          13.193731161,
+          0.050048783
+        ],
+        [
+          0.809620129,
+          0.050048783,
+          8.06126048
+        ]
+      ],
+      "bbox_mm": [
+        [
+          -53.299999,
+          -20.0,
+          -11.999289
+        ],
+        [
+          9.0,
+          15.656175,
+          73.491425
+        ]
+      ],
+      "volume_mm3": 36388.557277,
+      "material": {
+        "id": "PLA",
+        "density_kg_m3": "T14 (outer-shell volume x rho_inst x f_part)",
+        "colour": "signal_orange"
+      },
+      "servo_occurrences": [
+        "S5"
+      ],
+      "link": "wrist"
+    },
+    {
+      "name": "gripper",
+      "kind": "printed",
+      "part_file": "parts/gripper.stl",
+      "mesh_visual": "meshes/visual/gripper.stl",
+      "mesh_collision": [
+        "meshes/collision/gripper_00.stl",
+        "meshes/collision/gripper_01.stl",
+        "meshes/collision/gripper_02.stl",
+        "meshes/collision/gripper_03.stl",
+        "meshes/collision/gripper_04.stl",
+        "meshes/collision/gripper_05.stl",
+        "meshes/collision/gripper_06.stl",
+        "meshes/collision/gripper_07.stl",
+        "meshes/collision/gripper_08.stl",
+        "meshes/collision/gripper_09.stl",
+        "meshes/collision/gripper_10.stl",
+        "meshes/collision/gripper_11.stl",
+        "meshes/collision/gripper_12.stl",
+        "meshes/collision/gripper_13.stl",
+        "meshes/collision/gripper_14.stl",
+        "meshes/collision/gripper_15.stl",
+        "meshes/collision/gripper_16.stl",
+        "meshes/collision/gripper_17.stl",
+        "meshes/collision/gripper_18.stl",
+        "meshes/collision/gripper_19.stl",
+        "meshes/collision/gripper_20.stl",
+        "meshes/collision/gripper_21.stl",
+        "meshes/collision/gripper_22.stl",
+        "meshes/collision/gripper_23.stl",
+        "meshes/collision/gripper_24.stl",
+        "meshes/collision/gripper_25.stl",
+        "meshes/collision/gripper_26.stl",
+        "meshes/collision/gripper_27.stl",
+        "meshes/collision/gripper_28.stl",
+        "meshes/collision/gripper_29.stl",
+        "meshes/collision/gripper_30.stl",
+        "meshes/collision/gripper_31.stl",
+        "meshes/collision/gripper_32.stl",
+        "meshes/collision/gripper_33.stl",
+        "meshes/collision/gripper_34.stl",
+        "meshes/collision/gripper_35.stl",
+        "meshes/collision/gripper_36.stl",
+        "meshes/collision/gripper_37.stl",
+        "meshes/collision/gripper_38.stl",
+        "meshes/collision/gripper_39.stl",
+        "meshes/collision/gripper_40.stl",
+        "meshes/collision/gripper_41.stl",
+        "meshes/collision/gripper_42.stl",
+        "meshes/collision/gripper_43.stl",
+        "meshes/collision/gripper_44.stl",
+        "meshes/collision/gripper_45.stl",
+        "meshes/collision/gripper_46.stl",
+        "meshes/collision/gripper_47.stl",
+        "meshes/collision/gripper_48.stl",
+        "meshes/collision/gripper_49.stl",
+        "meshes/collision/gripper_50.stl",
+        "meshes/collision/gripper_51.stl",
+        "meshes/collision/gripper_52.stl",
+        "meshes/collision/gripper_53.stl",
+        "meshes/collision/gripper_54.stl",
+        "meshes/collision/gripper_55.stl",
+        "meshes/collision/gripper_56.stl",
+        "meshes/collision/gripper_57.stl",
+        "meshes/collision/gripper_58.stl",
+        "meshes/collision/gripper_59.stl",
+        "meshes/collision/gripper_60.stl",
+        "meshes/collision/gripper_61.stl",
+        "meshes/collision/gripper_62.stl",
+        "meshes/collision/gripper_63.stl",
+        "meshes/collision/gripper_64.stl",
+        "meshes/collision/gripper_65.stl",
+        "meshes/collision/gripper_66.stl",
+        "meshes/collision/gripper_67.stl",
+        "meshes/collision/gripper_68.stl",
+        "meshes/collision/gripper_69.stl",
+        "meshes/collision/gripper_70.stl",
+        "meshes/collision/gripper_71.stl",
+        "meshes/collision/gripper_72.stl",
+        "meshes/collision/gripper_73.stl",
+        "meshes/collision/gripper_74.stl",
+        "meshes/collision/gripper_75.stl",
+        "meshes/collision/gripper_76.stl",
+        "meshes/collision/gripper_77.stl",
+        "meshes/collision/gripper_78.stl",
+        "meshes/collision/gripper_79.stl",
+        "meshes/collision/gripper_80.stl",
+        "meshes/collision/gripper_81.stl",
+        "meshes/collision/gripper_82.stl",
+        "meshes/collision/gripper_83.stl",
+        "meshes/collision/gripper_84.stl",
+        "meshes/collision/gripper_85.stl",
+        "meshes/collision/gripper_86.stl",
+        "meshes/collision/gripper_87.stl",
+        "meshes/collision/gripper_88.stl",
+        "meshes/collision/gripper_89.stl",
+        "meshes/collision/gripper_90.stl",
+        "meshes/collision/gripper_91.stl",
+        "meshes/collision/gripper_92.stl",
+        "meshes/collision/gripper_93.stl",
+        "meshes/collision/gripper_94.stl",
+        "meshes/collision/gripper_95.stl"
+      ],
+      "mass_kg": 0.024167336,
+      "com_mm": [
+        -0.292191,
+        14.022798,
+        27.737267
+      ],
+      "inertia_kg_mm2": [
+        [
+          16.626483107,
+          -0.206297522,
+          -0.036121118
+        ],
+        [
+          -0.206297522,
+          14.591816088,
+          -2.844860061
+        ],
+        [
+          -0.036121118,
+          -2.844860061,
+          8.89875947
+        ]
+      ],
+      "bbox_mm": [
+        [
+          -24.000011,
+          -30.000021,
+          -1.000011
+        ],
+        [
+          28.00001,
+          35.200005,
+          100.641304
+        ]
+      ],
+      "volume_mm3": 55538.223377,
+      "material": {
+        "id": "PLA",
+        "density_kg_m3": "T14 (outer-shell volume x rho_inst x f_part)",
+        "colour": "signal_orange"
+      },
+      "servo_occurrences": [
+        "S6"
+      ],
+      "link": "gripper"
+    },
+    {
+      "name": "jaw",
+      "kind": "printed",
+      "part_file": "parts/jaw.stl",
+      "mesh_visual": "meshes/visual/jaw.stl",
+      "mesh_collision": [
+        "meshes/collision/jaw_00.stl",
+        "meshes/collision/jaw_01.stl",
+        "meshes/collision/jaw_02.stl",
+        "meshes/collision/jaw_03.stl",
+        "meshes/collision/jaw_04.stl",
+        "meshes/collision/jaw_05.stl",
+        "meshes/collision/jaw_06.stl",
+        "meshes/collision/jaw_07.stl",
+        "meshes/collision/jaw_08.stl",
+        "meshes/collision/jaw_09.stl",
+        "meshes/collision/jaw_10.stl",
+        "meshes/collision/jaw_11.stl",
+        "meshes/collision/jaw_12.stl",
+        "meshes/collision/jaw_13.stl",
+        "meshes/collision/jaw_14.stl",
+        "meshes/collision/jaw_15.stl",
+        "meshes/collision/jaw_16.stl",
+        "meshes/collision/jaw_17.stl",
+        "meshes/collision/jaw_18.stl",
+        "meshes/collision/jaw_19.stl",
+        "meshes/collision/jaw_20.stl",
+        "meshes/collision/jaw_21.stl",
+        "meshes/collision/jaw_22.stl",
+        "meshes/collision/jaw_23.stl",
+        "meshes/collision/jaw_24.stl",
+        "meshes/collision/jaw_25.stl",
+        "meshes/collision/jaw_26.stl",
+        "meshes/collision/jaw_27.stl",
+        "meshes/collision/jaw_28.stl",
+        "meshes/collision/jaw_29.stl",
+        "meshes/collision/jaw_30.stl",
+        "meshes/collision/jaw_31.stl",
+        "meshes/collision/jaw_32.stl",
+        "meshes/collision/jaw_33.stl",
+        "meshes/collision/jaw_34.stl",
+        "meshes/collision/jaw_35.stl",
+        "meshes/collision/jaw_36.stl",
+        "meshes/collision/jaw_37.stl",
+        "meshes/collision/jaw_38.stl",
+        "meshes/collision/jaw_39.stl",
+        "meshes/collision/jaw_40.stl",
+        "meshes/collision/jaw_41.stl",
+        "meshes/collision/jaw_42.stl",
+        "meshes/collision/jaw_43.stl",
+        "meshes/collision/jaw_44.stl",
+        "meshes/collision/jaw_45.stl",
+        "meshes/collision/jaw_46.stl",
+        "meshes/collision/jaw_47.stl",
+        "meshes/collision/jaw_48.stl",
+        "meshes/collision/jaw_49.stl",
+        "meshes/collision/jaw_50.stl",
+        "meshes/collision/jaw_51.stl",
+        "meshes/collision/jaw_52.stl",
+        "meshes/collision/jaw_53.stl",
+        "meshes/collision/jaw_54.stl",
+        "meshes/collision/jaw_55.stl",
+        "meshes/collision/jaw_56.stl",
+        "meshes/collision/jaw_57.stl",
+        "meshes/collision/jaw_58.stl",
+        "meshes/collision/jaw_59.stl",
+        "meshes/collision/jaw_60.stl",
+        "meshes/collision/jaw_61.stl",
+        "meshes/collision/jaw_62.stl",
+        "meshes/collision/jaw_63.stl",
+        "meshes/collision/jaw_64.stl",
+        "meshes/collision/jaw_65.stl",
+        "meshes/collision/jaw_66.stl",
+        "meshes/collision/jaw_67.stl",
+        "meshes/collision/jaw_68.stl",
+        "meshes/collision/jaw_69.stl",
+        "meshes/collision/jaw_70.stl",
+        "meshes/collision/jaw_71.stl",
+        "meshes/collision/jaw_72.stl",
+        "meshes/collision/jaw_73.stl",
+        "meshes/collision/jaw_74.stl",
+        "meshes/collision/jaw_75.stl",
+        "meshes/collision/jaw_76.stl",
+        "meshes/collision/jaw_77.stl",
+        "meshes/collision/jaw_78.stl",
+        "meshes/collision/jaw_79.stl",
+        "meshes/collision/jaw_80.stl",
+        "meshes/collision/jaw_81.stl",
+        "meshes/collision/jaw_82.stl",
+        "meshes/collision/jaw_83.stl",
+        "meshes/collision/jaw_84.stl",
+        "meshes/collision/jaw_85.stl",
+        "meshes/collision/jaw_86.stl",
+        "meshes/collision/jaw_87.stl",
+        "meshes/collision/jaw_88.stl",
+        "meshes/collision/jaw_89.stl",
+        "meshes/collision/jaw_90.stl",
+        "meshes/collision/jaw_91.stl",
+        "meshes/collision/jaw_92.stl",
+        "meshes/collision/jaw_93.stl",
+        "meshes/collision/jaw_94.stl",
+        "meshes/collision/jaw_95.stl"
+      ],
+      "mass_kg": 0.008633853,
+      "com_mm": [
+        19.29469,
+        1.600091,
+        28.423402
+      ],
+      "inertia_kg_mm2": [
+        [
+          3.430681987,
+          0.004567796,
+          0.077757767
+        ],
+        [
+          0.004567796,
+          4.429222053,
+          -0.224896037
+        ],
+        [
+          0.077757767,
+          -0.224896037,
+          1.408174019
+        ]
+      ],
+      "bbox_mm": [
+        [
+          -5.100023,
+          -9.99921,
+          -9.999948
+        ],
+        [
+          42.900013,
+          12.299956,
+          78.216034
+        ]
+      ],
+      "volume_mm3": 19684.781844,
+      "material": {
+        "id": "PLA",
+        "density_kg_m3": "T14 (outer-shell volume x rho_inst x f_part)",
+        "colour": "signal_orange"
+      },
+      "servo_occurrences": [],
+      "link": "jaw"
+    },
+    {
+      "name": "S1",
+      "kind": "servo",
+      "catalogue_id": "BUS-SERVO-12V-A",
+      "carrier_link": "base",
+      "designed_pose_in_carrier": {
+        "xyz": [
+          0.0,
+          0.0,
+          37.724
+        ],
+        "rpy": [
+          0.0,
+          0.0,
+          1.570796327
+        ]
+      },
+      "mesh_visual": "meshes/visual/servo.stl",
+      "mesh_collision": [],
+      "collision_primitives": [
+        {
+          "kind": "box",
+          "max": [
+            10.2,
+            12.4,
+            30.6
+          ],
+          "min": [
+            -35.2,
+            -12.4,
+            -4.0
+          ],
+          "name": "body"
+        }
+      ],
+      "horn_axis_point_mm": [
+        0.0,
+        0.0,
+        30.6
+      ],
+      "horn_axis_dir": [
+        0.0,
+        0.0,
+        1.0
+      ],
+      "horn_boss_height_mm": 2.5,
+      "locators_visual_only": [
+        "horn_disc",
+        "rear_disc"
+      ],
+      "mass_kg": 0.06,
+      "com_mm": [
+        -12.5,
+        0.0,
+        13.3
+      ],
+      "inertia_kg_mm2": [
+        [
+          9.061,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          16.2916,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          13.381
+        ]
+      ],
+      "bbox_mm": [
+        [
+          -35.2,
+          -12.4,
+          -4.0
+        ],
+        [
+          10.2,
+          12.4,
+          30.6
+        ]
+      ],
+      "stall_torque_nm": 2.94
+    },
+    {
+      "name": "S2",
+      "kind": "servo",
+      "catalogue_id": "BUS-SERVO-12V-A",
+      "carrier_link": "shoulder",
+      "designed_pose_in_carrier": {
+        "xyz": [
+          -14.822241,
+          30.3992,
+          61.495
+        ],
+        "rpy": [
+          0.0,
+          -1.570796327,
+          3.141592653
+        ]
+      },
+      "mesh_visual": "meshes/visual/servo.stl",
+      "mesh_collision": [],
+      "collision_primitives": [
+        {
+          "kind": "box",
+          "max": [
+            10.2,
+            12.4,
+            30.6
+          ],
+          "min": [
+            -35.2,
+            -12.4,
+            -4.0
+          ],
+          "name": "body"
+        }
+      ],
+      "horn_axis_point_mm": [
+        0.0,
+        0.0,
+        30.6
+      ],
+      "horn_axis_dir": [
+        0.0,
+        0.0,
+        1.0
+      ],
+      "horn_boss_height_mm": 2.5,
+      "locators_visual_only": [
+        "horn_disc",
+        "rear_disc"
+      ],
+      "mass_kg": 0.06,
+      "com_mm": [
+        -12.5,
+        0.0,
+        13.3
+      ],
+      "inertia_kg_mm2": [
+        [
+          9.061,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          16.2916,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          13.381
+        ]
+      ],
+      "bbox_mm": [
+        [
+          -35.2,
+          -12.4,
+          -4.0
+        ],
+        [
+          10.2,
+          12.4,
+          30.6
+        ]
+      ],
+      "stall_torque_nm": 2.94
+    },
+    {
+      "name": "S3",
+      "kind": "servo",
+      "catalogue_id": "BUS-SERVO-12V-A",
+      "carrier_link": "upper_arm",
+      "designed_pose_in_carrier": {
+        "xyz": [
+          -33.100018,
+          6e-06,
+          124.622871
+        ],
+        "rpy": [
+          1.570796327,
+          -0.250280736,
+          1.570796327
+        ]
+      },
+      "mesh_visual": "meshes/visual/servo.stl",
+      "mesh_collision": [],
+      "collision_primitives": [
+        {
+          "kind": "box",
+          "max": [
+            10.2,
+            12.4,
+            30.6
+          ],
+          "min": [
+            -35.2,
+            -12.4,
+            -4.0
+          ],
+          "name": "body"
+        }
+      ],
+      "horn_axis_point_mm": [
+        0.0,
+        0.0,
+        30.6
+      ],
+      "horn_axis_dir": [
+        0.0,
+        0.0,
+        1.0
+      ],
+      "horn_boss_height_mm": 2.5,
+      "locators_visual_only": [
+        "horn_disc",
+        "rear_disc"
+      ],
+      "mass_kg": 0.06,
+      "com_mm": [
+        -12.5,
+        0.0,
+        13.3
+      ],
+      "inertia_kg_mm2": [
+        [
+          9.061,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          16.2916,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          13.381
+        ]
+      ],
+      "bbox_mm": [
+        [
+          -35.2,
+          -12.4,
+          -4.0
+        ],
+        [
+          10.2,
+          12.4,
+          30.6
+        ]
+      ],
+      "stall_torque_nm": 2.94
+    },
+    {
+      "name": "S4",
+      "kind": "servo",
+      "catalogue_id": "BUS-SERVO-12V-A",
+      "carrier_link": "forearm",
+      "designed_pose_in_carrier": {
+        "xyz": [
+          -33.1,
+          0.0,
+          149.560518
+        ],
+        "rpy": [
+          1.570796327,
+          -1.536036801,
+          1.570796327
+        ]
+      },
+      "mesh_visual": "meshes/visual/servo.stl",
+      "mesh_collision": [],
+      "collision_primitives": [
+        {
+          "kind": "box",
+          "max": [
+            10.2,
+            12.4,
+            30.6
+          ],
+          "min": [
+            -35.2,
+            -12.4,
+            -4.0
+          ],
+          "name": "body"
+        }
+      ],
+      "horn_axis_point_mm": [
+        0.0,
+        0.0,
+        30.6
+      ],
+      "horn_axis_dir": [
+        0.0,
+        0.0,
+        1.0
+      ],
+      "horn_boss_height_mm": 2.5,
+      "locators_visual_only": [
+        "horn_disc",
+        "rear_disc"
+      ],
+      "mass_kg": 0.06,
+      "com_mm": [
+        -12.5,
+        0.0,
+        13.3
+      ],
+      "inertia_kg_mm2": [
+        [
+          9.061,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          16.2916,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          13.381
+        ]
+      ],
+      "bbox_mm": [
+        [
+          -35.2,
+          -12.4,
+          -4.0
+        ],
+        [
+          10.2,
+          12.4,
+          30.6
+        ]
+      ],
+      "stall_torque_nm": 2.94
+    },
+    {
+      "name": "S5",
+      "kind": "servo",
+      "catalogue_id": "BUS-SERVO-12V-A",
+      "carrier_link": "wrist",
+      "designed_pose_in_carrier": {
+        "xyz": [
+          -18.1,
+          0.0,
+          35.663035
+        ],
+        "rpy": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "mesh_visual": "meshes/visual/servo_no_horn.stl",
+      "mesh_collision": [],
+      "collision_primitives": [
+        {
+          "kind": "box",
+          "max": [
+            10.2,
+            12.4,
+            30.6
+          ],
+          "min": [
+            -35.2,
+            -12.4,
+            -4.0
+          ],
+          "name": "body"
+        }
+      ],
+      "horn_axis_point_mm": [
+        0.0,
+        0.0,
+        30.6
+      ],
+      "horn_axis_dir": [
+        0.0,
+        0.0,
+        1.0
+      ],
+      "horn_boss_height_mm": 2.5,
+      "locators_visual_only": [
+        "horn_disc",
+        "rear_disc"
+      ],
+      "mass_kg": 0.06,
+      "com_mm": [
+        -12.5,
+        0.0,
+        13.3
+      ],
+      "inertia_kg_mm2": [
+        [
+          9.061,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          16.2916,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          13.381
+        ]
+      ],
+      "bbox_mm": [
+        [
+          -35.2,
+          -12.4,
+          -4.0
+        ],
+        [
+          10.2,
+          12.4,
+          30.6
+        ]
+      ],
+      "stall_torque_nm": 2.94
+    },
+    {
+      "name": "S6",
+      "kind": "servo",
+      "catalogue_id": "BUS-SERVO-12V-A",
+      "carrier_link": "gripper",
+      "designed_pose_in_carrier": {
+        "xyz": [
+          14.300017,
+          -20.199986,
+          23.40001
+        ],
+        "rpy": [
+          1.570796663,
+          4.7e-08,
+          -1.570796373
+        ]
+      },
+      "mesh_visual": "meshes/visual/servo.stl",
+      "mesh_collision": [],
+      "collision_primitives": [
+        {
+          "kind": "box",
+          "max": [
+            10.2,
+            12.4,
+            30.6
+          ],
+          "min": [
+            -35.2,
+            -12.4,
+            -4.0
+          ],
+          "name": "body"
+        }
+      ],
+      "horn_axis_point_mm": [
+        0.0,
+        0.0,
+        30.6
+      ],
+      "horn_axis_dir": [
+        0.0,
+        0.0,
+        1.0
+      ],
+      "horn_boss_height_mm": 2.5,
+      "locators_visual_only": [
+        "horn_disc",
+        "rear_disc"
+      ],
+      "mass_kg": 0.06,
+      "com_mm": [
+        -12.5,
+        0.0,
+        13.3
+      ],
+      "inertia_kg_mm2": [
+        [
+          9.061,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          16.2916,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          13.381
+        ]
+      ],
+      "bbox_mm": [
+        [
+          -35.2,
+          -12.4,
+          -4.0
+        ],
+        [
+          10.2,
+          12.4,
+          30.6
+        ]
+      ],
+      "stall_torque_nm": 2.94
+    }
+  ]
+}

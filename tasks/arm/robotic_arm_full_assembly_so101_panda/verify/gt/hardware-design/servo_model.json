@@ -1,0 +1,77 @@
+{
+ "body": {
+  "max": [
+   10.2,
+   12.4,
+   30.6
+  ],
+  "min": [
+   -35.2,
+   -12.4,
+   -4.0
+  ]
+ },
+ "catalogue_id": "BUS-SERVO-12V-A",
+ "collision_primitives": [
+  {
+   "kind": "box",
+   "max": [
+    10.2,
+    12.4,
+    30.6
+   ],
+   "min": [
+    -35.2,
+    -12.4,
+    -4.0
+   ],
+   "name": "body"
+  }
+ ],
+ "connector_face": "-x",
+ "frame": "tier servo frame: +z = horn axis through the origin, z = 0 the case bottom, the case along -x, connectors on the -x end",
+ "horn": {
+  "axis_dir": [
+   0.0,
+   0.0,
+   1.0
+  ],
+  "axis_point": [
+   0.0,
+   0.0,
+   30.6
+  ],
+  "boss_height": 2.5,
+  "radius": 10.0
+ },
+ "locators_visual_only": [
+  "horn_disc",
+  "rear_disc"
+ ],
+ "mass_kg": 0.06,
+ "mesh_visual": "parts/servo.stl",
+ "mesh_visual_no_horn": "parts/servo_no_horn.stl",
+ "occurrence_mesh_variants": {
+  "S1": "with_horn",
+  "S2": "with_horn",
+  "S3": "with_horn",
+  "S4": "with_horn",
+  "S5": "no_horn",
+  "S6": "with_horn"
+ },
+ "rear_boss": {
+  "axis_dir": [
+   0.0,
+   0.0,
+   -1.0
+  ],
+  "axis_point": [
+   0.0,
+   0.0,
+   -3.3
+  ],
+  "height": 2.1,
+  "radius": 10.0
+ },
+ "stall_torque_nm": 2.94
+}

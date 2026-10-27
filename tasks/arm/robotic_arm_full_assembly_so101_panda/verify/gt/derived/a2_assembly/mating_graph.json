@@ -1,0 +1,1154 @@
+{
+  "handoff_version": "arm-chain-handoff/1.0.0",
+  "adapter": "A2-info (information-tier GT arm; bus-zero design, slide-in analysis at the public calibrated zero)",
+  "cell_version": "arm-assembly-cell-six/1.0.0",
+  "units": {
+    "length": "mm",
+    "angle": "rad"
+  },
+  "conventions": {
+    "frame_a_in_a / frame_b_in_b": "the two frames that coincide when the mate is achieved, expressed in part_a's and part_b's own frames (URDF semantics of assembly.json)",
+    "insertion_axis_in_a": "unit direction of part_b's motion during the final insertion, in part_a's frame (measured on the source geometry: the free extraction direction reversed)",
+    "servo_frame": "servo STL frame: +z = horn axis; horn frame = servo frame translated to horn_axis_point_mm (12.5, 0, 16.2), z = horn axis",
+    "requires": "mates that must be achieved before this one is evaluated (a link welded to a loose servo is unphysical; a bracket clamps a seated servo)"
+  },
+  "latch": {
+    "consecutive_ticks": 50,
+    "tick_s": 0.01,
+    "relative_speed_max_mm_s": 5.0,
+    "note": "a mate is achieved when its predicate holds for 50 consecutive 10 ms ticks with relative speed < 5 mm/s; the grader then welds at the DESIGNED relative pose and records the pre-snap error (CHAIN_PLAN 2.5, 05 B6)"
+  },
+  "mates": [
+    {
+      "id": "seat_S1",
+      "kind": "sleeve_seat",
+      "part_a": "base",
+      "part_b": "S1",
+      "frame_a_in_a": {
+        "xyz": [
+          0.0,
+          0.0,
+          37.724
+        ],
+        "rpy": [
+          0.0,
+          0.0,
+          1.570796327
+        ]
+      },
+      "frame_b_in_b": {
+        "xyz": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "rpy": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "insertion_axis_in_a": [
+        0.0,
+        -1.0,
+        0.0
+      ],
+      "insertion_axis_in_b": [
+        -1.0,
+        0.0,
+        0.0
+      ],
+      "insertion_depth_mm": 20.54,
+      "tol_pos_mm": 1.5,
+      "tol_ang_deg": 3.0,
+      "predicate": "full 6-DoF pose of the servo frame in the carrier within tol_pos / tol_ang",
+      "weight": 1.0,
+      "requires": []
+    },
+    {
+      "id": "seat_S2",
+      "kind": "sleeve_seat",
+      "part_a": "shoulder",
+      "part_b": "S2",
+      "frame_a_in_a": {
+        "xyz": [
+          -14.822241,
+          30.3992,
+          61.495
+        ],
+        "rpy": [
+          0.0,
+          -1.570796327,
+          3.141592653
+        ]
+      },
+      "frame_b_in_b": {
+        "xyz": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "rpy": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "insertion_axis_in_a": [
+        0.0,
+        1.0,
+        0.0
+      ],
+      "insertion_axis_in_b": [
+        0.0,
+        -1.0,
+        0.0
+      ],
+      "insertion_depth_mm": 24.7,
+      "tol_pos_mm": 1.5,
+      "tol_ang_deg": 3.0,
+      "predicate": "full 6-DoF pose of the servo frame in the carrier within tol_pos / tol_ang",
+      "weight": 1.0,
+      "requires": []
+    },
+    {
+      "id": "seat_S3",
+      "kind": "sleeve_seat",
+      "part_a": "upper_arm",
+      "part_b": "S3",
+      "frame_a_in_a": {
+        "xyz": [
+          -33.100018,
+          6e-06,
+          124.622871
+        ],
+        "rpy": [
+          1.570796327,
+          -0.250280736,
+          1.570796327
+        ]
+      },
+      "frame_b_in_b": {
+        "xyz": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "rpy": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "insertion_axis_in_a": [
+        0.0,
+        -0.968842928,
+        -0.247675958
+      ],
+      "insertion_axis_in_b": [
+        -1.0,
+        0.0,
+        0.0
+      ],
+      "insertion_depth_mm": 16.83,
+      "tol_pos_mm": 1.5,
+      "tol_ang_deg": 3.0,
+      "predicate": "full 6-DoF pose of the servo frame in the carrier within tol_pos / tol_ang",
+      "weight": 1.0,
+      "requires": []
+    },
+    {
+      "id": "seat_S4",
+      "kind": "sleeve_seat",
+      "part_a": "forearm",
+      "part_b": "S4",
+      "frame_a_in_a": {
+        "xyz": [
+          -33.1,
+          0.0,
+          149.560518
+        ],
+        "rpy": [
+          1.570796327,
+          -1.536036801,
+          1.570796327
+        ]
+      },
+      "frame_b_in_b": {
+        "xyz": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "rpy": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "insertion_axis_in_a": [
+        0.0,
+        0.999395949,
+        -0.034752527
+      ],
+      "insertion_axis_in_b": [
+        0.0,
+        -1.0,
+        0.0
+      ],
+      "insertion_depth_mm": 19.2,
+      "tol_pos_mm": 1.5,
+      "tol_ang_deg": 3.0,
+      "predicate": "full 6-DoF pose of the servo frame in the carrier within tol_pos / tol_ang",
+      "weight": 1.0,
+      "requires": []
+    },
+    {
+      "id": "seat_S5",
+      "kind": "sleeve_seat",
+      "part_a": "wrist",
+      "part_b": "S5",
+      "frame_a_in_a": {
+        "xyz": [
+          -18.1,
+          0.0,
+          35.663035
+        ],
+        "rpy": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "frame_b_in_b": {
+        "xyz": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "rpy": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "insertion_axis_in_a": [
+        0.0,
+        0.0,
+        -1.0
+      ],
+      "insertion_axis_in_b": [
+        0.0,
+        0.0,
+        -1.0
+      ],
+      "insertion_depth_mm": 34.6,
+      "tol_pos_mm": 1.5,
+      "tol_ang_deg": 3.0,
+      "predicate": "full 6-DoF pose of the servo frame in the carrier within tol_pos / tol_ang",
+      "weight": 1.0,
+      "requires": []
+    },
+    {
+      "id": "seat_S6",
+      "kind": "sleeve_seat",
+      "part_a": "gripper",
+      "part_b": "S6",
+      "frame_a_in_a": {
+        "xyz": [
+          14.300017,
+          -20.199986,
+          23.40001
+        ],
+        "rpy": [
+          1.570796663,
+          4.7e-08,
+          -1.570796373
+        ]
+      },
+      "frame_b_in_b": {
+        "xyz": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "rpy": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "insertion_axis_in_a": [
+        4.6e-08,
+        1.0,
+        4.7e-08
+      ],
+      "insertion_axis_in_b": [
+        -1.0,
+        0.0,
+        0.0
+      ],
+      "insertion_depth_mm": 45.0,
+      "tol_pos_mm": 1.5,
+      "tol_ang_deg": 3.0,
+      "predicate": "full 6-DoF pose of the servo frame in the carrier within tol_pos / tol_ang",
+      "weight": 1.0,
+      "requires": []
+    },
+    {
+      "id": "horn_base_yaw",
+      "kind": "horn_mate",
+      "joint": "base_yaw",
+      "part_a": "S1",
+      "part_b": "shoulder",
+      "servos": [
+        "S1"
+      ],
+      "frame_a_in_a": {
+        "xyz": [
+          0.0,
+          0.0,
+          30.6
+        ],
+        "rpy": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "frame_b_in_b": {
+        "xyz": [
+          0.0,
+          0.0,
+          -2.5
+        ],
+        "rpy": [
+          0.0,
+          0.0,
+          1.153540463
+        ]
+      },
+      "insertion_axis_in_a": [
+        0.0,
+        -1.0,
+        0.0
+      ],
+      "insertion_depth_mm": 25.0,
+      "tol_pos_mm": 1.5,
+      "tol_ang_deg": 3.0,
+      "axial_tol_mm": 1.0,
+      "yaw_modulo_deg": 360.0,
+      "design_yaw_deg": 66.093,
+      "predicate": "horn axis vs frame_b z within tol_ang (same direction), axis line distance <= tol_pos, axial offset <= axial_tol, yaw within tol_ang of design_yaw modulo 90 deg (quadrant recorded; joint_zero_offset_rad)",
+      "weight": 1.5,
+      "requires": [
+        "seat_S1"
+      ],
+      "slide_in": {
+        "frame_b_in_b": {
+          "xyz": [
+            0.0,
+            0.0,
+            -2.5
+          ],
+          "rpy": [
+            0.0,
+            0.0,
+            1.570796327
+          ]
+        },
+        "q_cell_rad": -0.417255864,
+        "yaw_from_design_deg": 23.907,
+        "note": "the link slides on along insertion_axis_in_a at this pose (the joint at q_cell_rad), then turns about the horn axis to the design (q_cell = 0); grader-only"
+      }
+    },
+    {
+      "id": "horn_shoulder_pitch",
+      "kind": "horn_mate",
+      "joint": "shoulder_pitch",
+      "part_a": "S2",
+      "part_b": "upper_arm",
+      "servos": [
+        "S2"
+      ],
+      "frame_a_in_a": {
+        "xyz": [
+          0.0,
+          0.0,
+          30.6
+        ],
+        "rpy": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "frame_b_in_b": {
+        "xyz": [
+          -2.500041,
+          0.0,
+          0.0
+        ],
+        "rpy": [
+          1.570796327,
+          -1.344270043,
+          1.570796326
+        ]
+      },
+      "insertion_axis_in_a": [
+        0.241379266,
+        0.970430858,
+        0.0
+      ],
+      "insertion_depth_mm": 25.0,
+      "tol_pos_mm": 1.5,
+      "tol_ang_deg": 3.0,
+      "axial_tol_mm": 1.0,
+      "yaw_modulo_deg": 360.0,
+      "design_yaw_deg": 90.0,
+      "predicate": "horn axis vs frame_b z within tol_ang (same direction), axis line distance <= tol_pos, axial offset <= axial_tol, yaw within tol_ang of design_yaw modulo 90 deg (quadrant recorded; joint_zero_offset_rad)",
+      "weight": 1.5,
+      "requires": [
+        "seat_S2"
+      ],
+      "slide_in": {
+        "frame_b_in_b": {
+          "xyz": [
+            -2.500041,
+            0.0,
+            0.0
+          ],
+          "rpy": [
+            -1.570796328,
+            -1.327009434,
+            -1.570796326
+          ]
+        },
+        "q_cell_rad": -0.470313177,
+        "yaw_from_design_deg": 26.94696,
+        "note": "the link slides on along insertion_axis_in_a at this pose (the joint at q_cell_rad), then turns about the horn axis to the design (q_cell = 0); grader-only"
+      }
+    },
+    {
+      "id": "horn_elbow_pitch",
+      "kind": "horn_mate",
+      "joint": "elbow_pitch",
+      "part_a": "S3",
+      "part_b": "forearm",
+      "servos": [
+        "S3"
+      ],
+      "frame_a_in_a": {
+        "xyz": [
+          0.0,
+          0.0,
+          30.6
+        ],
+        "rpy": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "frame_b_in_b": {
+        "xyz": [
+          -2.500018,
+          -4e-06,
+          1.1e-05
+        ],
+        "rpy": [
+          1.570796327,
+          -1.128041723,
+          1.570796327
+        ]
+      },
+      "insertion_axis_in_a": [
+        -0.99948697,
+        -0.032028057,
+        0.0
+      ],
+      "insertion_depth_mm": 25.0,
+      "tol_pos_mm": 1.5,
+      "tol_ang_deg": 3.0,
+      "axial_tol_mm": 1.0,
+      "yaw_modulo_deg": 360.0,
+      "design_yaw_deg": 90.0,
+      "predicate": "horn axis vs frame_b z within tol_ang (same direction), axis line distance <= tol_pos, axial offset <= axial_tol, yaw within tol_ang of design_yaw modulo 90 deg (quadrant recorded; joint_zero_offset_rad)",
+      "weight": 1.5,
+      "requires": [
+        "seat_S3"
+      ],
+      "slide_in": {
+        "frame_b_in_b": {
+          "xyz": [
+            -2.500018,
+            -8e-06,
+            9e-06
+          ],
+          "rpy": [
+            1.570796321,
+            -1.538762792,
+            1.570796333
+          ]
+        },
+        "q_cell_rad": -0.410721069,
+        "yaw_from_design_deg": 23.532584,
+        "note": "the link slides on along insertion_axis_in_a at this pose (the joint at q_cell_rad), then turns about the horn axis to the design (q_cell = 0); grader-only"
+      }
+    },
+    {
+      "id": "horn_wrist_pitch",
+      "kind": "horn_mate",
+      "joint": "wrist_pitch",
+      "part_a": "S4",
+      "part_b": "wrist",
+      "servos": [
+        "S4"
+      ],
+      "frame_a_in_a": {
+        "xyz": [
+          0.0,
+          0.0,
+          30.6
+        ],
+        "rpy": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "frame_b_in_b": {
+        "xyz": [
+          -2.5,
+          0.0,
+          0.0
+        ],
+        "rpy": [
+          -1.570796326,
+          -1.391159608,
+          -1.570796327
+        ]
+      },
+      "insertion_axis_in_a": [
+        -0.999992902,
+        0.003767843,
+        0.0
+      ],
+      "insertion_depth_mm": 25.0,
+      "tol_pos_mm": 1.5,
+      "tol_ang_deg": 3.0,
+      "axial_tol_mm": 1.0,
+      "yaw_modulo_deg": 360.0,
+      "design_yaw_deg": -90.0,
+      "predicate": "horn axis vs frame_b z within tol_ang (same direction), axis line distance <= tol_pos, axial offset <= axial_tol, yaw within tol_ang of design_yaw modulo 90 deg (quadrant recorded; joint_zero_offset_rad)",
+      "weight": 1.5,
+      "requires": [
+        "seat_S4"
+      ],
+      "slide_in": {
+        "frame_b_in_b": {
+          "xyz": [
+            -2.5,
+            0.0,
+            0.0
+          ],
+          "rpy": [
+            -1.570796324,
+            -1.567028475,
+            -1.570796329
+          ]
+        },
+        "q_cell_rad": 0.175868867,
+        "yaw_from_design_deg": -10.076544,
+        "note": "the link slides on along insertion_axis_in_a at this pose (the joint at q_cell_rad), then turns about the horn axis to the design (q_cell = 0); grader-only"
+      }
+    },
+    {
+      "id": "horn_wrist_roll",
+      "kind": "horn_mate",
+      "joint": "wrist_roll",
+      "part_a": "S5",
+      "part_b": "gripper",
+      "servos": [
+        "S5"
+      ],
+      "frame_a_in_a": {
+        "xyz": [
+          0.0,
+          0.0,
+          30.6
+        ],
+        "rpy": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "frame_b_in_b": {
+        "xyz": [
+          0.0,
+          0.0,
+          -2.500041
+        ],
+        "rpy": [
+          0.0,
+          0.0,
+          0.849992799
+        ]
+      },
+      "insertion_axis_in_a": [
+        -0.998815384,
+        -0.048660337,
+        0.0
+      ],
+      "insertion_depth_mm": 25.0,
+      "tol_pos_mm": 1.5,
+      "tol_ang_deg": 3.0,
+      "axial_tol_mm": 1.0,
+      "yaw_modulo_deg": 360.0,
+      "design_yaw_deg": 48.701,
+      "predicate": "horn axis vs frame_b z within tol_ang (same direction), axis line distance <= tol_pos, axial offset <= axial_tol, yaw within tol_ang of design_yaw modulo 90 deg (quadrant recorded; joint_zero_offset_rad)",
+      "weight": 1.5,
+      "requires": [
+        "seat_S5"
+      ],
+      "slide_in": {
+        "frame_b_in_b": {
+          "xyz": [
+            0.0,
+            0.0,
+            -2.500041
+          ],
+          "rpy": [
+            0.0,
+            0.0,
+            -0.048679561
+          ]
+        },
+        "q_cell_rad": 0.89867236,
+        "yaw_from_design_deg": -51.490133,
+        "note": "the link slides on along insertion_axis_in_a at this pose (the joint at q_cell_rad), then turns about the horn axis to the design (q_cell = 0); grader-only"
+      }
+    },
+    {
+      "id": "horn_jaw",
+      "kind": "horn_mate",
+      "joint": "jaw",
+      "part_a": "S6",
+      "part_b": "jaw",
+      "servos": [
+        "S6"
+      ],
+      "frame_a_in_a": {
+        "xyz": [
+          0.0,
+          0.0,
+          30.6
+        ],
+        "rpy": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "frame_b_in_b": {
+        "xyz": [
+          2.499978,
+          8e-06,
+          9e-06
+        ],
+        "rpy": [
+          1.570796697,
+          -0.636137559,
+          -1.570796384
+        ]
+      },
+      "insertion_axis_in_a": [
+        4.7e-08,
+        -1.0,
+        3.36e-07
+      ],
+      "insertion_depth_mm": 25.0,
+      "tol_pos_mm": 1.5,
+      "tol_ang_deg": 3.0,
+      "axial_tol_mm": 1.0,
+      "yaw_modulo_deg": 360.0,
+      "design_yaw_deg": -90.000003,
+      "predicate": "horn axis vs frame_b z within tol_ang (same direction), axis line distance <= tol_pos, axial offset <= axial_tol, yaw within tol_ang of design_yaw modulo 90 deg (quadrant recorded; joint_zero_offset_rad)",
+      "weight": 1.5,
+      "requires": [
+        "seat_S6"
+      ],
+      "slide_in": {
+        "frame_b_in_b": {
+          "xyz": [
+            2.499978,
+            1e-06,
+            1.2e-05
+          ],
+          "rpy": [
+            1.570796663,
+            4.7e-08,
+            -1.570796373
+          ]
+        },
+        "q_cell_rad": -0.636137606,
+        "yaw_from_design_deg": -36.448,
+        "note": "the link slides on along insertion_axis_in_a at this pose (the joint at q_cell_rad), then turns about the horn axis to the design (q_cell = 0); grader-only"
+      }
+    },
+    {
+      "id": "seat_base_clamp",
+      "kind": "part_seat",
+      "part_a": "base",
+      "part_b": "base_clamp",
+      "frame_a_in_a": {
+        "xyz": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "rpy": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "frame_b_in_b": {
+        "xyz": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "rpy": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "insertion_axis_in_a": [
+        0.0,
+        0.0,
+        -1.0
+      ],
+      "insertion_depth_mm": 5.0,
+      "tol_pos_mm": 1.5,
+      "tol_ang_deg": 3.0,
+      "predicate": "full 6-DoF pose of the bracket frame in the link within tol_pos / tol_ang",
+      "weight": 1.0,
+      "requires": [
+        "seat_S1"
+      ]
+    },
+    {
+      "id": "seat_shoulder_clamp",
+      "kind": "part_seat",
+      "part_a": "shoulder",
+      "part_b": "shoulder_clamp",
+      "frame_a_in_a": {
+        "xyz": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "rpy": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "frame_b_in_b": {
+        "xyz": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "rpy": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "insertion_axis_in_a": [
+        0.0,
+        0.0,
+        -1.0
+      ],
+      "insertion_depth_mm": 5.0,
+      "tol_pos_mm": 1.5,
+      "tol_ang_deg": 3.0,
+      "predicate": "full 6-DoF pose of the bracket frame in the link within tol_pos / tol_ang",
+      "weight": 1.0,
+      "requires": [
+        "seat_S2"
+      ]
+    },
+    {
+      "id": "seat_wrist_clamp",
+      "kind": "part_seat",
+      "part_a": "forearm",
+      "part_b": "wrist_clamp",
+      "frame_a_in_a": {
+        "xyz": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "rpy": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "frame_b_in_b": {
+        "xyz": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "rpy": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "insertion_axis_in_a": [
+        0.0,
+        0.0,
+        -1.0
+      ],
+      "insertion_depth_mm": 5.0,
+      "tol_pos_mm": 1.5,
+      "tol_ang_deg": 3.0,
+      "predicate": "full 6-DoF pose of the bracket frame in the link within tol_pos / tol_ang",
+      "weight": 1.0,
+      "requires": [
+        "seat_S4"
+      ]
+    },
+    {
+      "id": "base_mount",
+      "kind": "base_mount",
+      "part_a": "fixture",
+      "part_b": "base",
+      "frame_a_in_a": {
+        "xyz": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "rpy": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "frame_b_in_b": {
+        "xyz": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "rpy": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "insertion_axis_in_a": [
+        0.0,
+        0.0,
+        -1.0
+      ],
+      "insertion_depth_mm": 5.0,
+      "tol_pos_mm": 1.5,
+      "tol_ang_deg": 3.0,
+      "yaw_modulo_deg": 90,
+      "predicate": "base frame vs fixture frame within tol (yaw modulo 90 deg)",
+      "weight": 1.0,
+      "requires": [],
+      "enabled_from_rung": 4,
+      "in_default_scope": false
+    }
+  ],
+  "scopes": {
+    "elbow": [
+      "seat_S3",
+      "horn_elbow_pitch"
+    ],
+    "default": [
+      "seat_S1",
+      "seat_base_clamp",
+      "horn_base_yaw",
+      "seat_S2",
+      "seat_shoulder_clamp",
+      "horn_shoulder_pitch",
+      "seat_S3",
+      "horn_elbow_pitch",
+      "seat_S4",
+      "seat_wrist_clamp",
+      "horn_wrist_pitch",
+      "seat_S5",
+      "horn_wrist_roll",
+      "seat_S6",
+      "horn_jaw"
+    ]
+  },
+  "scope_notes": {
+    "elbow": "the graded stage of the reference benchmark's task on this arm: the elbow servo seated in the upper arm's pocket and the forearm fork mated on its horn (their 4 tab screws and 8 horn screws are the latch here); the proximal (base .. upper arm) and the distal (forearm .. jaw) halves are pre-assembled by the cell",
+    "default": "the full arm from the base up, 15 mates (6 seats, 3 bracket seats, 6 horn mates), weight 18.0; no reference program yet"
+  },
+  "totals": {
+    "mates_default_scope": 15,
+    "weight_default_scope": 18.0,
+    "mates_elbow_scope": 2,
+    "weight_elbow_scope": 2.5
+  },
+  "geometry_analysis": {
+    "seat_S1": {
+      "free_extraction_dirs_servo_frame": [
+        "+x"
+      ],
+      "sweep_max_inside_fraction": {
+        "+x": 0.01,
+        "-x": 0.4875,
+        "+y": 0.0367,
+        "-y": 0.0383,
+        "+z": 0.13,
+        "-z": 0.2092
+      },
+      "pocket_depth_mm": 20.54,
+      "blocked_in_every_direction": false,
+      "note": null
+    },
+    "seat_S2": {
+      "free_extraction_dirs_servo_frame": [],
+      "sweep_max_inside_fraction": {
+        "+x": 0.0358,
+        "-x": 0.565,
+        "+y": 0.0183,
+        "-y": 0.0583,
+        "+z": 0.1142,
+        "-z": 0.11
+      },
+      "pocket_depth_mm": 24.7,
+      "blocked_in_every_direction": true,
+      "note": "no axis-aligned extraction of the case clears this pocket in the source geometry (snap / lip features); the least-blocked direction is recorded"
+    },
+    "seat_S3": {
+      "free_extraction_dirs_servo_frame": [
+        "+x"
+      ],
+      "sweep_max_inside_fraction": {
+        "+x": 0.0058,
+        "-x": 0.1608,
+        "+y": 0.1042,
+        "-y": 0.3292,
+        "+z": 0.1408,
+        "-z": 0.1608
+      },
+      "pocket_depth_mm": 16.83,
+      "blocked_in_every_direction": false,
+      "note": null
+    },
+    "seat_S4": {
+      "free_extraction_dirs_servo_frame": [
+        "+y"
+      ],
+      "sweep_max_inside_fraction": {
+        "+x": 0.0408,
+        "-x": 0.5275,
+        "+y": 0.0092,
+        "-y": 0.0483,
+        "+z": 0.0967,
+        "-z": 0.0867
+      },
+      "pocket_depth_mm": 19.2,
+      "blocked_in_every_direction": false,
+      "note": null
+    },
+    "seat_S5": {
+      "free_extraction_dirs_servo_frame": [],
+      "sweep_max_inside_fraction": {
+        "+x": 0.2792,
+        "-x": 0.0467,
+        "+y": 0.0917,
+        "-y": 0.1117,
+        "+z": 0.0442,
+        "-z": 0.1192
+      },
+      "pocket_depth_mm": 34.6,
+      "blocked_in_every_direction": true,
+      "note": "no axis-aligned extraction of the case clears this pocket in the source geometry (snap / lip features); the least-blocked direction is recorded"
+    },
+    "seat_S6": {
+      "free_extraction_dirs_servo_frame": [
+        "+x"
+      ],
+      "sweep_max_inside_fraction": {
+        "+x": 0.0033,
+        "-x": 0.3875,
+        "+y": 0.0925,
+        "-y": 0.2467,
+        "+z": 0.175,
+        "-z": 0.1592
+      },
+      "pocket_depth_mm": 45.0,
+      "blocked_in_every_direction": false,
+      "note": null
+    },
+    "horn_base_yaw": {
+      "free_extraction_dirs_link_frame": [],
+      "least_blocked_link_dir": "-x",
+      "sweep_max_inside_fraction": {
+        "+x": 0.0168,
+        "-x": 0.0152,
+        "+y": 0.0156,
+        "-y": 0.128,
+        "+z": 0.1,
+        "-z": 0.1188
+      },
+      "approach_in_horn_frame": [
+        0.0,
+        -1.0,
+        0.0
+      ],
+      "blocked_in_every_direction": true
+    },
+    "horn_shoulder_pitch": {
+      "free_extraction_dirs_link_frame": [
+        "+y",
+        "+z"
+      ],
+      "least_blocked_link_dir": "+y",
+      "sweep_max_inside_fraction": {
+        "+x": 0.0744,
+        "-x": 0.0768,
+        "+y": 0.0084,
+        "-y": 0.0108,
+        "+z": 0.0088,
+        "-z": 0.036
+      },
+      "approach_in_horn_frame": [
+        0.241379266,
+        0.970430858,
+        0.0
+      ],
+      "blocked_in_every_direction": false
+    },
+    "horn_elbow_pitch": {
+      "free_extraction_dirs_link_frame": [],
+      "least_blocked_link_dir": "+z",
+      "sweep_max_inside_fraction": {
+        "+x": 0.07,
+        "-x": 0.0936,
+        "+y": 0.0132,
+        "-y": 0.0128,
+        "+z": 0.0112,
+        "-z": 0.0784
+      },
+      "approach_in_horn_frame": [
+        -0.99948697,
+        -0.032028057,
+        0.0
+      ],
+      "blocked_in_every_direction": true
+    },
+    "horn_wrist_pitch": {
+      "free_extraction_dirs_link_frame": [],
+      "least_blocked_link_dir": "+z",
+      "sweep_max_inside_fraction": {
+        "+x": 0.0984,
+        "-x": 0.096,
+        "+y": 0.0152,
+        "-y": 0.014,
+        "+z": 0.0116,
+        "-z": 0.122
+      },
+      "approach_in_horn_frame": [
+        -0.999992902,
+        0.003767843,
+        0.0
+      ],
+      "blocked_in_every_direction": true
+    },
+    "horn_wrist_roll": {
+      "free_extraction_dirs_link_frame": [
+        "+x",
+        "-x",
+        "+y",
+        "-y",
+        "+z"
+      ],
+      "least_blocked_link_dir": "+x",
+      "sweep_max_inside_fraction": {
+        "+x": 0.0,
+        "-x": 0.0,
+        "+y": 0.0,
+        "-y": 0.0,
+        "+z": 0.0,
+        "-z": 0.206
+      },
+      "approach_in_horn_frame": [
+        -0.998815384,
+        -0.048660337,
+        0.0
+      ],
+      "blocked_in_every_direction": false
+    },
+    "horn_jaw": {
+      "free_extraction_dirs_link_frame": [],
+      "least_blocked_link_dir": "+z",
+      "sweep_max_inside_fraction": {
+        "+x": 0.1416,
+        "-x": 0.1572,
+        "+y": 0.0312,
+        "-y": 0.0256,
+        "+z": 0.0172,
+        "-z": 0.3448
+      },
+      "approach_in_horn_frame": [
+        4.7e-08,
+        -1.0,
+        3.36e-07
+      ],
+      "blocked_in_every_direction": true
+    },
+    "seat_base_clamp": {
+      "free_extraction_dirs_bracket_frame": [
+        "+z"
+      ],
+      "sweep_max_inside_fraction": {
+        "+x": 0.2327,
+        "-x": 0.2707,
+        "+y": 0.182,
+        "-y": 0.2607,
+        "+z": 0.008,
+        "-z": 0.4853
+      }
+    },
+    "seat_shoulder_clamp": {
+      "free_extraction_dirs_bracket_frame": [],
+      "sweep_max_inside_fraction": {
+        "+x": 0.216,
+        "-x": 0.21,
+        "+y": 0.322,
+        "-y": 0.2707,
+        "+z": 0.0253,
+        "-z": 0.05
+      }
+    },
+    "seat_wrist_clamp": {
+      "free_extraction_dirs_bracket_frame": [],
+      "sweep_max_inside_fraction": {
+        "+x": 0.2067,
+        "-x": 0.192,
+        "+y": 0.2987,
+        "-y": 0.2473,
+        "+z": 0.098,
+        "-z": 0.196
+      }
+    }
+  },
+  "design_zero": "bus zero (E-ASM-6): frame_b_in_b of every horn mate = the horn frame in the link with the servo at bus reading 0"
+}

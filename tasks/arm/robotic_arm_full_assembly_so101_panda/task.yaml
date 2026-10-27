@@ -1,0 +1,54 @@
+# robotic_arm_full_assembly_so101_panda (information tier I1, assembly stage, the WHOLE arm from loose parts; built 2026-10-22
+# from arm_assemble_six_servo_from_manual_panda_np on the owner's request: assemble the arm from the base with the
+# Panda, physically: unpowered free joints, a coupling state machine, every part placed by the robot).
+#
+# The agent receives the print-frame kit of a HIDDEN variant of a six-servo desktop arm (STL files as delivered to the
+# printer, kit.json, the servo's CAD and datasheet), the shop's 25-photo picture manual with physical scale references, the
+# cell's commissioning document and API and the cell library; no practice. It delivers assemble.py (solve(cell): a
+# camera-only program that builds the whole arm, 15 mates, from the base clamped on the fixture), run as an unprivileged
+# account on 3 OS-entropy episodes of the grader's MuJoCo full-arm cell (verify/arm/assembly_full: the parts on the bench
+# in stable orientations, placed and turned at random around a hidden bench plan; two uncalibrated RGB-D cameras, top and
+# wrist, rendered by MuJoCo's Filament on CPU Vulkan in a baked factory hall; noisy F/T, no part poses, no mate events). Score = the episode mean of the fastened mates' weight / 18. The oracle submits
+# the privileged reference assembler (verify/arm/assembly_full/reference.py) with a 256-bit token: it runs inside the cell
+# on the bench plan's nominal layout. Grader knobs live in verify/grader_config.json.
+
+spec_type: core/v1
+name: robotic_arm_full_assembly_so101_panda
+image: {kind: container}
+resources: {cpus: 8, memory_mb: 16384}
+network: {mode: block}
+
+# agent: 6 h; verify: the collision pieces once (~5 min) + 3 x (cell build ~10 s + program <= 2400 s wall);
+# the oracle's verify: 3 x the reference assembler (~500 s simulated, ~30-40 min wall each).
+timeouts: {setup: 600, agent: 21600, verify: 14400}
+
+artifacts: [/home/user/submission]
+
+metadata:
+  platform: arm
+  direction: assembly
+  metric:
+    name: assembly_score
+    direction: higher
+    hardware_invariant: true
+  mode: atomic
+  stage: assembly
+  stage_key: assembly
+  info_tier: 1
+  hidden_instance: H_asm2
+  practice_instances: []
+  render_backend: filament
+  photo_set_version: "3"
+  given_from: {stage: hardware-design, adapter: A2-info}
+  entry: design-first
+  route: code-as-policy
+  agent_role: [assembly engineer, assembly-cell programmer]
+  artifact_kind: [program]
+  oracle_kind: token-privileged
+  compute: cpu
+  branch: {assembler: panda, fastening: coupling (on-feature hold, latch-on-seat, at-rest horn), joints: unpowered back-drivable, engine: mujoco, observation: cameras-only}
+  observation_tier: camera-only
+  randomisation: [bench layout (place, yaw) per episode, fixture +-10 mm, cameras (mount, intrinsics, distortion), lighting, F/T bias]
+  expert_time_hours: 60
+  siblings: [arm_assemble_six_servo_from_manual_panda_np]
+  tags: [assembly, mujoco, panda, code-as-policy, camera-only, rgbd, calibration, picture-manual, hidden-variant, full-arm, oracle-token, info-tier]

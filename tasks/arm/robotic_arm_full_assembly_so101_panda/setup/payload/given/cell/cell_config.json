@@ -1,0 +1,70 @@
+{
+ "bench_jitter": {
+  "gap_m": 0.006,
+  "xy_m": 0.03,
+  "yaw_deg": 30.0
+ },
+ "camera_budget_frames": 600,
+ "cpu_cap_factor": 4.0,
+ "damage": {
+  "note": "a part pressed on the environment or another part above part_force_N for `ticks` consecutive 10 ms ticks (0.2 s) is a safety violation",
+  "pad_force_N": null,
+  "part_force_N": 150.0,
+  "report_N": {
+   "pad_force_N": 120.0,
+   "part_force_N": 150.0
+  },
+  "ticks": 20
+ },
+ "episodes": 3,
+ "fixture_jitter_m": 0.01,
+ "held": {
+  "force_N": 1.0,
+  "ticks": 5
+ },
+ "latch": {
+  "hold_ticks": 50,
+  "horn_fastening": "at_rest",
+  "note": "task version 3 (AP-17, maintainer decision D): a fork is fastened wherever it rests on its horn (axis / axial within tolerance, < 5 mm/s and < 2 deg/s for 50 ticks) at the rotation it rests at; the horn mate counts only within 3 deg of the design (graded completion; version 2 'keyed' fastened only at the design, a physical probe of the hidden zero)",
+  "rel_speed_max_m_s": 0.005,
+  "rest_ang_speed_max_deg_s": 2.0,
+  "tolerance_scale": 1.0
+ },
+ "max_ticks_per_step": 500,
+ "note": "the grader's cell configuration as far as it is public (camera mounts, the bench plan and the oracle's settings are not)",
+ "pads": {
+  "condim": 4,
+  "note": "the fingertip pads' contact (defect fix 2026-09-28): the robot model's default soft pad contact (solref 0.02 s) let a held servo creep ~9 % of every hand rotation about the approach axis",
+  "solref": [
+   0.002,
+   1.0
+  ]
+ },
+ "route_gate": {
+  "forbidden_calls": [
+   "torch.optim",
+   ".backward(",
+   "jax.grad"
+  ],
+  "forbidden_extensions": [
+   ".pt",
+   ".pth",
+   ".onnx",
+   ".safetensors",
+   ".ckpt",
+   ".h5",
+   ".pb",
+   ".pkl",
+   ".npz"
+  ],
+  "max_submission_mb": 60
+ },
+ "safety": {
+  "panda_force_N": 30.0,
+  "part_speed_m_s": 3.0
+ },
+ "settle_s": 0.6,
+ "silence_s": 120.0,
+ "sim_cap_s": 1200.0,
+ "wall_cap_s": 2400.0
+}

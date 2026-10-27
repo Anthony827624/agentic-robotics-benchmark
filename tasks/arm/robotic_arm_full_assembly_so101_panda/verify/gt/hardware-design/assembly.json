@@ -1,0 +1,387 @@
+{
+ "design_notes": "cell design of an information-tier GT arm: tier link frames (world-aligned at the straight-up zero, origin on the joint axis), joint origins rotated to the reference angles so that q_cell = 0 is the reference pose (bus-zero design: every servo reads bus 0); limits = the collision-free operating box minus the reference",
+ "joints": [
+  {
+   "axis": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "child_link": "shoulder",
+   "driven_by": [
+    "S1"
+   ],
+   "limits": {
+    "lower": -2.337117864,
+    "upper": 1.502606136
+   },
+   "name": "base_yaw",
+   "origin": {
+    "rpy": [
+     0.0,
+     0.0,
+     0.417255864
+    ],
+    "xyz": [
+     0.0,
+     0.0,
+     70.824
+    ]
+   },
+   "parent_link": "base",
+   "slide_tier_angle_rad": 0.0,
+   "tier_angle_at_zero_rad": 0.417255864,
+   "type": "revolute"
+  },
+  {
+   "axis": [
+    1.0,
+    0.0,
+    0.0
+   ],
+   "child_link": "upper_arm",
+   "driven_by": [
+    "S2"
+   ],
+   "limits": {
+    "lower": -1.978348284,
+    "upper": 1.268522716
+   },
+   "name": "shoulder_pitch",
+   "origin": {
+    "rpy": [
+     0.226526284,
+     0.0,
+     0.0
+    ],
+    "xyz": [
+     18.2778,
+     30.3992,
+     61.495
+    ]
+   },
+   "parent_link": "shoulder",
+   "slide_tier_angle_rad": -0.243786893,
+   "tier_angle_at_zero_rad": 0.226526284,
+   "type": "revolute"
+  },
+  {
+   "axis": [
+    1.0,
+    0.0,
+    0.0
+   ],
+   "child_link": "forearm",
+   "driven_by": [
+    "S3"
+   ],
+   "limits": {
+    "lower": -1.039359013,
+    "upper": 1.282020987
+   },
+   "name": "elbow_pitch",
+   "origin": {
+    "rpy": [
+     -0.877760987,
+     0.0,
+     0.0
+    ],
+    "xyz": [
+     0.0,
+     0.0,
+     124.622861
+    ]
+   },
+   "parent_link": "upper_arm",
+   "slide_tier_angle_rad": -1.288482056,
+   "tier_angle_at_zero_rad": -0.877760987,
+   "type": "revolute"
+  },
+  {
+   "axis": [
+    1.0,
+    0.0,
+    0.0
+   ],
+   "child_link": "wrist",
+   "driven_by": [
+    "S4"
+   ],
+   "limits": {
+    "lower": -1.265382755,
+    "upper": 1.701677245
+   },
+   "name": "wrist_pitch",
+   "origin": {
+    "rpy": [
+     -0.214396245,
+     0.0,
+     0.0
+    ],
+    "xyz": [
+     0.0,
+     0.0,
+     149.560518
+    ]
+   },
+   "parent_link": "forearm",
+   "slide_tier_angle_rad": -0.038527378,
+   "tier_angle_at_zero_rad": -0.214396245,
+   "type": "revolute"
+  },
+  {
+   "axis": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "child_link": "gripper",
+   "driven_by": [
+    "S5"
+   ],
+   "limits": {
+    "lower": -1.942534201,
+    "upper": 3.642519799
+   },
+   "name": "wrist_roll",
+   "origin": {
+    "rpy": [
+     0.0,
+     0.0,
+     -0.849992799
+    ],
+    "xyz": [
+     -18.1,
+     0.0,
+     68.763076
+    ]
+   },
+   "parent_link": "wrist",
+   "slide_tier_angle_rad": 0.048679561,
+   "tier_angle_at_zero_rad": -0.849992799,
+   "type": "revolute"
+  },
+  {
+   "axis": [
+    1.0,
+    0.0,
+    0.0
+   ],
+   "child_link": "jaw",
+   "driven_by": [
+    "S6"
+   ],
+   "limits": {
+    "lower": -0.810670606,
+    "upper": 1.109191394
+   },
+   "name": "jaw",
+   "origin": {
+    "rpy": [
+     0.636137606,
+     0.0,
+     0.0
+    ],
+    "xyz": [
+     -18.799961,
+     -20.199986,
+     23.399988
+    ]
+   },
+   "parent_link": "gripper",
+   "slide_tier_angle_rad": 0.0,
+   "tier_angle_at_zero_rad": 0.636137606,
+   "type": "revolute"
+  }
+ ],
+ "links": [
+  {
+   "attached_parts": [
+    {
+     "name": "base_clamp",
+     "part_file": "parts/base_clamp.stl",
+     "role": "bracket: the servo clamp of this link; bolts abstracted -> part_seat mate",
+     "rpy": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "xyz": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "name": "base",
+   "part_file": "parts/base.stl",
+   "servo_occurrences": [
+    {
+     "mesh_variant": "with_horn",
+     "rpy": [
+      0.0,
+      0.0,
+      1.570796327
+     ],
+     "servo_id": "S1",
+     "xyz": [
+      0.0,
+      0.0,
+      37.724
+     ]
+    }
+   ]
+  },
+  {
+   "attached_parts": [
+    {
+     "name": "shoulder_clamp",
+     "part_file": "parts/shoulder_clamp.stl",
+     "role": "bracket: the servo clamp of this link; bolts abstracted -> part_seat mate",
+     "rpy": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "xyz": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "name": "shoulder",
+   "part_file": "parts/shoulder.stl",
+   "servo_occurrences": [
+    {
+     "mesh_variant": "with_horn",
+     "rpy": [
+      0.0,
+      -1.570796327,
+      -3.141592654
+     ],
+     "servo_id": "S2",
+     "xyz": [
+      -14.822241,
+      30.3992,
+      61.495
+     ]
+    }
+   ]
+  },
+  {
+   "attached_parts": [],
+   "name": "upper_arm",
+   "part_file": "parts/upper_arm.stl",
+   "servo_occurrences": [
+    {
+     "mesh_variant": "with_horn",
+     "rpy": [
+      1.570796327,
+      -0.250280736,
+      1.570796327
+     ],
+     "servo_id": "S3",
+     "xyz": [
+      -33.100018,
+      6e-06,
+      124.622871
+     ]
+    }
+   ]
+  },
+  {
+   "attached_parts": [
+    {
+     "name": "wrist_clamp",
+     "part_file": "parts/wrist_clamp.stl",
+     "role": "bracket: the servo clamp of this link; bolts abstracted -> part_seat mate",
+     "rpy": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "xyz": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "name": "forearm",
+   "part_file": "parts/forearm.stl",
+   "servo_occurrences": [
+    {
+     "mesh_variant": "with_horn",
+     "rpy": [
+      1.570796327,
+      -1.536036801,
+      1.570796327
+     ],
+     "servo_id": "S4",
+     "xyz": [
+      -33.1,
+      0.0,
+      149.560518
+     ]
+    }
+   ]
+  },
+  {
+   "attached_parts": [],
+   "name": "wrist",
+   "part_file": "parts/wrist.stl",
+   "servo_occurrences": [
+    {
+     "mesh_variant": "no_horn",
+     "rpy": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "servo_id": "S5",
+     "xyz": [
+      -18.1,
+      0.0,
+      35.663035
+     ]
+    }
+   ]
+  },
+  {
+   "attached_parts": [],
+   "name": "gripper",
+   "part_file": "parts/gripper.stl",
+   "servo_occurrences": [
+    {
+     "mesh_variant": "with_horn",
+     "rpy": [
+      1.570796663,
+      4.7e-08,
+      -1.570796373
+     ],
+     "servo_id": "S6",
+     "xyz": [
+      14.300017,
+      -20.199986,
+      23.40001
+     ]
+    }
+   ]
+  },
+  {
+   "attached_parts": [],
+   "name": "jaw",
+   "part_file": "parts/jaw.stl",
+   "servo_occurrences": []
+  }
+ ],
+ "root_link": "base",
+ "units": {
+  "angle": "rad",
+  "length": "mm"
+ },
+ "zero_convention": {
+  "q_tier = q_cell + tier_angle_at_zero_rad": true
+ }
+}

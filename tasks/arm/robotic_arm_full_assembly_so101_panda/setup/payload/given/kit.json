@@ -1,0 +1,97 @@
+{
+ "frames": "each STL is the file that went to the printer: millimetres, the part in its print orientation (largest flat face on z = 0, centred in x / y); the servo files are the vendor's CAD in the servo's own frame (datasheet)",
+ "material": "PLA+, ~20 % infill, one colour for every printed part",
+ "parts": [
+  {
+   "file": "parts/P01.stl",
+   "id": "P01",
+   "mass_g": 65,
+   "quantity": 1,
+   "role": "base"
+  },
+  {
+   "file": "parts/P02.stl",
+   "id": "P02",
+   "mass_g": 10,
+   "quantity": 1,
+   "role": "base servo clamp"
+  },
+  {
+   "file": "parts/P03.stl",
+   "id": "P03",
+   "mass_g": 33,
+   "quantity": 1,
+   "role": "shoulder"
+  },
+  {
+   "file": "parts/P04.stl",
+   "id": "P04",
+   "mass_g": 7,
+   "quantity": 1,
+   "role": "shoulder servo clamp"
+  },
+  {
+   "file": "parts/P05.stl",
+   "id": "P05",
+   "mass_g": 56,
+   "quantity": 1,
+   "role": "upper arm"
+  },
+  {
+   "file": "parts/P06.stl",
+   "id": "P06",
+   "mass_g": 44,
+   "quantity": 1,
+   "role": "forearm"
+  },
+  {
+   "file": "parts/P07.stl",
+   "id": "P07",
+   "mass_g": 6,
+   "quantity": 1,
+   "role": "wrist servo clamp"
+  },
+  {
+   "file": "parts/P08.stl",
+   "id": "P08",
+   "mass_g": 15,
+   "quantity": 1,
+   "role": "wrist"
+  },
+  {
+   "file": "parts/P09.stl",
+   "id": "P09",
+   "mass_g": 24,
+   "quantity": 1,
+   "role": "gripper body"
+  },
+  {
+   "file": "parts/P10.stl",
+   "id": "P10",
+   "mass_g": 9,
+   "quantity": 1,
+   "role": "moving jaw"
+  }
+ ],
+ "schema": "arm-kit/1",
+ "servos": [
+  {
+   "catalogue_id": "BUS-SERVO-12V-A",
+   "file": "parts/servo.stl",
+   "kind": "bus servo (with horn)",
+   "note": "the horn is already fitted on the output spline",
+   "quantity": 5
+  },
+  {
+   "catalogue_id": "BUS-SERVO-12V-A",
+   "file": "parts/servo_hornless.stl",
+   "kind": "bus servo (horn-less)",
+   "note": "fitted where a joint needs no horn on its output (the kit's sixth servo)",
+   "quantity": 1
+  }
+ ],
+ "units": {
+  "length": "mm",
+  "mass": "g"
+ }
+}

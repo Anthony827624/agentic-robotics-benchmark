@@ -1,0 +1,14 @@
+{
+ "alias": "hidden",
+ "anchor_hints": {
+  "forearm_station_dz_mm": 0.0
+ },
+ "colour": "signal_orange",
+ "id": "H_asm2",
+ "rgba": [
+  0.93,
+  0.42,
+  0.1,
+  1.0
+ ]
+}
