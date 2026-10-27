@@ -1,24 +1,14 @@
-"""Independent HOT3D archival-motion replay driver (no runner/policy/checkpoint).
+"""Open-loop replay of absolute joint-position PD targets in Isaac Sim / PhysX.
 
-Replays the two exported success clips (m676 / m671) through the shared Isaac
-eval env in two modes:
+The spec names a motion file (the scene: robot start state, object, references), the
+envs that replay a submission and the NPZ each of them reads. Every env starts from
+its motion's frame 0, optionally perturbed (``apply_initial_perturbation``); the
+targets are injected through ``DirectPDAction.load_targets`` and stepped open-loop at
+60 Hz without object-assist forces, while the standard evaluation callbacks record the
+tracking errors. ``report.json`` lists, per replayed env, the time-averaged errors after
+the grace period.
 
-  raw    num_envs=1024, batch-0 motion plan of the source eval; the archived
-         raw policy actions are re-fed to envs 109/532 (all other envs get
-         zeros) for a short run. Purpose: capture authoritative action-term
-         runtime parameters + per-step raw/processed/reference series for the
-         offline raw->absolute-PD conversion. NOT a success claim.
-
-  direct num_envs=33, one filler motion per object slot and the two target
-         clips at env 1/15; the converted 60 Hz absolute PD target sequences
-         (padded to 160 rows) are injected via DirectPDAction.load_targets and
-         replayed open-loop for 160 policy steps, with the standard eval
-         callbacks (TrackingPerformance / ContactPerformance / RolloutRecord /
-         ActionCapture) driven exactly like evaluation.evaluate._rollout and
-         scored with the UNMODIFIED full SR@1.0 standard.
-
-GPU discipline: run only with CUDA_VISIBLE_DEVICES pinned to the UUID of a
-verified-free GPU. Writes nothing under outputs/hot3d_success/.
+Usage: replay_hot3d_pd.py --spec spec.json --out-dir <dir>
 """
 
 from __future__ import annotations
@@ -105,6 +95,8 @@ def run(args: argparse.Namespace) -> dict:
     spec_path = Path(args.spec).resolve()
     spec = json.loads(spec_path.read_text())
     mode = spec["mode"]
+    if mode != "direct":
+        raise ValueError(f"unsupported replay mode {mode!r}")
     num_envs = int(spec["num_envs"])
     out_dir = Path(args.out_dir).resolve()
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -124,9 +116,8 @@ def run(args: argparse.Namespace) -> dict:
             "eval.command.start_frame=0",
             "eval.success_criterion=full",
             "eval.stop_when_all_solved=false",
+            "envs/actions@actions=replay_pd",
         ]
-        if mode == "direct":
-            overrides.append("envs/actions@actions=replay_pd")
         cfg = hydra.compose(config_name="flashdexretarget", overrides=overrides)
     OmegaConf.resolve(cfg)
 
@@ -160,23 +151,15 @@ def run(args: argparse.Namespace) -> dict:
 
     # ── callbacks: the driver replaces index 0 (the eval-setup callback) ──────
     callbacks = [instantiate(cb) for cb in cfg.eval.callbacks[1:]]
-    if mode == "raw":
-        capture = ActionCapture(
-            command_name=cfg.eval.command_name,
-            mode="raw",
-            env_indices=[int(t["env_1024"]) for t in spec["targets"]],
-            max_steps=int(spec["capture_max_steps"]),
-            out_dir=out_dir,
-        )
-    else:
-        capture = ActionCapture(
+    callbacks.append(
+        ActionCapture(
             command_name=cfg.eval.command_name,
             mode="direct",
             env_indices=[int(e) for e in spec["target_envs"]],
             max_steps=None,
             out_dir=out_dir,
         )
-    callbacks.append(capture)
+    )
     metric_cbs = [cb for cb in callbacks if hasattr(cb, "reduce_state")]
     states: dict[int, list] = {id(cb): [] for cb in metric_cbs}
 
@@ -191,7 +174,7 @@ def run(args: argparse.Namespace) -> dict:
         "spec": str(spec_path),
     }
 
-    max_steps = int(spec["capture_max_steps"]) if mode == "raw" else int(spec["steps"])
+    max_steps = int(spec["steps"])
     try:
         with torch.no_grad():
             # Same protocol as evaluation.evaluate._rollout: every callback gets
@@ -200,92 +183,54 @@ def run(args: argparse.Namespace) -> dict:
             for cb in callbacks:
                 if hasattr(cb, "on_eval_setup"):
                     cb.on_eval_setup(raw_eval)
-            if mode == "raw":
-                plan_ids = torch.tensor(
-                    spec["batch_motion_ids"][0], dtype=torch.long, device=device
+            motion_ids = torch.tensor(
+                spec["motion_ids"], dtype=torch.long, device=device
+            )
+            cmd.motion_ids[:] = motion_ids
+            term = action_term(raw_eval)
+            env_ids = torch.tensor(
+                spec["target_envs"], dtype=torch.long, device=device
+            )
+            pds = []
+            for env_idx, mid in zip(
+                spec["target_envs"], spec["target_motion_ids"], strict=True
+            ):
+                entry = spec["pd_targets"][str(mid)]
+                pd_path = Path(entry["path"])
+                assert pd_path.exists(), pd_path
+                arr = np.load(pd_path)["pd_targets"]
+                pds.append(torch.from_numpy(np.ascontiguousarray(arr)))
+                print(
+                    f"[replay] env{env_idx} <= m{mid} pd targets {arr.shape} "
+                    f"sha_ok={pd_path.stat().st_size > 0}",
+                    flush=True,
                 )
-                env_plan = getattr(raw_eval, "_isaac_eval_plan", None)
-                if env_plan is not None:
-                    live = env_plan[0]["motion_ids"]
-                    assert torch.equal(plan_ids, live), (
-                        "spec batch0 != env eval plan batch0"
-                    )
-                cmd.motion_ids[:] = plan_ids
-                npz = {
-                    t["motion_id"]: np.load(t["source_npz"]) for t in spec["targets"]
-                }
-                eval_env.reset()
+            targets = torch.stack(pds, dim=1).to(device)  # (T, n_sel, 56)
+            term.load_targets(env_ids, targets)
+            eval_env.reset()
+            if spec.get("perturbation"):
+                source_info["perturbation"] = apply_initial_perturbation(
+                    raw_eval, cmd, env_ids, spec["perturbation"]
+                )
+            for cb in callbacks:
+                cb.on_start(raw_eval)
+            for k in range(max_steps):
+                eval_env.step(torch.zeros(num_envs, 56, device=device))
                 for cb in callbacks:
-                    cb.on_start(raw_eval)
-                for k in range(max_steps):
-                    actions = torch.zeros(num_envs, 56, device=device)
-                    for t in spec["targets"]:
-                        actions[int(t["env_1024"])] = torch.from_numpy(
-                            np.ascontiguousarray(npz[t["motion_id"]]["actions"][k])
-                        ).to(device)
-                    eval_env.step(actions)
-                    for cb in callbacks:
-                        cb.on_step(raw_eval)
-                active_mask = torch.ones(num_envs, dtype=torch.bool, device=device)
-            else:
-                motion_ids = torch.tensor(
-                    spec["motion_ids"], dtype=torch.long, device=device
-                )
-                cmd.motion_ids[:] = motion_ids
-                term = action_term(raw_eval)
-                env_ids = torch.tensor(
-                    spec["target_envs"], dtype=torch.long, device=device
-                )
-                pds = []
-                for env_idx, mid in zip(
-                    spec["target_envs"], spec["target_motion_ids"], strict=True
-                ):
-                    entry = spec["pd_targets"][str(mid)]
-                    pd_path = Path(entry["path"])
-                    assert pd_path.exists(), pd_path
-                    arr = np.load(pd_path)["pd_targets"]
-                    pds.append(torch.from_numpy(np.ascontiguousarray(arr)))
-                    print(
-                        f"[replay] env{env_idx} <= m{mid} pd targets {arr.shape} "
-                        f"sha_ok={pd_path.stat().st_size > 0}",
-                        flush=True,
-                    )
-                targets = torch.stack(pds, dim=1).to(device)  # (T, n_sel, 56)
-                term.load_targets(env_ids, targets)
-                eval_env.reset()
-                if spec.get("perturbation"):
-                    source_info["perturbation"] = apply_initial_perturbation(
-                        raw_eval, cmd, env_ids, spec["perturbation"]
-                    )
-                for cb in callbacks:
-                    cb.on_start(raw_eval)
-                for k in range(max_steps):
-                    eval_env.step(torch.zeros(num_envs, 56, device=device))
-                    for cb in callbacks:
-                        cb.on_step(raw_eval)
-                active_mask = torch.zeros(num_envs, dtype=torch.bool, device=device)
-                active_mask[env_ids] = True
+                    cb.on_step(raw_eval)
+            active_mask = torch.zeros(num_envs, dtype=torch.bool, device=device)
+            active_mask[env_ids] = True
             for cb in metric_cbs:
                 states[id(cb)].append(cb.collect_state(active_mask))
     finally:
         eval_env.exit_eval()
 
     metrics = reduce_metrics(callbacks, states)
-    success_dir = None
-    if mode == "direct":
-        success_dir = out_dir / "success"
-        metrics.update(
-            tracking_success_metrics(
-                raw_eval,
-                cfg.eval,
-                callbacks,
-                states,
-                None,
-                success_dir,
-                0,
-                source_info,
-            )
+    metrics.update(
+        tracking_success_metrics(
+            raw_eval, cfg.eval, callbacks, states, None, out_dir / "success", 0, source_info
         )
+    )
     metrics["num_batches"] = 1.0
     metrics["num_envs"] = float(num_envs)
     metrics = {
@@ -302,36 +247,35 @@ def run(args: argparse.Namespace) -> dict:
         "metrics": metrics,
         "source_info": source_info,
     }
-    if mode == "direct":
-        tp_cb = next(cb for cb in metric_cbs if hasattr(cb, "per_env_fail"))
-        st = states[id(tp_cb)]
-        fail = tp_cb.per_env_fail(st)
-        fail_obj = tp_cb.per_env_fail_obj(st)
-        scored = tp_cb.per_env_scored(st)
-        mids = tp_cb.per_env_motion_ids(st)
-        cat = tp_cb._concat(st)
-        errors = {
-            k: v.max(dim=-1).values
-            for k, v in tp_cb._side_errors(
-                cat, cat["count_per_env"].clamp(min=1.0)
-            ).items()
-        }
-        clips = []
-        for row in range(int(mids.numel())):
-            clips.append(
-                {
-                    "motion_id": int(mids[row].item()),
-                    "scored": bool(scored[row].item()),
-                    "full_pass_sr1.0": bool(
-                        scored[row].item() and not fail[row, tp_cb.k1_idx].item()
-                    ),
-                    "obj_pass_sr1.0": bool(
-                        scored[row].item() and not fail_obj[row, tp_cb.k1_idx].item()
-                    ),
-                    "errors": {k: float(v[row].item()) for k, v in errors.items()},
-                }
-            )
-        report["clips"] = clips
+    tp_cb = next(cb for cb in metric_cbs if hasattr(cb, "per_env_fail"))
+    st = states[id(tp_cb)]
+    fail = tp_cb.per_env_fail(st)
+    fail_obj = tp_cb.per_env_fail_obj(st)
+    scored = tp_cb.per_env_scored(st)
+    mids = tp_cb.per_env_motion_ids(st)
+    cat = tp_cb._concat(st)
+    errors = {
+        k: v.max(dim=-1).values
+        for k, v in tp_cb._side_errors(
+            cat, cat["count_per_env"].clamp(min=1.0)
+        ).items()
+    }
+    clips = []
+    for row in range(int(mids.numel())):
+        clips.append(
+            {
+                "motion_id": int(mids[row].item()),
+                "scored": bool(scored[row].item()),
+                "full_pass_sr1.0": bool(
+                    scored[row].item() and not fail[row, tp_cb.k1_idx].item()
+                ),
+                "obj_pass_sr1.0": bool(
+                    scored[row].item() and not fail_obj[row, tp_cb.k1_idx].item()
+                ),
+                "errors": {k: float(v[row].item()) for k, v in errors.items()},
+            }
+        )
+    report["clips"] = clips
     (out_dir / "report.json").write_text(json.dumps(report, indent=1))
     print(json.dumps(report, indent=1), flush=True)
 
@@ -345,20 +289,17 @@ def main() -> None:
     ap.add_argument(
         "--spec",
         required=True,
-        help="spec_1024.json (raw) or spec_33.json (direct)",
+        help="replay spec (motion file, target envs, PD target files)",
     )
     ap.add_argument(
         "--out-dir",
         required=True,
-        help="task-local output dir (must NOT be outputs/hot3d_success/*)",
+        help="output directory for report.json",
     )
     args = ap.parse_args()
     report = run(args)
-    ok = True
-    if report["mode"] == "direct":
-        for c in report["clips"]:
-            ok = ok and c["full_pass_sr1.0"]
-        print(f"[replay] direct full SR@1.0 per-clip pass: {ok}", flush=True)
+    ok = all(c["full_pass_sr1.0"] for c in report["clips"])
+    print(f"[replay] full SR@1.0 pass on every replayed env: {ok}", flush=True)
     sys.stdout.flush()
     sys.stderr.flush()
     os._exit(0 if ok else 2)

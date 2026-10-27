@@ -1,5 +1,5 @@
-asset_path: /data/hz108/projects/FlashDexRetarget/assets/robot/sharpa/urdf/sharpa_bimanual.urdf
-usd_dir: /data/hz108/projects/FlashDexRetarget/assets/robot/sharpa/urdf/converted
+asset_path: assets/robot/sharpa/urdf/sharpa_bimanual.urdf
+usd_dir: assets/robot/sharpa/urdf/converted
 usd_file_name: sharpa_bimanual.usd
 force_usd_conversion: true
 make_instanceable: false
