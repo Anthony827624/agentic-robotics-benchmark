@@ -1,0 +1,53 @@
+{
+ "bus_voltage_v": 12.0,
+ "format": "bom-info/2",
+ "parts": [
+  {
+   "count": 1,
+   "joint": "base_yaw",
+   "part_id": "KM-S30-12",
+   "role": "servo"
+  },
+  {
+   "count": 1,
+   "joint": "shoulder_pitch",
+   "part_id": "KM-S45-12",
+   "role": "servo"
+  },
+  {
+   "count": 1,
+   "joint": "elbow_pitch",
+   "part_id": "KM-S35-12",
+   "role": "servo"
+  },
+  {
+   "count": 1,
+   "joint": "wrist_pitch",
+   "part_id": "KM-S25-12",
+   "role": "servo"
+  },
+  {
+   "count": 1,
+   "joint": "wrist_roll",
+   "part_id": "KM-C6-12",
+   "role": "servo"
+  },
+  {
+   "count": 1,
+   "joint": "jaw",
+   "part_id": "KM-S25-12",
+   "role": "servo"
+  },
+  {
+   "count": 1,
+   "part_id": "KM-TTL-ADP",
+   "role": "bus_board"
+  },
+  {
+   "count": 1,
+   "part_id": "PSU-12V-10A",
+   "role": "psu"
+  }
+ ],
+ "total_cost_usd": 131.0
+}

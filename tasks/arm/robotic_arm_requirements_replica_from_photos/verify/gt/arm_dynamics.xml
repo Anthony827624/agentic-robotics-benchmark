@@ -1,0 +1,60 @@
+<mujoco model="gt_arm_dynamics">
+  <compiler angle="radian" meshdir="assets/"/>
+
+  <default>
+    <default class="arm">
+      <joint armature="0.028" damping="0.6" frictionloss="0.052"/>
+      <general forcerange="-2.94 2.94" biastype="affine" gainprm="998.22" biasprm="0 -998.22 -2.731"/>
+      <default class="visual">
+        <geom type="mesh" contype="0" conaffinity="0" group="2"/>
+      </default>
+      <default class="collision">
+        <geom group="3"/>
+      </default>
+    </default>
+  </default>
+
+  <worldbody>
+    <body name="base" childclass="arm">
+      <inertial pos="4.34224e-05 -0.0288818 0.0280168" quat="0.301832 0.640485 0.231369 0.667192" mass="0.0958554" diaginertia="0.000133084 0.000104344 0.000101886"/>
+      <body name="shoulder" pos="0 0 0.0748">
+        <inertial pos="0.000303688 0.0326838 0.000805178" quat="0.99628 -0.0691137 0.0120356 0.0500554" mass="0.0408167" diaginertia="3.37136e-05 3.2702e-05 1.36666e-05"/>
+        <joint name="base_yaw" range="-1.62722 1.78435"/>
+        <body name="upper_arm" pos="0.0182778 0.0319812 0.05948">
+          <inertial pos="-0.0181972 -0.0150834 0.0523834" quat="0.697765 0.109028 -0.0955761 0.7015" mass="0.0445622" diaginertia="6.3848e-05 4.77902e-05 2.0176e-05"/>
+          <joint name="shoulder_pitch" range="-1.67398 1.3771" axis="1 0 0"/>
+          <body name="forearm" pos="0 0 0.104066">
+            <inertial pos="-0.0179324 0.00217785 0.0727374" quat="0.707582 -0.0118784 0.00613606 0.706505" mass="0.0576597" diaginertia="0.000108496 9.19865e-05 2.3768e-05"/>
+            <joint name="elbow_pitch" range="-1.61784 0.167713" axis="1 0 0"/>
+            <body name="wrist" pos="0 0 0.156169">
+              <inertial pos="-0.0199794 -0.00038988 0.0286056" quat="0.684912 -0.676944 0.18906 0.192091" mass="0.0217256" diaginertia="9.34801e-06 1.20909e-05 1.7552e-05"/>
+              <joint name="wrist_pitch" range="-1.34131 1.22657" axis="1 0 0"/>
+              <body name="gripper" pos="-0.0181 0 0.0639731">
+                <inertial pos="-0.000252415 0.0145615 0.0321333" quat="0.989329 -0.126753 -0.0045132 -0.0717058" mass="0.0285173" diaginertia="2.55887e-05 2.41796e-05 8.95517e-06"/>
+                <joint name="wrist_roll" range="-2.6331 2.42597"/>
+                <site name="tcp" size="0.003" pos="0.000218208 0.0098999 0.106431" quat="0.707107 0 0 -0.707107" group="4" rgba="1 0 0 1"/>
+                <body name="jaw" pos="-0.0188 -0.0202 0.0234">
+                  <inertial pos="0.0192249 0.00149363 0.035043" quat="0.706301 -0.0257539 0.0107273 0.707362" mass="0.0112497" diaginertia="7.75785e-06 6.64674e-06 1.59014e-06"/>
+                  <joint name="jaw" range="-0.173556 1.36196" axis="1 0 0"/>
+                  <site name="jaw_tip" size="0.003" pos="0.0189 0.0123 0.084006" quat="0.707107 0 0 0.707107" group="4" rgba="0 0 1 1"/>
+                </body>
+              </body>
+              <body name="adapter_S5" pos="-0.0361559 0 0.0408594">
+                <inertial pos="-0.0361559 0 0.0408594" mass="0.00465055" diaginertia="1.60327e-06 1.4989e-06 5.81081e-07"/>
+              </body>
+            </body>
+          </body>
+        </body>
+      </body>
+    </body>
+  </worldbody>
+
+  <contact>
+    <exclude name="adj_base_yaw" body1="base" body2="shoulder"/>
+    <exclude name="adj_shoulder_pitch" body1="shoulder" body2="upper_arm"/>
+    <exclude name="adj_elbow_pitch" body1="upper_arm" body2="forearm"/>
+    <exclude name="adj_wrist_pitch" body1="forearm" body2="wrist"/>
+    <exclude name="adj_wrist_roll" body1="wrist" body2="gripper"/>
+    <exclude name="adj_jaw" body1="gripper" body2="jaw"/>
+  </contact>
+</mujoco>

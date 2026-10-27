@@ -1,0 +1,71 @@
+{
+ "az_c": 0.1459951022239667,
+ "az_half": 0.8813420120011789,
+ "brief": {
+  "H": 1.0,
+  "T": 0.91,
+  "bus_voltages_v": [
+   7.5,
+   12.0
+  ],
+  "ceiling": 156.0,
+  "ceiling_factor": 1.190388,
+  "com_offset": 0.025,
+  "eco": 12.0,
+  "harness_drop_v": 0.3,
+  "jaw_close_s": 0.5,
+  "m_hi": 0.268,
+  "m_lo": 0.19,
+  "p_quantile_z": 1.96,
+  "proof": 1.25,
+  "unit_count": 10,
+  "untested_cap": 0.7
+ },
+ "format": "req-i2-layer/1",
+ "objects": [
+  {
+   "diameter_m": 0.06710353165684763,
+   "kind": "jar_lid",
+   "mass_kg": 0.214,
+   "on_scale": false
+  },
+  {
+   "diameter_m": 0.06477397310809505,
+   "kind": "glass_tumbler",
+   "mass_kg": 0.121,
+   "on_scale": false
+  },
+  {
+   "diameter_m": 0.07583799292038258,
+   "kind": "mug_enamel",
+   "mass_kg": 0.268,
+   "on_scale": true
+  }
+ ],
+ "pitches_deg": [
+  -55.0
+ ],
+ "r_max": 0.3585793678114324,
+ "r_min": 0.32011675503902,
+ "tape": {
+  "colour": "yellow",
+  "width_m": 0.019
+ },
+ "tote": {
+  "centre_xy": [
+   0.29593920431659915,
+   0.16606352441616223
+  ],
+  "colour": "grey",
+  "footprint_m": [
+   0.18,
+   0.13
+  ],
+  "height_m": 0.03347715197416211,
+  "side": -1.0,
+  "wall_m": 0.004,
+  "yaw_rad": 0.5113562564220071
+ },
+ "z_lo": 0.02,
+ "z_max": 0.06347715197416211
+}

@@ -1,0 +1,7 @@
+# gitignored generated givens (T16): rebuilt by ../../arm_requirements_replica_from_photos_i2-dev/regen_givens.py --restore,
+# pinned by sha256 in ../verify/given_hashes.json and -dev/evidence/givens_manifest.json
+payload/photos/*.jpg
+payload/practice/*/photos/*.jpg
+payload/datasheets/*.png
+payload/lot_reports/*.png
+payload/practice/*/lot_reports/*.png

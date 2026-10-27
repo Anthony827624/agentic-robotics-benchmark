@@ -1,0 +1,100 @@
+{
+ "format": "sketch-info/2",
+ "geometry": {
+  "forearm_axis_distance": {
+   "nominal": 0.156168684,
+   "tol": 0.0005
+  },
+  "jaw_lever": {
+   "nominal": 0.09351777800000001,
+   "tol": 0.0005
+  },
+  "jaw_stroke": {
+   "nominal": 0.13515500700000002,
+   "tol": 0.0005
+  },
+  "shoulder_axis_height": {
+   "nominal": 0.13428,
+   "tol": 0.0005
+  },
+  "shoulder_axis_offset": {
+   "nominal": 0.0319812,
+   "tol": 0.0005
+  },
+  "upper_arm_axis_distance": {
+   "nominal": 0.10406562700000001,
+   "tol": 0.0005
+  },
+  "wrist_axis_to_tcp": {
+   "nominal": 0.170691713,
+   "tol": 0.0005
+  }
+ },
+ "joint_ranges": {
+  "base_yaw": [
+   -1.6272193308533693,
+   1.7843530687396707
+  ],
+  "elbow_pitch": [
+   -1.6178416767824038,
+   0.1677121784826391
+  ],
+  "shoulder_pitch": [
+   -1.6739854281605573,
+   1.3771031770670699
+  ],
+  "wrist_pitch": [
+   -1.3993413407872866,
+   1.1685423890501987
+  ],
+  "wrist_roll": [
+   -2.6330979573382534,
+   2.425971008357826
+  ]
+ },
+ "joints": {
+  "base_yaw": {
+   "body_class": "standard",
+   "servo_id": "KM-S30-12"
+  },
+  "elbow_pitch": {
+   "body_class": "standard",
+   "servo_id": "KM-S35-12"
+  },
+  "jaw": {
+   "body_class": "standard",
+   "servo_id": "KM-S25-12"
+  },
+  "shoulder_pitch": {
+   "body_class": "standard",
+   "servo_id": "KM-S45-12"
+  },
+  "wrist_pitch": {
+   "body_class": "standard",
+   "servo_id": "KM-S25-12"
+  },
+  "wrist_roll": {
+   "body_class": "compact",
+   "servo_id": "KM-C6-12"
+  }
+ },
+ "links": {
+  "link_1": {
+   "max": 0.10456562700000001,
+   "min": 0.10356562700000001
+  },
+  "link_2": {
+   "max": 0.156668684,
+   "min": 0.155668684
+  },
+  "link_3": {
+   "max": 0.171191713,
+   "min": 0.170191713
+  }
+ },
+ "topology": "5R + jaw",
+ "units": {
+  "angle": "rad",
+  "length": "m"
+ }
+}

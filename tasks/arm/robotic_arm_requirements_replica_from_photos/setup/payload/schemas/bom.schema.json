@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": true,
+  "properties": {
+    "bus_voltage_v": {
+      "enum": [
+        7.5,
+        12,
+        12.0
+      ],
+      "type": "number"
+    },
+    "format": {
+      "type": "string"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "parts": {
+      "items": {
+        "additionalProperties": true,
+        "properties": {
+          "count": {
+            "minimum": 1,
+            "type": "integer"
+          },
+          "joint": {
+            "enum": [
+              "base_yaw",
+              "shoulder_pitch",
+              "elbow_pitch",
+              "wrist_pitch",
+              "wrist_roll",
+              "jaw"
+            ],
+            "type": "string"
+          },
+          "note": {
+            "type": "string"
+          },
+          "part_id": {
+            "type": "string"
+          },
+          "role": {
+            "enum": [
+              "servo",
+              "bus_board",
+              "psu"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "part_id",
+          "count",
+          "role"
+        ],
+        "type": "object"
+      },
+      "minItems": 8,
+      "type": "array"
+    },
+    "total_cost_usd": {
+      "type": "number"
+    }
+  },
+  "required": [
+    "bus_voltage_v",
+    "parts"
+  ],
+  "title": "bom-info/2 bill of materials (per replica unit)",
+  "type": "object"
+}

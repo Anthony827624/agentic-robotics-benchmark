@@ -1,0 +1,417 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": true,
+  "properties": {
+    "geometry": {
+      "additionalProperties": true,
+      "properties": {
+        "forearm_axis_distance": {
+          "additionalProperties": true,
+          "properties": {
+            "nominal": {
+              "type": "number"
+            },
+            "tol": {
+              "minimum": 0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "nominal",
+            "tol"
+          ],
+          "type": "object"
+        },
+        "jaw_lever": {
+          "additionalProperties": true,
+          "properties": {
+            "nominal": {
+              "type": "number"
+            },
+            "tol": {
+              "minimum": 0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "nominal",
+            "tol"
+          ],
+          "type": "object"
+        },
+        "jaw_stroke": {
+          "additionalProperties": true,
+          "properties": {
+            "nominal": {
+              "type": "number"
+            },
+            "tol": {
+              "minimum": 0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "nominal",
+            "tol"
+          ],
+          "type": "object"
+        },
+        "shoulder_axis_height": {
+          "additionalProperties": true,
+          "properties": {
+            "nominal": {
+              "type": "number"
+            },
+            "tol": {
+              "minimum": 0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "nominal",
+            "tol"
+          ],
+          "type": "object"
+        },
+        "shoulder_axis_offset": {
+          "additionalProperties": true,
+          "properties": {
+            "nominal": {
+              "type": "number"
+            },
+            "tol": {
+              "minimum": 0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "nominal",
+            "tol"
+          ],
+          "type": "object"
+        },
+        "upper_arm_axis_distance": {
+          "additionalProperties": true,
+          "properties": {
+            "nominal": {
+              "type": "number"
+            },
+            "tol": {
+              "minimum": 0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "nominal",
+            "tol"
+          ],
+          "type": "object"
+        },
+        "wrist_axis_to_tcp": {
+          "additionalProperties": true,
+          "properties": {
+            "nominal": {
+              "type": "number"
+            },
+            "tol": {
+              "minimum": 0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "nominal",
+            "tol"
+          ],
+          "type": "object"
+        }
+      },
+      "required": [
+        "shoulder_axis_height",
+        "shoulder_axis_offset",
+        "upper_arm_axis_distance",
+        "forearm_axis_distance",
+        "wrist_axis_to_tcp",
+        "jaw_lever",
+        "jaw_stroke"
+      ],
+      "type": "object"
+    },
+    "joint_ranges": {
+      "additionalProperties": false,
+      "properties": {
+        "base_yaw": {
+          "items": {
+            "type": "number"
+          },
+          "maxItems": 2,
+          "minItems": 2,
+          "type": "array"
+        },
+        "elbow_pitch": {
+          "items": {
+            "type": "number"
+          },
+          "maxItems": 2,
+          "minItems": 2,
+          "type": "array"
+        },
+        "jaw": {
+          "items": {
+            "type": "number"
+          },
+          "maxItems": 2,
+          "minItems": 2,
+          "type": "array"
+        },
+        "shoulder_pitch": {
+          "items": {
+            "type": "number"
+          },
+          "maxItems": 2,
+          "minItems": 2,
+          "type": "array"
+        },
+        "wrist_pitch": {
+          "items": {
+            "type": "number"
+          },
+          "maxItems": 2,
+          "minItems": 2,
+          "type": "array"
+        },
+        "wrist_roll": {
+          "items": {
+            "type": "number"
+          },
+          "maxItems": 2,
+          "minItems": 2,
+          "type": "array"
+        }
+      },
+      "required": [
+        "base_yaw",
+        "shoulder_pitch",
+        "elbow_pitch",
+        "wrist_pitch",
+        "wrist_roll"
+      ],
+      "type": "object"
+    },
+    "joints": {
+      "additionalProperties": false,
+      "properties": {
+        "base_yaw": {
+          "properties": {
+            "body_class": {
+              "enum": [
+                "standard",
+                "compact",
+                "large"
+              ],
+              "type": "string"
+            },
+            "servo_id": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "servo_id",
+            "body_class"
+          ],
+          "type": "object"
+        },
+        "elbow_pitch": {
+          "properties": {
+            "body_class": {
+              "enum": [
+                "standard",
+                "compact",
+                "large"
+              ],
+              "type": "string"
+            },
+            "servo_id": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "servo_id",
+            "body_class"
+          ],
+          "type": "object"
+        },
+        "jaw": {
+          "properties": {
+            "body_class": {
+              "enum": [
+                "standard",
+                "compact",
+                "large"
+              ],
+              "type": "string"
+            },
+            "servo_id": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "servo_id",
+            "body_class"
+          ],
+          "type": "object"
+        },
+        "shoulder_pitch": {
+          "properties": {
+            "body_class": {
+              "enum": [
+                "standard",
+                "compact",
+                "large"
+              ],
+              "type": "string"
+            },
+            "servo_id": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "servo_id",
+            "body_class"
+          ],
+          "type": "object"
+        },
+        "wrist_pitch": {
+          "properties": {
+            "body_class": {
+              "enum": [
+                "standard",
+                "compact",
+                "large"
+              ],
+              "type": "string"
+            },
+            "servo_id": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "servo_id",
+            "body_class"
+          ],
+          "type": "object"
+        },
+        "wrist_roll": {
+          "properties": {
+            "body_class": {
+              "enum": [
+                "standard",
+                "compact",
+                "large"
+              ],
+              "type": "string"
+            },
+            "servo_id": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "servo_id",
+            "body_class"
+          ],
+          "type": "object"
+        }
+      },
+      "required": [
+        "base_yaw",
+        "shoulder_pitch",
+        "elbow_pitch",
+        "wrist_pitch",
+        "wrist_roll",
+        "jaw"
+      ],
+      "type": "object"
+    },
+    "links": {
+      "properties": {
+        "link_1": {
+          "properties": {
+            "max": {
+              "type": "number"
+            },
+            "min": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "min",
+            "max"
+          ],
+          "type": "object"
+        },
+        "link_2": {
+          "properties": {
+            "max": {
+              "type": "number"
+            },
+            "min": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "min",
+            "max"
+          ],
+          "type": "object"
+        },
+        "link_3": {
+          "properties": {
+            "max": {
+              "type": "number"
+            },
+            "min": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "min",
+            "max"
+          ],
+          "type": "object"
+        }
+      },
+      "required": [
+        "link_1",
+        "link_2",
+        "link_3"
+      ],
+      "type": "object"
+    },
+    "topology": {
+      "type": "string"
+    },
+    "units": {
+      "properties": {
+        "angle": {
+          "const": "rad"
+        },
+        "length": {
+          "const": "m"
+        }
+      },
+      "required": [
+        "length",
+        "angle"
+      ],
+      "type": "object"
+    }
+  },
+  "required": [
+    "units",
+    "geometry",
+    "joint_ranges",
+    "joints",
+    "links"
+  ],
+  "title": "sketch-info/2 kinematic sketch of the replica",
+  "type": "object"
+}

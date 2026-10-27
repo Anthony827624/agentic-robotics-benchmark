@@ -1,0 +1,141 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": true,
+  "description": "Traced requirements of the replica fleet: one item per quantity the brief, the build log, the photos or the documents fix, plus the derived items of brief B-16 (source_id 'derived' with a derivation note). Bounds in the listed units; every item traced to its source.",
+  "properties": {
+    "notes": {
+      "type": "string"
+    },
+    "project": {
+      "type": "string"
+    },
+    "requirements": {
+      "items": {
+        "additionalProperties": true,
+        "properties": {
+          "bound": {
+            "type": "number"
+          },
+          "comparator": {
+            "enum": [
+              ">=",
+              "<=",
+              "==",
+              ">",
+              "<"
+            ],
+            "type": "string"
+          },
+          "derivation": {
+            "type": "string"
+          },
+          "id": {
+            "pattern": "^REQ-[A-Za-z0-9_.-]+$",
+            "type": "string"
+          },
+          "quantity": {
+            "enum": [
+              "bus_voltage",
+              "dwell_time",
+              "eco_cost",
+              "grasp_pitch_angles",
+              "grip_torque",
+              "gripper_close_time",
+              "gripper_opening_min",
+              "harness_drop",
+              "joint_peak_speed:base_yaw",
+              "joint_peak_speed:elbow_pitch",
+              "joint_peak_speed:shoulder_pitch",
+              "joint_peak_speed:wrist_pitch",
+              "joint_peak_speed:wrist_roll",
+              "joint_peak_torque:base_yaw",
+              "joint_peak_torque:elbow_pitch",
+              "joint_peak_torque:shoulder_pitch",
+              "joint_peak_torque:wrist_pitch",
+              "joint_peak_torque:wrist_roll",
+              "joint_rms_torque:base_yaw",
+              "joint_rms_torque:elbow_pitch",
+              "joint_rms_torque:shoulder_pitch",
+              "joint_rms_torque:wrist_pitch",
+              "move_time",
+              "moving_mass",
+              "payload_com_offset",
+              "payload_mass_max",
+              "payload_mass_min",
+              "proof_load_factor",
+              "psu_count",
+              "reach_radius_max",
+              "reach_radius_min",
+              "revolute_dof",
+              "servo_count",
+              "supply_peak_current",
+              "total_cost",
+              "unit_count",
+              "untested_vendor_derating",
+              "workspace_azimuth_max",
+              "workspace_azimuth_min",
+              "workspace_height_max",
+              "workspace_height_min"
+            ],
+            "type": "string"
+          },
+          "source_clause": {
+            "type": "string"
+          },
+          "source_id": {
+            "pattern": "^(B|BL)-[0-9]{2}$|^PH-[0-9]{2}$|^DS-[A-Za-z0-9-]+$|^LR(-[0-9]{4}-[0-9]{4})?$|^derived$",
+            "type": "string"
+          },
+          "unit": {
+            "enum": [
+              "A",
+              "N",
+              "N m",
+              "N.m",
+              "Nm",
+              "USD",
+              "V",
+              "cm",
+              "count",
+              "deg",
+              "deg/s",
+              "fraction",
+              "g",
+              "kg",
+              "kg.cm",
+              "m",
+              "mA",
+              "mm",
+              "ms",
+              "oz.in",
+              "rad",
+              "rad/s",
+              "rpm",
+              "s"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "quantity",
+          "comparator",
+          "bound",
+          "unit",
+          "source_id"
+        ],
+        "type": "object"
+      },
+      "minItems": 1,
+      "type": "array"
+    },
+    "units": {
+      "type": "object"
+    }
+  },
+  "required": [
+    "requirements"
+  ],
+  "title": "req-info/2 requirements sheet",
+  "type": "object"
+}

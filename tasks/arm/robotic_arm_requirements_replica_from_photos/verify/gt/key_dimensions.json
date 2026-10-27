@@ -1,0 +1,126 @@
+{
+ "angle_map": {
+  "base_yaw": [
+   1.0,
+   -0.0
+  ],
+  "elbow_pitch": [
+   1.0,
+   0.0
+  ],
+  "shoulder_pitch": [
+   1.0,
+   -0.0
+  ],
+  "wrist_pitch": [
+   1.0,
+   -0.058031376020116286
+  ],
+  "wrist_roll": [
+   1.0,
+   0.0
+  ]
+ },
+ "appendix_d": {
+  "forearm_axis_distance": 0.156168684,
+  "jaw_lever": 0.09351777800000001,
+  "jaw_stroke": 0.13515500700000002,
+  "shoulder_axis_height": 0.13428,
+  "shoulder_axis_offset": 0.0319812,
+  "upper_arm_axis_distance": 0.10406562700000001,
+  "wrist_axis_to_tcp": 0.170691713
+ },
+ "fk_check": {
+  "forearm_axis_distance": 0.156169,
+  "shoulder_axis_height": 0.13428,
+  "shoulder_axis_offset": 0.0319812,
+  "upper_arm_axis_distance": 0.10406599999999999,
+  "wrist_axis_to_tcp": 0.17069143305046097
+ },
+ "format": "req-info-key-dims/1",
+ "pocket_class": {
+  "base_yaw": "standard",
+  "elbow_pitch": "standard",
+  "jaw": "standard",
+  "shoulder_pitch": "standard",
+  "wrist_pitch": "standard",
+  "wrist_roll": "compact"
+ },
+ "public": {
+  "appendix_d": {
+   "forearm_axis_distance": 0.13500026,
+   "jaw_lever": 0.08158712,
+   "jaw_stroke": 0.140210472,
+   "shoulder_axis_height": 0.119,
+   "shoulder_axis_offset": 0.0303992,
+   "upper_arm_axis_distance": 0.11600002999999999,
+   "wrist_axis_to_tcp": 0.155725888
+  },
+  "stops_rad": {
+   "base_yaw": [
+    -1.9190104565187893,
+    1.9190104565187893
+   ],
+   "elbow_pitch": [
+    -1.9190104565187893,
+    0.4003698037612392
+   ],
+   "shoulder_pitch": [
+    -1.7441354467859655,
+    1.5002326651367657
+   ],
+   "wrist_pitch": [
+    -1.5341101220943354,
+    1.4326075217626342
+   ],
+   "wrist_roll": [
+    -2.791844379453398,
+    2.791844379453398
+   ]
+  }
+ },
+ "stops_deg": {
+  "base_yaw": [
+   -93.23280000000001,
+   102.2359
+  ],
+  "elbow_pitch": [
+   -92.6955,
+   9.6092
+  ],
+  "shoulder_pitch": [
+   -95.9123,
+   78.9022
+  ],
+  "wrist_pitch": [
+   -80.17635292528936,
+   66.95254707471065
+  ],
+  "wrist_roll": [
+   -150.86540000000002,
+   138.9979
+  ]
+ },
+ "stops_rad": {
+  "base_yaw": [
+   -1.6272193308533693,
+   1.7843530687396707
+  ],
+  "elbow_pitch": [
+   -1.6178416767824038,
+   0.1677121784826391
+  ],
+  "shoulder_pitch": [
+   -1.6739854281605573,
+   1.3771031770670699
+  ],
+  "wrist_pitch": [
+   -1.3993413407872866,
+   1.1685423890501987
+  ],
+  "wrist_roll": [
+   -2.6330979573382534,
+   2.425971008357826
+  ]
+ }
+}

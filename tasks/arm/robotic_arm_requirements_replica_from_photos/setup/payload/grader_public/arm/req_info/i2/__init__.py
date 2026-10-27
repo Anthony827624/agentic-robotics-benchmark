@@ -1,0 +1,1 @@
+"""Rung-I2 grading modules: the brief's acceptance procedure with an injected catalogue (procedure, lotmodel, catalog), the live optimum search, the ECO repair, the criteria, the schemas. No catalogue, lot or price number is in this code."""

@@ -1,0 +1,666 @@
+{
+ "boards": [
+  {
+   "input_range_v": [
+    6.0,
+    12.6
+   ],
+   "part_id": "KM-TTL-ADP",
+   "price_usd": 7.9,
+   "protocols": [
+    "KM-TTL"
+   ]
+  },
+  {
+   "input_range_v": [
+    9.0,
+    14.0
+   ],
+   "part_id": "AD-485-ADP",
+   "price_usd": 12.9,
+   "protocols": [
+    "AD-485"
+   ]
+  },
+  {
+   "input_range_v": [
+    6.0,
+    14.0
+   ],
+   "part_id": "HUB-DUAL-14",
+   "price_usd": 24.9,
+   "protocols": [
+    "KM-TTL",
+    "AD-485"
+   ]
+  }
+ ],
+ "format": "req-i2-catalogue/1",
+ "psus": [
+  {
+   "output_v": 7.5,
+   "part_id": "PSU-7V5-5A",
+   "price_usd": 9.9,
+   "rated_current_a": 5.0
+  },
+  {
+   "output_v": 7.5,
+   "part_id": "PSU-7V5-10A",
+   "price_usd": 15.9,
+   "rated_current_a": 10.0
+  },
+  {
+   "output_v": 12.0,
+   "part_id": "PSU-12V-5A",
+   "price_usd": 11.9,
+   "rated_current_a": 5.0
+  },
+  {
+   "output_v": 12.0,
+   "part_id": "PSU-12V-10A",
+   "price_usd": 17.9,
+   "rated_current_a": 10.0
+  },
+  {
+   "output_v": 12.0,
+   "part_id": "PSU-12V-20A",
+   "price_usd": 27.9,
+   "rated_current_a": 20.0
+  }
+ ],
+ "servos": [
+  {
+   "body_class": "standard",
+   "mass_kg": 0.055,
+   "no_load_current_a": 0.18,
+   "output_inertia_kgm2": 0.0044,
+   "part_id": "KM-S08-7",
+   "points": [
+    {
+     "no_load_speed_rad_s": 9.696273622190718,
+     "stall_current_a": 1.9,
+     "stall_torque_nm": 0.71588545,
+     "voltage_v": 6.0
+    },
+    {
+     "no_load_speed_rad_s": 13.255665205020223,
+     "stall_current_a": 2.5,
+     "stall_torque_nm": 0.93163175,
+     "voltage_v": 8.4
+    }
+   ],
+   "price_usd": 12.6,
+   "protocol": "KM-TTL",
+   "rated_torque_nm": 0.4118793,
+   "vendor": "KM",
+   "voltage_range_v": [
+    6.0,
+    8.4
+   ]
+  },
+  {
+   "body_class": "standard",
+   "mass_kg": 0.055,
+   "no_load_current_a": 0.18,
+   "output_inertia_kgm2": 0.0074,
+   "part_id": "KM-S10-7",
+   "points": [
+    {
+     "no_load_speed_rad_s": 7.426932987209913,
+     "stall_current_a": 2.0,
+     "stall_torque_nm": 0.9218251000000001,
+     "voltage_v": 6.0
+    },
+    {
+     "no_load_speed_rad_s": 10.166966516471822,
+     "stall_current_a": 2.7,
+     "stall_torque_nm": 1.20621795,
+     "voltage_v": 8.4
+    }
+   ],
+   "price_usd": 13.2,
+   "protocol": "KM-TTL",
+   "rated_torque_nm": 0.5491724,
+   "vendor": "KM",
+   "voltage_range_v": [
+    6.0,
+    8.4
+   ]
+  },
+  {
+   "body_class": "standard",
+   "mass_kg": 0.056,
+   "no_load_current_a": 0.18,
+   "output_inertia_kgm2": 0.024,
+   "part_id": "KM-S20-7",
+   "points": [
+    {
+     "no_load_speed_rad_s": 4.106657063516069,
+     "stall_current_a": 2.2,
+     "stall_torque_nm": 1.6573238499999998,
+     "voltage_v": 6.0
+    },
+    {
+     "no_load_speed_rad_s": 5.630094361272031,
+     "stall_current_a": 2.9,
+     "stall_torque_nm": 2.157463,
+     "voltage_v": 8.4
+    }
+   ],
+   "price_usd": 14.1,
+   "protocol": "KM-TTL",
+   "rated_torque_nm": 0.9610517000000001,
+   "vendor": "KM",
+   "voltage_range_v": [
+    6.0,
+    8.4
+   ]
+  },
+  {
+   "body_class": "standard",
+   "mass_kg": 0.057,
+   "no_load_current_a": 0.18,
+   "output_inertia_kgm2": 0.03,
+   "part_id": "KM-S24-7",
+   "points": [
+    {
+     "no_load_speed_rad_s": 3.549822207446094,
+     "stall_current_a": 2.3,
+     "stall_torque_nm": 1.9221034000000001,
+     "voltage_v": 6.0
+    },
+    {
+     "no_load_speed_rad_s": 4.870686284635338,
+     "stall_current_a": 3.0,
+     "stall_torque_nm": 2.52030905,
+     "voltage_v": 8.4
+    }
+   ],
+   "price_usd": 15.6,
+   "protocol": "KM-TTL",
+   "rated_torque_nm": 1.1179581,
+   "vendor": "KM",
+   "voltage_range_v": [
+    6.0,
+    8.4
+   ]
+  },
+  {
+   "body_class": "standard",
+   "mass_kg": 0.06,
+   "no_load_current_a": 0.15,
+   "output_inertia_kgm2": 0.024,
+   "part_id": "KM-S25-12",
+   "points": [
+    {
+     "no_load_speed_rad_s": 5.108280737544379,
+     "stall_current_a": 1.7,
+     "stall_torque_nm": 1.9711366500000003,
+     "voltage_v": 9.0
+    },
+    {
+     "no_load_speed_rad_s": 7.123792865282978,
+     "stall_current_a": 2.3,
+     "stall_torque_nm": 2.7654753,
+     "voltage_v": 12.6
+    }
+   ],
+   "price_usd": 14.4,
+   "protocol": "KM-TTL",
+   "rated_torque_nm": 1.2160246000000001,
+   "vendor": "KM",
+   "voltage_range_v": [
+    9.0,
+    12.6
+   ]
+  },
+  {
+   "body_class": "standard",
+   "mass_kg": 0.061,
+   "no_load_current_a": 0.15,
+   "output_inertia_kgm2": 0.024,
+   "part_id": "KM-S30-12",
+   "points": [
+    {
+     "no_load_speed_rad_s": 5.058925368099506,
+     "stall_current_a": 1.9,
+     "stall_torque_nm": 2.2751428,
+     "voltage_v": 9.0
+    },
+    {
+     "no_load_speed_rad_s": 7.075659129706741,
+     "stall_current_a": 2.6,
+     "stall_torque_nm": 3.1773545999999997,
+     "voltage_v": 12.6
+    }
+   ],
+   "price_usd": 16.3,
+   "protocol": "KM-TTL",
+   "rated_torque_nm": 1.42196425,
+   "vendor": "KM",
+   "voltage_range_v": [
+    9.0,
+    12.6
+   ]
+  },
+  {
+   "body_class": "standard",
+   "mass_kg": 0.061,
+   "no_load_current_a": 0.15,
+   "output_inertia_kgm2": 0.0074,
+   "part_id": "KM-S17-12",
+   "points": [
+    {
+     "no_load_speed_rad_s": 9.185943431549102,
+     "stall_current_a": 1.8,
+     "stall_torque_nm": 1.26505785,
+     "voltage_v": 9.0
+    },
+    {
+     "no_load_speed_rad_s": 12.928364829587625,
+     "stall_current_a": 2.4,
+     "stall_torque_nm": 1.7553903499999999,
+     "voltage_v": 12.6
+    }
+   ],
+   "price_usd": 17.2,
+   "protocol": "KM-TTL",
+   "rated_torque_nm": 0.7943386499999999,
+   "vendor": "KM",
+   "voltage_range_v": [
+    9.0,
+    12.6
+   ]
+  },
+  {
+   "body_class": "standard",
+   "mass_kg": 0.064,
+   "no_load_current_a": 0.15,
+   "output_inertia_kgm2": 0.026,
+   "part_id": "KM-S35-12",
+   "points": [
+    {
+     "no_load_speed_rad_s": 4.848136811095359,
+     "stall_current_a": 2.1,
+     "stall_torque_nm": 2.6085689000000003,
+     "voltage_v": 9.0
+    },
+    {
+     "no_load_speed_rad_s": 6.670048096793615,
+     "stall_current_a": 2.9,
+     "stall_torque_nm": 3.6676870999999998,
+     "voltage_v": 12.6
+    }
+   ],
+   "price_usd": 19.4,
+   "protocol": "KM-TTL",
+   "rated_torque_nm": 1.6671305,
+   "vendor": "KM",
+   "voltage_range_v": [
+    9.0,
+    12.6
+   ]
+  },
+  {
+   "body_class": "standard",
+   "mass_kg": 0.068,
+   "no_load_current_a": 0.18,
+   "output_inertia_kgm2": 0.028,
+   "part_id": "KM-S40-12",
+   "points": [
+    {
+     "no_load_speed_rad_s": 4.654211338651545,
+     "stall_current_a": 2.4,
+     "stall_torque_nm": 2.9812216,
+     "voltage_v": 9.0
+    },
+    {
+     "no_load_speed_rad_s": 6.464182414793813,
+     "stall_current_a": 3.2,
+     "stall_torque_nm": 4.1776329,
+     "voltage_v": 12.6
+    }
+   ],
+   "price_usd": 23.6,
+   "protocol": "KM-TTL",
+   "rated_torque_nm": 1.9221034000000001,
+   "vendor": "KM",
+   "voltage_range_v": [
+    9.0,
+    12.6
+   ]
+  },
+  {
+   "body_class": "standard",
+   "mass_kg": 0.098,
+   "no_load_current_a": 0.25,
+   "output_inertia_kgm2": 0.052,
+   "part_id": "KM-S45-12",
+   "points": [
+    {
+     "no_load_speed_rad_s": 2.9919930034188504,
+     "stall_current_a": 3.5,
+     "stall_torque_nm": 3.4127142,
+     "voltage_v": 9.0
+    },
+    {
+     "no_load_speed_rad_s": 4.106657063516069,
+     "stall_current_a": 4.7,
+     "stall_torque_nm": 4.7268053000000005,
+     "voltage_v": 12.6
+    }
+   ],
+   "price_usd": 28.9,
+   "protocol": "KM-TTL",
+   "rated_torque_nm": 2.1378497000000003,
+   "vendor": "KM",
+   "voltage_range_v": [
+    9.0,
+    12.6
+   ]
+  },
+  {
+   "body_class": "standard",
+   "mass_kg": 0.085,
+   "no_load_current_a": 0.12,
+   "output_inertia_kgm2": 0.02,
+   "part_id": "KM-B40-12",
+   "points": [
+    {
+     "no_load_speed_rad_s": 5.630094361272031,
+     "stall_current_a": 2.6,
+     "stall_torque_nm": 3.0008349,
+     "voltage_v": 9.0
+    },
+    {
+     "no_load_speed_rad_s": 7.643777745960566,
+     "stall_current_a": 3.5,
+     "stall_torque_nm": 4.2168595,
+     "voltage_v": 12.6
+    }
+   ],
+   "price_usd": 44.9,
+   "protocol": "KM-TTL",
+   "rated_torque_nm": 2.40262925,
+   "vendor": "KM",
+   "voltage_range_v": [
+    9.0,
+    12.6
+   ]
+  },
+  {
+   "body_class": "compact",
+   "mass_kg": 0.024,
+   "no_load_current_a": 0.08,
+   "output_inertia_kgm2": 0.002,
+   "part_id": "KM-C4-7",
+   "points": [
+    {
+     "no_load_speed_rad_s": 8.874555518615235,
+     "stall_current_a": 1.0,
+     "stall_torque_nm": 0.40207265,
+     "voltage_v": 6.0
+    },
+    {
+     "no_load_speed_rad_s": 11.89997217268861,
+     "stall_current_a": 1.3,
+     "stall_torque_nm": 0.51975245,
+     "voltage_v": 8.4
+    }
+   ],
+   "price_usd": 11.2,
+   "protocol": "KM-TTL",
+   "rated_torque_nm": 0.2353596,
+   "vendor": "KM",
+   "voltage_range_v": [
+    6.0,
+    8.4
+   ]
+  },
+  {
+   "body_class": "compact",
+   "mass_kg": 0.026,
+   "no_load_current_a": 0.08,
+   "output_inertia_kgm2": 0.0026,
+   "part_id": "KM-C7-7",
+   "points": [
+    {
+     "no_load_speed_rad_s": 7.757018897752575,
+     "stall_current_a": 1.2,
+     "stall_torque_nm": 0.6080123000000001,
+     "voltage_v": 6.0
+    },
+    {
+     "no_load_speed_rad_s": 10.577753042389874,
+     "stall_current_a": 1.6,
+     "stall_torque_nm": 0.7943386499999999,
+     "voltage_v": 8.4
+    }
+   ],
+   "price_usd": 12.8,
+   "protocol": "KM-TTL",
+   "rated_torque_nm": 0.3530394,
+   "vendor": "KM",
+   "voltage_range_v": [
+    6.0,
+    8.4
+   ]
+  },
+  {
+   "body_class": "compact",
+   "mass_kg": 0.025,
+   "no_load_current_a": 0.07,
+   "output_inertia_kgm2": 0.002,
+   "part_id": "KM-C6-12",
+   "points": [
+    {
+     "no_load_speed_rad_s": 9.349978135683907,
+     "stall_current_a": 0.9,
+     "stall_torque_nm": 0.5491724,
+     "voltage_v": 9.0
+    },
+    {
+     "no_load_speed_rad_s": 12.770701843860946,
+     "stall_current_a": 1.2,
+     "stall_torque_nm": 0.7649187,
+     "voltage_v": 12.6
+    }
+   ],
+   "price_usd": 11.8,
+   "protocol": "KM-TTL",
+   "rated_torque_nm": 0.32361945,
+   "vendor": "KM",
+   "voltage_range_v": [
+    9.0,
+    12.6
+   ]
+  },
+  {
+   "body_class": "compact",
+   "mass_kg": 0.027,
+   "no_load_current_a": 0.08,
+   "output_inertia_kgm2": 0.003,
+   "part_id": "KM-C9-12",
+   "points": [
+    {
+     "no_load_speed_rad_s": 8.18123086872342,
+     "stall_current_a": 1.1,
+     "stall_torque_nm": 0.7649187,
+     "voltage_v": 9.0
+    },
+    {
+     "no_load_speed_rad_s": 11.260188722544061,
+     "stall_current_a": 1.5,
+     "stall_torque_nm": 1.0591182000000001,
+     "voltage_v": 12.6
+    }
+   ],
+   "price_usd": 13.6,
+   "protocol": "KM-TTL",
+   "rated_torque_nm": 0.4707192,
+   "vendor": "KM",
+   "voltage_range_v": [
+    9.0,
+    12.6
+   ]
+  },
+  {
+   "body_class": "compact",
+   "mass_kg": 0.031,
+   "no_load_current_a": 0.09,
+   "output_inertia_kgm2": 0.0042,
+   "part_id": "KM-C12-12",
+   "points": [
+    {
+     "no_load_speed_rad_s": 6.981317007977318,
+     "stall_current_a": 1.3,
+     "stall_torque_nm": 1.0002783,
+     "voltage_v": 9.0
+    },
+    {
+     "no_load_speed_rad_s": 9.696273622190718,
+     "stall_current_a": 1.8,
+     "stall_torque_nm": 1.38273765,
+     "voltage_v": 12.6
+    }
+   ],
+   "price_usd": 16.4,
+   "protocol": "KM-TTL",
+   "rated_torque_nm": 0.6276256,
+   "vendor": "KM",
+   "voltage_range_v": [
+    9.0,
+    12.6
+   ]
+  },
+  {
+   "body_class": "large",
+   "mass_kg": 0.16,
+   "no_load_current_a": 0.3,
+   "output_inertia_kgm2": 0.08,
+   "part_id": "KM-L85-12",
+   "points": [
+    {
+     "no_load_speed_rad_s": 2.5541403687721895,
+     "stall_current_a": 4.5,
+     "stall_torque_nm": 6.668522,
+     "voltage_v": 9.0
+    },
+    {
+     "no_load_speed_rad_s": 3.2724923474893677,
+     "stall_current_a": 6.0,
+     "stall_torque_nm": 8.433719,
+     "voltage_v": 12.6
+    }
+   ],
+   "price_usd": 48.6,
+   "protocol": "KM-TTL",
+   "rated_torque_nm": 3.8245935,
+   "vendor": "KM",
+   "voltage_range_v": [
+    9.0,
+    12.6
+   ]
+  },
+  {
+   "body_class": "standard",
+   "mass_kg": 0.075,
+   "no_load_current_a": 0.2,
+   "output_inertia_kgm2": 0.03,
+   "part_id": "AD-H40-12",
+   "points": [
+    {
+     "no_load_speed_rad_s": 6.283185307179585,
+     "stall_current_a": 3.6,
+     "stall_torque_nm": 3.91916125455,
+     "voltage_v": 12.0
+    }
+   ],
+   "price_usd": 17.4,
+   "protocol": "AD-485",
+   "rated_torque_nm": 0.7061551810000001,
+   "vendor": "AD",
+   "voltage_range_v": [
+    10.0,
+    14.0
+   ]
+  },
+  {
+   "body_class": "standard",
+   "mass_kg": 0.062,
+   "no_load_current_a": 0.2,
+   "output_inertia_kgm2": 0.018,
+   "part_id": "AD-H25-12",
+   "points": [
+    {
+     "no_load_speed_rad_s": 7.853981633974483,
+     "stall_current_a": 2.8,
+     "stall_torque_nm": 2.4715431335,
+     "voltage_v": 12.0
+    }
+   ],
+   "price_usd": 14.6,
+   "protocol": "AD-485",
+   "rated_torque_nm": 0.49430862670000003,
+   "vendor": "AD",
+   "voltage_range_v": [
+    10.0,
+    14.0
+   ]
+  },
+  {
+   "body_class": "standard",
+   "mass_kg": 0.06,
+   "no_load_current_a": 0.2,
+   "output_inertia_kgm2": 0.012,
+   "part_id": "AD-M15-7",
+   "points": [
+    {
+     "no_load_speed_rad_s": 6.544984694978735,
+     "stall_current_a": 2.4,
+     "stall_torque_nm": 1.4709212420230002,
+     "voltage_v": 7.4
+    }
+   ],
+   "price_usd": 12.2,
+   "protocol": "AD-485",
+   "rated_torque_nm": 0.441346988125,
+   "vendor": "AD",
+   "voltage_range_v": [
+    6.0,
+    8.4
+   ]
+  },
+  {
+   "body_class": "compact",
+   "mass_kg": 0.028,
+   "no_load_current_a": 0.1,
+   "output_inertia_kgm2": 0.003,
+   "part_id": "AD-C10-12",
+   "points": [
+    {
+     "no_load_speed_rad_s": 9.94837673636768,
+     "stall_current_a": 1.4,
+     "stall_torque_nm": 0.98155570159,
+     "voltage_v": 12.0
+    }
+   ],
+   "price_usd": 12.4,
+   "protocol": "AD-485",
+   "rated_torque_nm": 0.29658517602,
+   "vendor": "AD",
+   "voltage_range_v": [
+    10.0,
+    14.0
+   ]
+  }
+ ],
+ "vendors": {
+  "AD": {
+   "inspected": false
+  },
+  "KM": {
+   "inspected": true
+  }
+ }
+}

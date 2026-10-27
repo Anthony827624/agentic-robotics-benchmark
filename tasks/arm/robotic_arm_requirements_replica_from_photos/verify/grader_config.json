@@ -1,0 +1,77 @@
+{
+ "grader": {
+  "c1": {
+   "gripper_mm": [
+    0.5,
+    3.0
+   ],
+   "group_weights": {
+    "body_classes": 0.05,
+    "gripper": 0.1,
+    "lengths": 0.55,
+    "stops": 0.3
+   },
+   "length_mm": [
+    0.5,
+    4.0
+   ],
+   "stop_deg": [
+    1.0,
+    6.0
+   ]
+  },
+  "c2": {
+   "angle_deg": [
+    1.5,
+    6.0
+   ],
+   "brief_rel": [
+    0.02,
+    0.04
+   ],
+   "clause_weight": 0.5,
+   "photo_rel": [
+    0.01,
+    0.06
+   ]
+  },
+  "c3": {
+   "floors": {
+    "A": 0.2,
+    "N.m": 0.05,
+    "kg": 0.01,
+    "rad/s": 0.2
+   },
+   "rel": [
+    0.03,
+    0.15
+   ]
+  },
+  "c4": {
+   "mode": "all"
+  },
+  "c5": {
+   "band_usd": 12.0
+  },
+  "eco_usd": 12.0,
+  "g0": {
+   "links_tol_m": 0.001
+  },
+  "weights": {
+   "bom_acceptance": 0.1,
+   "bom_economy": 0.3,
+   "derived_requirements": 0.2,
+   "kinematic_replication": 0.3,
+   "requirements_sheet": 0.1
+  }
+ },
+ "ik_selftest_tol_rad": 1e-06,
+ "version": "req-i2-grader-config/1",
+ "weights": {
+  "bom_acceptance": 0.1,
+  "bom_economy": 0.3,
+  "derived_requirements": 0.2,
+  "kinematic_replication": 0.3,
+  "requirements_sheet": 0.1
+ }
+}

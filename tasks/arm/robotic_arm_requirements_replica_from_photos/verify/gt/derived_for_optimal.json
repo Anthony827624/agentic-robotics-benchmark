@@ -1,0 +1,17 @@
+{
+ "grip_torque": 0.5061276149522675,
+ "joint_peak_speed:base_yaw": 2.905741841879457,
+ "joint_peak_speed:elbow_pitch": 1.3074321528633202,
+ "joint_peak_speed:shoulder_pitch": 0.8310645518319209,
+ "joint_peak_speed:wrist_pitch": 0.7270217025373291,
+ "joint_peak_torque:base_yaw": 0.7276688941140989,
+ "joint_peak_torque:elbow_pitch": 1.3033172868848455,
+ "joint_peak_torque:shoulder_pitch": 1.8017976734512233,
+ "joint_peak_torque:wrist_pitch": 0.5627891339496296,
+ "joint_rms_torque:base_yaw": 0.4088643231954859,
+ "joint_rms_torque:elbow_pitch": 1.274008612716874,
+ "joint_rms_torque:shoulder_pitch": 1.7048665186214542,
+ "joint_rms_torque:wrist_pitch": 0.522575163266594,
+ "moving_mass": 0.5161817287333716,
+ "supply_peak_current": 6.434224176067219
+}
