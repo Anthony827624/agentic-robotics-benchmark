@@ -10,5 +10,11 @@
     "since": "2026-10-15T15:24:22Z",
     "slug": "fault_adaptive_spacecraft_docking",
     "spec_hash": "sha256:95b824570ebf68cda4aa08382f7d95b3e4ee0110eefc03191a9cccd1eda8dc7e"
+  },
+  {
+    "content_digest": "sha256:3bd3dea0795c7e65940ae07822500e6e74cbaadcf2b772142d05863b1e3a55c8",
+    "since": "2026-10-27T17:31:33Z",
+    "slug": "robotic_arm_cad_design_from_photos",
+    "spec_hash": "sha256:10b7f2f5c18dabb35baf33d00b0a851c5d55253e35db11f705d28bd4fa1585d7"
   }
 ]
