@@ -1,0 +1,31 @@
+{
+  "weights": {
+    "kinematic_fidelity": 0.3,
+    "feature_fidelity": 0.25,
+    "shape_fidelity": 0.25,
+    "mass_properties": 0.1,
+    "component_fit": 0.05,
+    "interference_free": 0.05
+  },
+  "gates": [
+    "cad_valid",
+    "public_model_reuse",
+    "cad_json_consistent"
+  ],
+  "band_overrides": {
+    "floor_iou": [
+      0.2,
+      0.5
+    ],
+    "floor_fk_mm": [
+      15.0,
+      60.0
+    ]
+  },
+  "fk_configs": 64,
+  "interference_configs": 64,
+  "declared_range_configs": 16,
+  "mjcf_configs": 16,
+  "extract_timeout_s": 600,
+  "note": "gates and band_overrides are applied by task_grading.py (servos_mounted reported, not a gate; floors softened, 2026-10-21); the other bands, sub-weights and the floors' rule are in given/design_rules.yaml (its template-relative rule is unused: the agent gets no templates); this file also holds the run sizes, the criterion weights and the FreeCAD reader's time limit"
+}

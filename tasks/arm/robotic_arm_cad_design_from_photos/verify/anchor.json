@@ -1,0 +1,8 @@
+{
+ "direction": "higher",
+ "full_at": 1.0,
+ "metric": "design_score",
+ "note": "design_score is the weighted mean of the six criteria after the gates and floors, already on [0, 1]; ratio = score / 1.0, reward = ratio",
+ "source": "the oracle's own measured design_score under ale validate: the oracle document (the photographed unit itself) scores exactly 1.0 under every hidden seed draw (validate-f2a2c7f6 and the earlier validation runs in the task's development record)",
+ "value": 1.0
+}

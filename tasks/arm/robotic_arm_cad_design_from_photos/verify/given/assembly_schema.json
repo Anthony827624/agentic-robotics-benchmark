@@ -1,0 +1,281 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "arm_links_from_photo_set/assembly.json",
+  "title": "assembly.json of the re-modelled six-servo desktop arm (tier vocabulary)",
+  "description": "Kinematic assembly of the submitted parts. Lengths mm, angles rad. rpy is fixed-axis XYZ: R = Rz(yaw) * Ry(pitch) * Rx(roll). A link frame is the coordinate system shared by the STEP parts of that link (every part of a link is modelled in the same frame, world-aligned at the zero configuration). A joint origin is the child-link frame expressed in the parent-link frame at q = 0; the joint axis is a unit vector in the child-link frame through the child frame origin (URDF semantics), so a moving link's frame origin lies on its joint axis. At q = 0 every joint axis equals its axis_at_zero of requirements.yaml (pitch and jaw axes +x, yaw and roll +z). A servo occurrence pose is the servo frame of servo/servo.json in the link frame. The six joints appear in the order base_yaw, shoulder_pitch, elbow_pitch, wrist_pitch, wrist_roll, jaw, form a serial chain rooted at base with the parent / child / servo of requirements.yaml structure, and the ten parts P01..P10 are each placed once in their link. tcp is the tool centre point in the gripper frame (requirements.yaml tool_centre_point).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "units",
+    "root_link",
+    "links",
+    "joints",
+    "tcp"
+  ],
+  "properties": {
+    "units": {
+      "type": "object",
+      "required": [
+        "length",
+        "angle"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "length": {
+          "const": "mm"
+        },
+        "angle": {
+          "const": "rad"
+        }
+      }
+    },
+    "root_link": {
+      "const": "base"
+    },
+    "design_notes": {
+      "type": "string",
+      "maxLength": 4000
+    },
+    "links": {
+      "type": "array",
+      "minItems": 7,
+      "maxItems": 7,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "parts",
+          "servo_occurrences"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "enum": [
+              "base",
+              "shoulder",
+              "upper_arm",
+              "forearm",
+              "wrist",
+              "gripper",
+              "jaw"
+            ]
+          },
+          "parts": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 2,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "part_id",
+                "part_file"
+              ],
+              "properties": {
+                "part_id": {
+                  "type": "string",
+                  "enum": [
+                    "P01",
+                    "P02",
+                    "P03",
+                    "P04",
+                    "P05",
+                    "P06",
+                    "P07",
+                    "P08",
+                    "P09",
+                    "P10"
+                  ]
+                },
+                "part_file": {
+                  "type": "string",
+                  "pattern": "^parts/[A-Za-z0-9_.-]+\\.(step|stp|STEP|STP)$"
+                }
+              }
+            }
+          },
+          "servo_occurrences": {
+            "type": "array",
+            "maxItems": 1,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "servo_id",
+                "xyz",
+                "rpy"
+              ],
+              "properties": {
+                "servo_id": {
+                  "type": "string",
+                  "enum": [
+                    "S1",
+                    "S2",
+                    "S3",
+                    "S4",
+                    "S5",
+                    "S6"
+                  ]
+                },
+                "xyz": {
+                  "type": "array",
+                  "minItems": 3,
+                  "maxItems": 3,
+                  "items": {
+                    "type": "number"
+                  }
+                },
+                "rpy": {
+                  "type": "array",
+                  "minItems": 3,
+                  "maxItems": 3,
+                  "items": {
+                    "type": "number"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "joints": {
+      "type": "array",
+      "minItems": 6,
+      "maxItems": 6,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "type",
+          "parent_link",
+          "child_link",
+          "origin",
+          "axis",
+          "limits",
+          "driven_by"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "enum": [
+              "base_yaw",
+              "shoulder_pitch",
+              "elbow_pitch",
+              "wrist_pitch",
+              "wrist_roll",
+              "jaw"
+            ]
+          },
+          "type": {
+            "const": "revolute"
+          },
+          "parent_link": {
+            "type": "string"
+          },
+          "child_link": {
+            "type": "string"
+          },
+          "origin": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "xyz",
+              "rpy"
+            ],
+            "properties": {
+              "xyz": {
+                "type": "array",
+                "minItems": 3,
+                "maxItems": 3,
+                "items": {
+                  "type": "number"
+                }
+              },
+              "rpy": {
+                "type": "array",
+                "minItems": 3,
+                "maxItems": 3,
+                "items": {
+                  "type": "number"
+                }
+              }
+            }
+          },
+          "axis": {
+            "type": "array",
+            "minItems": 3,
+            "maxItems": 3,
+            "items": {
+              "type": "number"
+            }
+          },
+          "limits": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "lower",
+              "upper"
+            ],
+            "properties": {
+              "lower": {
+                "type": "number",
+                "minimum": -3.1416,
+                "maximum": 3.1416
+              },
+              "upper": {
+                "type": "number",
+                "minimum": -3.1416,
+                "maximum": 3.1416
+              }
+            }
+          },
+          "driven_by": {
+            "type": "string",
+            "enum": [
+              "S1",
+              "S2",
+              "S3",
+              "S4",
+              "S5",
+              "S6"
+            ],
+            "description": "the servo occurrence driving this joint (requirements.yaml structure)"
+          }
+        }
+      }
+    },
+    "tcp": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "link",
+        "xyz",
+        "approach"
+      ],
+      "properties": {
+        "link": {
+          "const": "gripper"
+        },
+        "xyz": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3,
+          "items": {
+            "type": "number"
+          }
+        },
+        "approach": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3,
+          "items": {
+            "type": "number"
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,99 @@
+# design_rules.yaml: the shop's fabrication and interface rules and the review checklist the grader applies (given input).
+# Units: mm unless a key says otherwise. Every probe geometry and every band is stated, so the practice checker and the
+# grader agree (they run the same code).
+
+material:
+  name: PLA
+  density_kg_m3: 520     # the slicer rule: outer-shell volume x 520 kg/m3 (enclosed voids count as material)
+  process: FDM 3D printing, 0.4 mm nozzle
+
+printer_envelope_mm: [220, 220, 250]   # per part, any orientation
+max_parts: 10                           # exactly the ten parts P01..P10, one STEP solid each
+min_wall_mm: 1.0
+
+servo_mounting:
+  keep_out_volume_ratio: 0.001          # intersection of the servo solid with the carrier or the driven link <= this fraction of the servo volume (log-linear to 0 at 10 x)
+  keep_out: >
+    No link material may lie inside the servo envelope (case, flanges, gear cover, horn disc and boss, connector housing
+    and pins; servo/servo_keepout.step, the servo without its detachable rear disc). The intersection is a boolean of that
+    solid with the carrier link and with the driven link at q = 0. Recommended clearance 0.3 mm around the case.
+  flanges: >
+    A servo is retained by screws through at least two of its eight flange holes (servo/servo.json flanges). A hole is
+    "used" when the carrier has material around the hole axis 1 mm outboard of that flange's outer face (ring of radius
+    3 mm, at least three quarters inside link material) and the axis itself is empty there (the screw path, >= 1.1 mm).
+    Score = (best two holes) / 2; a servo below 0.5 retention is not mounted (gate servos_mounted).
+  horn: >
+    The driven link rests on the horn mating face (servo/servo.json horn.mating_face_z) and is bolted through the four
+    horn holes. The horn mates at any spline angle, so the grader sweeps the bolt square about the axis (45 steps over its
+    90 deg period) and keeps the best angle: per bolt a ring of radius 2.5 mm around the bolt axis, probed 1 mm above the
+    face, must be at least three quarters inside the driven link and the axis itself empty (a hole >= 1.8 mm); the centre
+    must be empty (hole >= 3 mm). Score = mean over the four bolts.
+  rear_disc: >
+    The rear side must be supported: EITHER the driven link carries a second plate on the passive rear disc (same
+    four-bolt rule probed 1 mm below the disc face, no centre hole needed) OR the carrier seats the rear boss (a ring of
+    radius 8 mm probed 1 mm below the disc face at least three quarters inside the carrier).
+  retention_gate: 0.5                   # keep-out x flange x horn per servo; below this the servo counts as unmounted
+  spacers: >
+    A servo may sit on a printed spacer block at the far end of its pocket (the product line uses them to move a servo
+    towards the pocket mouth); the spacer is part of the printed part that forms the pocket.
+
+clearances:
+  static_contact_mm: 0.2                # the child link must touch the parent link or its driving servo at q = 0 within this
+  adjacent_ratio: 0.01                  # adjacent links may intersect by <= 1e-2 of the smaller volume
+  nonadjacent_ratio: 0.001              # non-adjacent links <= 1e-3; both log-linear to 0 at ten times the threshold
+  mounting_plane_tolerance_mm: 0.5      # a configuration counts only if every moving link and servo stays above z = -0.5
+
+grading_tolerances:
+  axis_angle_deg: 1.0     # joint axis vs its servo's horn axis (anti-parallel accepted)
+  axis_offset_mm: 0.5     # joint axis line vs horn axis line
+  contact_mm: 0.2         # parent / child (or driving servo) proximity at the joint
+  mjcf_fk_mm: 1.0         # the converted MJCF's forward kinematics vs the declared chain (16 configurations)
+  mjcf_fk_deg: 0.5
+
+grading:
+  weights: {kinematic_fidelity: 0.30, feature_fidelity: 0.25, shape_fidelity: 0.25, mass_properties: 0.10, component_fit: 0.05,
+            interference_free: 0.05}
+  band_rule: "band(e; full, zero) = 1 for |e| <= full, 0 for |e| >= zero, linear between; every band is absolute against the photographed unit"
+  bands:
+    axis_mm: [0.3, 3.0]            # per joint: distance between your driving servo's horn centre and the unit's (world, q = 0)
+    length_mm: [0.3, 3.0]          # per length item (kinematic lengths)
+    fk_median_mm: [0.5, 8.0]       # median tool-point error over 64 configurations of the unit's operating box
+    fk_p90_mm: [1.0, 15.0]         # 90th percentile of the same errors
+    jaw_tip_median_mm: [0.5, 8.0]  # median error of the moving jaw's tip point (T12 construction on each side's own P10)
+    cutout_offset_mm: [0.3, 3.0]   # centre offset of a found cut-out
+    cutout_area_rel: [0.10, 0.50]  # |area error| / area of a found cut-out
+    pocket_floor_mm: [0.3, 3.0]    # the S3 / S4 pocket floor position along the insertion axis
+    extent_mm: [0.3, 3.0]          # per part and axis: aligned bounding-box extent in the link axes
+    opening_mm: [0.3, 3.0]         # base openings: mean matched centre distance (missing / extra at 3.0)
+    surface_mm: [0.3, 2.5]         # per part: 90th percentile of the symmetric surface distances after alignment (20 000 samples each way)
+    one_minus_iou: [0.05, 0.40]    # per part: 1 - volume IoU after alignment
+    mass_rel: [0.02, 0.15]         # per link: |relative error| of the published-rule mass
+    com_mm: [0.5, 6.0]             # per link: centre of mass (arm frame, q = 0)
+    floor_iou: [0.50, 0.75]        # shape floor: per part clamp((IoU - 0.50) / 0.25, 0, 1), mean over the ten parts
+    floor_fk_mm: [5.0, 15.0]       # kinematic floor: band(median tool-point error; 5, 15)
+  subweights:
+    kinematic: {axes: 0.35, lengths: 0.15, fk: 0.40, range: 0.10}
+    fk: {median: 0.40, p90: 0.35, jaw_tip: 0.25}
+    feature: {cutouts: 0.50, pocket_floors: 0.10, extents: 0.25, openings: 0.15}
+    shape: {surface: 0.6, iou: 0.4}
+  template_relative:
+    rule: >
+      Every item of kinematic_fidelity, feature_fidelity, shape_fidelity and mass_properties is also scored for the
+      practice units' own CAD (the templates): every template part for the part items (shape, cut-outs, pocket floors,
+      extents, base openings), every per-link combination of the templates' links for the chain items (axes, lengths,
+      FK, range coverage) and every per-part combination inside a link for the link masses and centres of mass (placed
+      by every combination of the chain). t = the best template score of the item. relative = sum(w max(0, s - t)) /
+      sum(w (1 - t)) over the criterion's items (w = the item's weight inside the criterion, s = your item score);
+      plain = sum(w s) / sum(w); the criterion = min(plain, relative), then the floors. Copying the templates, or any
+      combination of their parts and links, earns 0; the photographed unit scores 1.
+    templates_photographed_unit: [P1, P2]
+    templates_practice: {P1: [P2], P2: [P1]}
+  floors: >
+    F_s (shape floor) multiplies kinematic_fidelity and feature_fidelity; F_s x F_k multiplies mass_properties,
+    component_fit and interference_free; shape_fidelity is not floored. Credit for a working arm is credit for the
+    photographed arm.
+  alignment: >
+    Feature and shape fidelity compare each of your parts with the unit's after a rigid alignment: both parts placed at
+    q = 0 by their own assembly.json, then point-to-plane ICP (20 000 of your surface samples against 200 000 of the unit's,
+    trimmed to the best 90 %, 40 iterations, total correction within 15 mm / 15 deg; if the trimmed RMS stays above 3 mm, a
+    multistart from the 24 principal-axis rotations). The alignment offset is recorded, never scored.

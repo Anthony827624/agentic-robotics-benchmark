@@ -1,0 +1,359 @@
+{
+ "design_notes": "parts in world-aligned link frames at the straight-up zero; limits = the collision-free operating box; tcp = on the fixed finger's gripping face, mid-line, 10.0 mm back from the fingertip",
+ "joints": [
+  {
+   "axis": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "child_link": "shoulder",
+   "driven_by": "S1",
+   "limits": {
+    "lower": -1.919862,
+    "upper": 1.919862
+   },
+   "name": "base_yaw",
+   "origin": {
+    "rpy": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "xyz": [
+     0.0,
+     0.0,
+     74.569
+    ]
+   },
+   "parent_link": "base",
+   "type": "revolute"
+  },
+  {
+   "axis": [
+    1.0,
+    0.0,
+    0.0
+   ],
+   "child_link": "upper_arm",
+   "driven_by": "S2",
+   "limits": {
+    "lower": -1.761082,
+    "upper": 1.48579
+   },
+   "name": "shoulder_pitch",
+   "origin": {
+    "rpy": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "xyz": [
+     18.2778,
+     35.6322,
+     64.065
+    ]
+   },
+   "parent_link": "shoulder",
+   "type": "revolute"
+  },
+  {
+   "axis": [
+    1.0,
+    0.0,
+    0.0
+   ],
+   "child_link": "forearm",
+   "driven_by": "S3",
+   "limits": {
+    "lower": -1.90499,
+    "upper": 0.41639
+   },
+   "name": "elbow_pitch",
+   "origin": {
+    "rpy": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "xyz": [
+     -0.0,
+     0.0,
+     127.963719
+    ]
+   },
+   "parent_link": "upper_arm",
+   "type": "revolute"
+  },
+  {
+   "axis": [
+    1.0,
+    0.0,
+    0.0
+   ],
+   "child_link": "wrist",
+   "driven_by": "S4",
+   "limits": {
+    "lower": -1.48265,
+    "upper": 1.48441
+   },
+   "name": "wrist_pitch",
+   "origin": {
+    "rpy": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "xyz": [
+     0.0,
+     0.0,
+     138.154981
+    ]
+   },
+   "parent_link": "forearm",
+   "type": "revolute"
+  },
+  {
+   "axis": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "child_link": "gripper",
+   "driven_by": "S5",
+   "limits": {
+    "lower": -2.792527,
+    "upper": 2.792527
+   },
+   "name": "wrist_roll",
+   "origin": {
+    "rpy": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "xyz": [
+     -18.1,
+     0.0,
+     57.946076
+    ]
+   },
+   "parent_link": "wrist",
+   "type": "revolute"
+  },
+  {
+   "axis": [
+    -1.0,
+    -0.0,
+    -0.0
+   ],
+   "child_link": "jaw",
+   "driven_by": "S6",
+   "limits": {
+    "lower": -1.745329,
+    "upper": 0.174533
+   },
+   "name": "jaw",
+   "origin": {
+    "rpy": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "xyz": [
+     -18.799961,
+     -20.199986,
+     23.399988
+    ]
+   },
+   "parent_link": "gripper",
+   "type": "revolute"
+  }
+ ],
+ "links": [
+  {
+   "name": "base",
+   "parts": [
+    {
+     "part_file": "parts/P01_base_shell.step",
+     "part_id": "P01"
+    },
+    {
+     "part_file": "parts/P02_base_servo_carrier.step",
+     "part_id": "P02"
+    }
+   ],
+   "servo_occurrences": [
+    {
+     "rpy": [
+      -0.0,
+      -0.0,
+      1.570796327
+     ],
+     "servo_id": "S1",
+     "xyz": [
+      -0.0,
+      0.0,
+      41.469
+     ]
+    }
+   ]
+  },
+  {
+   "name": "shoulder",
+   "parts": [
+    {
+     "part_file": "parts/P03_shoulder_rotation.step",
+     "part_id": "P03"
+    },
+    {
+     "part_file": "parts/P04_shoulder_servo_carrier.step",
+     "part_id": "P04"
+    }
+   ],
+   "servo_occurrences": [
+    {
+     "rpy": [
+      0.0,
+      -1.570796327,
+      -3.141592654
+     ],
+     "servo_id": "S2",
+     "xyz": [
+      -14.822241,
+      35.6322,
+      64.065
+     ]
+    }
+   ]
+  },
+  {
+   "name": "upper_arm",
+   "parts": [
+    {
+     "part_file": "parts/P05_upper_arm.step",
+     "part_id": "P05"
+    }
+   ],
+   "servo_occurrences": [
+    {
+     "rpy": [
+      1.570796327,
+      -0.259539939,
+      1.570796327
+     ],
+     "servo_id": "S3",
+     "xyz": [
+      -33.100018,
+      5e-06,
+      127.963729
+     ]
+    }
+   ]
+  },
+  {
+   "name": "forearm",
+   "parts": [
+    {
+     "part_file": "parts/P06_forearm.step",
+     "part_id": "P06"
+    },
+    {
+     "part_file": "parts/P07_wrist_servo_carrier.step",
+     "part_id": "P07"
+    }
+   ],
+   "servo_occurrences": [
+    {
+     "rpy": [
+      1.570796327,
+      -1.533164957,
+      1.570796327
+     ],
+     "servo_id": "S4",
+     "xyz": [
+      -33.1,
+      -0.0,
+      138.154981
+     ]
+    }
+   ]
+  },
+  {
+   "name": "wrist",
+   "parts": [
+    {
+     "part_file": "parts/P08_wrist_body.step",
+     "part_id": "P08"
+    }
+   ],
+   "servo_occurrences": [
+    {
+     "rpy": [
+      -0.0,
+      0.0,
+      0.0
+     ],
+     "servo_id": "S5",
+     "xyz": [
+      -18.1,
+      0.0,
+      24.846035
+     ]
+    }
+   ]
+  },
+  {
+   "name": "gripper",
+   "parts": [
+    {
+     "part_file": "parts/P09_gripper_static.step",
+     "part_id": "P09"
+    }
+   ],
+   "servo_occurrences": [
+    {
+     "rpy": [
+      1.570796663,
+      4.7e-08,
+      -1.570796373
+     ],
+     "servo_id": "S6",
+     "xyz": [
+      14.300017,
+      -20.199986,
+      23.40001
+     ]
+    }
+   ]
+  },
+  {
+   "name": "jaw",
+   "parts": [
+    {
+     "part_file": "parts/P10_gripper_jaw.step",
+     "part_id": "P10"
+    }
+   ],
+   "servo_occurrences": []
+  }
+ ],
+ "root_link": "base",
+ "tcp": {
+  "approach": [
+   0.0,
+   0.0,
+   1.0
+  ],
+  "link": "gripper",
+  "xyz": [
+   0.218208,
+   7.899902,
+   106.170305
+  ]
+ },
+ "units": {
+  "angle": "rad",
+  "length": "mm"
+ }
+}

@@ -1,0 +1,294 @@
+{
+  "family": "BUS-SERVO-12V-A: 12 V serial-bus servo with a magnetic 12-bit encoder (4096 ticks per turn). Generated from the numbers in this file; every number a grader uses is here.",
+  "units": {
+    "length": "mm",
+    "angle": "deg",
+    "mass": "kg",
+    "torque": "N*m"
+  },
+  "frame": "+z = horn axis direction; the horn axis passes through the origin; z = 0 is the bottom face of the case (the horn-side flange is the TOP flange, the rear disc is below z = 0); the case extends along -x (its centre is at x = -12.5)",
+  "body": {
+    "size": [
+      45.4,
+      24.8,
+      28.8
+    ],
+    "min": [
+      -35.2,
+      -12.4,
+      0.0
+    ],
+    "max": [
+      10.2,
+      12.4,
+      28.8
+    ],
+    "rear_vertical_edge_fillet_mm": 2.0,
+    "front_vertical_edge_chamfer_mm": 3.0,
+    "note": "case between the two flanges; the raised gear cover between the top rails reaches z = 31.4"
+  },
+  "overall_envelope": {
+    "min": [
+      -35.2,
+      -12.4,
+      -3.9
+    ],
+    "max": [
+      10.2,
+      12.4,
+      33.1
+    ],
+    "note": "connector pins reach z = -5.0 under the rear flange"
+  },
+  "horn": {
+    "axis_point": [
+      0.0,
+      0.0,
+      33.1
+    ],
+    "axis_dir": [
+      0.0,
+      0.0,
+      1.0
+    ],
+    "mating_face_z": 33.1,
+    "disc": {
+      "diameter": 20.0,
+      "z": [
+        30.6,
+        33.1
+      ]
+    },
+    "boss": {
+      "diameter": 9.0,
+      "z": [
+        29.1,
+        30.6
+      ]
+    },
+    "bolt_holes": {
+      "count": 4,
+      "diameter": 2.5,
+      "pattern": "square of side 9.9 mm (PCD 14.0 mm) centred on the axis",
+      "positions_on_mating_face": [
+        [
+          4.95,
+          4.95,
+          33.1
+        ],
+        [
+          -4.95,
+          4.95,
+          33.1
+        ],
+        [
+          -4.95,
+          -4.95,
+          33.1
+        ],
+        [
+          4.95,
+          -4.95,
+          33.1
+        ]
+      ],
+      "fastener": "M2.5 x 8 machine screw; the link on the horn needs clearance holes 2.6-3.0 mm at these positions and a centre hole >= 3 mm"
+    },
+    "rule": "a link driven by this servo rests on the horn mating face (z = 33.1) and is bolted through the four holes; the horn mates at any spline angle, so the grader sweeps the four-bolt square about the axis (45 steps over its 90 deg period) and keeps the best angle: per bolt a ring of radius 2.5 mm around the bolt axis, probed 1 mm above the face, at least three quarters inside the link and the bolt axis itself empty (a hole >= 1.8 mm); the centre must be empty (a hole >= 3 mm)"
+  },
+  "rear_disc": {
+    "axis_point": [
+      0.0,
+      0.0,
+      -3.3
+    ],
+    "axis_dir": [
+      0.0,
+      0.0,
+      -1.0
+    ],
+    "diameter": 20.0,
+    "z": [
+      -3.3,
+      -1.2
+    ],
+    "bolt_holes": {
+      "count": 4,
+      "diameter": 2.5,
+      "positions_on_face": [
+        [
+          4.95,
+          4.95,
+          -3.3
+        ],
+        [
+          -4.95,
+          4.95,
+          -3.3
+        ],
+        [
+          -4.95,
+          -4.95,
+          -3.3
+        ],
+        [
+          4.95,
+          -4.95,
+          -3.3
+        ]
+      ]
+    },
+    "cap": {
+      "diameter": 6.0,
+      "z": [
+        -3.9,
+        -3.3
+      ]
+    },
+    "rule": "passive coaxial disc (double support): EITHER the driven link carries a second plate on it (the same swept four-bolt rule probed 1 mm below z = -3.3, no centre hole needed) OR the carrier seats the rear boss (a ring of radius 8 mm probed 1 mm below that face at least three quarters inside the carrier); one of the two must hold"
+  },
+  "flanges": {
+    "top": {
+      "z": [
+        28.8,
+        30.3
+      ],
+      "outer_face_z": 30.3,
+      "rails_x": [
+        -34.8,
+        -5.7
+      ],
+      "rails_y": [
+        [
+          7.0,
+          12.35
+        ],
+        [
+          -12.35,
+          -7.0
+        ]
+      ],
+      "holes_xy": [
+        [
+          -8.3,
+          10.25
+        ],
+        [
+          -8.3,
+          -10.25
+        ],
+        [
+          -29.0,
+          10.25
+        ],
+        [
+          -29.0,
+          -10.25
+        ]
+      ],
+      "hole_diameter": 1.5
+    },
+    "bottom": {
+      "z": [
+        -1.5,
+        0.0
+      ],
+      "outer_face_z": -1.5,
+      "x": [
+        -34.9,
+        -5.3
+      ],
+      "y": [
+        -12.35,
+        12.35
+      ],
+      "holes_xy": [
+        [
+          -8.3,
+          10.25
+        ],
+        [
+          -8.3,
+          -10.25
+        ],
+        [
+          -29.0,
+          10.25
+        ],
+        [
+          -29.0,
+          -10.25
+        ]
+      ],
+      "hole_diameter": 1.5
+    },
+    "fastener": "M2 x 8 self-tapping screw through a 2.0-2.4 mm clearance hole in the carrier into the flange pilot hole",
+    "rule": "the servo is retained by screws through at least two of its eight flange holes: for a used hole the carrier has material around the hole axis (ring of radius 3 mm probed 1 mm outboard of that flange's outer face) and an empty screw path on the axis; the two remaining pairs may rest on ledges"
+  },
+  "connector": {
+    "box_min": [
+      -29.9,
+      -9.2,
+      -3.3
+    ],
+    "box_max": [
+      -16.6,
+      9.2,
+      -1.4
+    ],
+    "pins_min": [
+      -15.1,
+      -8.6,
+      -5.0
+    ],
+    "pins_max": [
+      -13.0,
+      8.6,
+      -1.4
+    ],
+    "note": "bus connector housing and pins under the rear flange (part of the keep-out); the cable leaves along -z / -x"
+  },
+  "keep_out_solid": "servo_keepout.step",
+  "keep_out_note": "the keep-out envelope (servo_keepout.step) equals the stand-in except that the rear passive disc is absent (it is a detachable second horn: fit it only where the driven link carries a rear plate); the 6 mm rear boss stays",
+  "keep_out_margin_mm": 0.3,
+  "volume_mm3": 36617.086,
+  "centre_of_mass": [
+    -12.5,
+    0.0,
+    14.4
+  ],
+  "actuator_facts": {
+    "catalogue_id": "BUS-SERVO-12V-A",
+    "mass_kg": 0.06,
+    "stall_torque_nm": 2.94,
+    "no_load_speed_rad_s": 6.49,
+    "voltage_range_v": [
+      9.0,
+      12.6
+    ],
+    "note": "the same servo drives every joint (six occurrences S1..S6)"
+  },
+  "tier_specs": {
+    "sku": "BUS-SERVO-12V-A",
+    "case_mm": [
+      45.4,
+      24.8,
+      28.8
+    ],
+    "flange_thickness_mm": 1.5,
+    "overall_height_mm": 34.6,
+    "horn_disc_diameter_mm": 20.0,
+    "horn_bolt_pcd_mm": 14.0,
+    "horn_axis_offset_from_case_centre_mm": 12.5,
+    "mass_kg": 0.06,
+    "stall_torque_nm": 2.94,
+    "stall_torque_voltage_v": 12.0,
+    "no_load_speed_rad_s": 6.49,
+    "voltage_range_v": [
+      9.0,
+      12.6
+    ],
+    "encoder_ticks_per_rev": 4096,
+    "bus_angle_rule": "b = (ticks - 2048) x 2 pi / 4096 rad"
+  }
+}

@@ -1,0 +1,8 @@
+# The FreeCAD MCP server of this task (image/vendor/freecad-mcp, neka-nat/freecad-mcp at a pinned commit): it drives the
+# FreeCAD session on the desktop through the addon's local RPC server. Tools: documents, objects (create / edit / delete /
+# inspect), views (screenshots), parts library, FEM, and execute_code (Python inside FreeCAD).
+schema_version = 1
+name = "freecad"
+transport = "stdio"
+command = "/opt/freecad-mcp/bin/freecad-mcp"
+args = ["--freecadcmd", "/opt/freecad/usr/bin/freecadcmd"]

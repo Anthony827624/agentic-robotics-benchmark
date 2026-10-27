@@ -1,0 +1,40 @@
+# robotic_arm_cad_design_from_photos: the hardware-design (CAD) stage of the robotic-arm full-stack workflow (an atomic
+# task). A mechanical designer re-creates the lost CAD of a modified six-servo desktop arm in FreeCAD 1.1, known only
+# from one fixed photo set (80 photos rendered with Blender Cycles in a lab room: the ten printed parts on a cutting
+# mat, both sides, close-ups, the re-assembled unit in three poses, the gripper) and the bought servo's datasheet,
+# drawing and STEP. No topology, no templates, no practice units. It delivers one FreeCAD document,
+# /home/user/submission/arm.FCStd: ten PartDesign Bodies labelled with the part tags, six servo copies, one Assembly
+# with Grounded / Fixed / Revolute joints and limits, saved in configuration Z.
+#
+# The agent drives the FreeCAD GUI session through the task's MCP server (tools/mcp/freecad.toml; its execute_code
+# runs Python inside the session); the instruction asks for it, the harness's own tools stay available, and verify
+# records the tool use as statistics only.
+#
+# Grading (verify/verify.py; knobs in verify/grader_config.json; no agent code runs): headless FreeCAD reads the
+# document as an unprivileged account, the mechanism is inferred and aligned with the unit's base, then gates
+# cad_valid, public_model_reuse, cad_json_consistent x kinematic_fidelity 0.30, feature_fidelity 0.25,
+# shape_fidelity 0.25, mass_properties 0.10, component_fit 0.05, interference_free 0.05, with shape / tool-point
+# floors. design_score = the weighted mean; reward = design_score (verify/anchor.json).
+
+spec_type: core/v1
+
+name: robotic_arm_cad_design_from_photos
+
+image: {kind: container}
+
+resources: {cpus: 8, memory_mb: 16384}
+network: {mode: block}
+
+# setup: stage the photo set and the servo documents (< 30 s). agent: re-model the unit in FreeCAD (6 h). verify:
+# lockdown, the FreeCAD document read by headless FreeCAD, the mechanism check and conversion, the grader (oracle
+# about 90 s on 8 CPUs).
+timeouts: {setup: 300, agent: 21600, verify: 1800}
+
+artifacts: [/home/user/submission]
+
+tools:
+  mcp_servers:
+    - path: tools/mcp/freecad.toml
+
+metadata:
+  platform: arm
