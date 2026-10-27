@@ -19,6 +19,7 @@
   "protocol": "assets/control_bounds.json",
   "isaac_python": "/opt/isaac-venv/bin/python",
   "replay_timeout_s": 900,
+  "replay_workers": 4,
   "scoring_cap": 1.5,
   "clips": [
     {

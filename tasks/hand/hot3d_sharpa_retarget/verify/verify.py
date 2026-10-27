@@ -1,5 +1,6 @@
 """Validate NPZ submissions and score independent physical replays."""
 
+from concurrent.futures import ThreadPoolExecutor, as_completed
 import json
 import os
 from pathlib import Path
@@ -127,6 +128,24 @@ def clip_score(report, config):
     return sum(scores) / len(scores), sum(passes) / len(passes), sum(ratios) / len(ratios)
 
 
+def replay_all(configs, submissions, workers):
+    """Replay each valid clip in its own Isaac process, `workers` at a time.
+
+    Every clip keeps its own scene: a scene that holds several clips changes the PhysX
+    solution, so the processes run side by side instead of sharing one simulator.
+    """
+    jobs = [(cfg, submissions[cfg["clip"]]) for cfg in configs if cfg["clip"] in submissions]
+    reports = {}
+    with ThreadPoolExecutor(max_workers=max(1, workers)) as pool:
+        futures = {pool.submit(run_replay, cfg, path): cfg["clip"] for cfg, path in jobs}
+        for future in as_completed(futures):
+            try:
+                reports[futures[future]] = future.result()
+            except ReplayError as exc:
+                require(False, "{}: {}".format(futures[future], exc))
+    return reports
+
+
 def main():
     config = stage_config()
     anchor, anchor_meta = read_anchor()
@@ -139,19 +158,22 @@ def main():
     invalid = []
     completed = 0
     scored_envs = 0.0
+    valid = {}
     for cfg in configs:
         submission = home / "submission" / (cfg["clip"] + ".npz")
         try:
             validate_submission(submission, cfg)
         except SubmissionError as exc:
-            measured.append(0.0)
-            passed.append(0.0)
             invalid.append("{}: {}".format(cfg["clip"], exc))
             continue
-        try:
-            report = run_replay(cfg, submission)
-        except ReplayError as exc:
-            require(False, str(exc))
+        valid[cfg["clip"]] = submission
+    reports = replay_all(configs, valid, int(config.get("replay_workers", 1)))
+    for cfg in configs:
+        report = reports.get(cfg["clip"])
+        if report is None:
+            measured.append(0.0)
+            passed.append(0.0)
+            continue
         completed += 1
         score, pass_rate, mean_ratio = clip_score(report, cfg)
         measured.append(score)

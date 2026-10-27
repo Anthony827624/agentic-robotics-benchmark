@@ -3,6 +3,6 @@
   "direction": "higher",
   "value": 1.0,
   "full_at": 0.95,
-  "source": "Measured by ale validate on the nine-clip task: validate-5894a231, validate-277fea36, validate-7ff7879f and validate-a581fa34, oracle result.json: mean_clip_score=1.0 in all four runs, every clip 1.0 over 4 perturbed replays each (36 replays per run). The fixed-seed replay is deterministic, so the four runs agree exactly; full_at 0.95 leaves margin for one replay drifting on other hardware.",
+  "source": "Measured by ale validate on the nine-clip task: validate-5894a231, validate-277fea36, validate-7ff7879f and validate-a581fa34 (clips replayed one after another), and validate-e19240e5 (the same per-clip replays, four at a time), oracle result.json: mean_clip_score=1.0 in all five runs, every clip 1.0 over 4 perturbed replays each (36 replays per run). The fixed-seed replay is deterministic and each clip keeps its own scene, so the runs agree exactly; full_at 0.95 leaves margin for one replay drifting on other hardware.",
   "reference_commit": "68728b5cf5f0c10fa298a53fad70bfb21e38a419"
 }
