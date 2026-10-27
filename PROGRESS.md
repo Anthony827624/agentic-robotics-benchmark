@@ -7,7 +7,7 @@
 > before every hand-off. Where it disagrees with the code or `git log`, the code wins: fix
 > this file.
 >
-> Last updated: 2026-10-15, later the same day (§6: the website is display-only; the
+> Last updated: 2026-10-21 (task assets: `task-assets.toml`). Before that: 2026-10-15, later the same day (§6: the website is display-only; the
 > spacecraft task is the worked example and `uav_hover` is gone; `ale-export` and the template
 > download are retired; the registry's schema lives here).
 
@@ -236,6 +236,22 @@ and `verify/` included.
     no tool call, so this is an evaluation-stack failure, not difficulty.
   - Conclusion: the task does not stump frontier models; its difficulty must go up (results
     posted on #1 for its author). About $104 at list prices.
+
+## 7. 2026-10-21 — task assets: one configuration file names the asset repository
+
+Tasks with large agent-visible files fetch them at image build from the Hugging Face dataset
+`grounded-intelligence-initiative/agentic-robotics-last-exam` (first used by the open pull
+request #13). The dataset is now named once, in `task-assets.toml`; `scripts/task_assets.py`
+writes it into every task's `image/assets.sha256` (`sync`), checks it in CI (`check`) and
+writes a new task's list (`list`); `shared/task_assets/fetch_assets.py` is the canonical
+fetcher that each such task vendors byte-identically (it also takes an `endpoint`, so a mirror
+works). Renaming the dataset = edit `task-assets.toml`, run `sync`, commit; every task with
+assets then gets a new content digest (re-export the registry after the merge). Usage:
+`docs/task-assets.md`.
+
+- Uses: `robotic_arm_cad_design_from_photos` (#15, merged; dataset commit `ccf1b9b`) and the open #13
+  (`robotic_arm_replica_requirements_from_photos`), both on the canonical fetcher and the synced header.
+- Next: export the registry for #15's new slug (`identity-history.json`).
 
 ## Open items
 

@@ -82,6 +82,10 @@ and the results of both.
   placement of the folder at `tasks/<metadata.platform>/<name>/`;
 - `verify/robotics_grader/` byte-identical to `shared/robotics_grader/` (copy the canonical
   kit over yours and re-validate if this fails);
+- for a task with large files in the Hugging Face dataset, its `image/assets.sha256` naming the
+  dataset in [`task-assets.toml`](task-assets.toml) and its `image/fetch_assets.py` identical to
+  `shared/task_assets/fetch_assets.py` (`python3 scripts/task_assets.py check`;
+  [`docs/task-assets.md`](docs/task-assets.md));
 - the registry identity cross-check for tasks the registry already knows (a new slug is a
   notice, not a failure);
 - the pytest suite.

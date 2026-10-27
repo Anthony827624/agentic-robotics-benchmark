@@ -14,6 +14,9 @@ cover everything around it.
   bootstrap, what the maintainers do. The short version is the repository's
   [`CONTRIBUTING.md`](../CONTRIBUTING.md); sign-up, roles and credit are in the project's
   contribution guidelines (linked from there).
+- [`task-assets.md`](task-assets.md) — large agent-visible files (photo sets, scans, meshes): the Hugging Face
+  dataset they live in, named once in [`task-assets.toml`](../task-assets.toml); wiring a task, uploading, and
+  redirecting every task to a renamed dataset or a mirror.
 - [`evidence/`](evidence/) — real `ale validate` verdicts and the isolation audit.
 - [`dev/`](dev/) — dated design records
   ([`dev/20260902-engine-run-submission.md`](dev/20260902-engine-run-submission.md) and

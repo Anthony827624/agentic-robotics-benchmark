@@ -16,8 +16,10 @@
 #     tasks/platforms.json and placement at tasks/<platform>/<slug>/);
 #   - the shared verify-stage kit: robotics_grader selftest + canonical-vs-vendored byte
 #     equality (a task that ships a modified kit fails here; nothing re-vendors it later);
+#   - every task's asset list against task-assets.toml and its vendored fetcher against
+#     shared/task_assets/fetch_assets.py (scripts/task_assets.py check);
 #   - the pytest suite (onboarding gate, registry export and its schema, skills, template,
-#     domain lint).
+#     domain lint, task assets).
 name: pr-checks
 
 on:
@@ -133,6 +135,13 @@ jobs:
             fi
           done
           exit $status
+
+      # Large agent-visible files come from the asset repository named once in task-assets.toml
+      # (docs/task-assets.md). Each task copies that name into its image/assets.sha256 (the image
+      # cannot read the repository root) and vendors shared/task_assets/fetch_assets.py; a task
+      # that disagrees with either is a failure: run 'python3 scripts/task_assets.py sync'.
+      - name: Task assets match task-assets.toml and the canonical fetcher
+        run: python3 scripts/task_assets.py check
 
       - name: Pytest
         run: uv run pytest -q

@@ -187,6 +187,7 @@ cd vendor/ale && VIRTUAL_ENV= DOCKER_HOST=unix:///var/run/docker.sock \
 uv run ale-onboard <spec>.yaml --json
 uv run ale-onboard --gate-only tasks/<platform>/<slug> --json
 uv run python scripts/lint_domain.py .
+python3 scripts/task_assets.py check     # every task's asset list vs task-assets.toml (sync to fix)
 cd shared && python3 -m robotics_grader.selftest
 cd vendor/ale && VIRTUAL_ENV= uv run python ../../scripts/export_registry.py --tasks ../../tasks \
     --history ../../identity-history.json --out registry.json
@@ -208,7 +209,11 @@ uv run pytest -q
   in random order with no marker on the wire, only the true reply is applied) and
   re-simulation (open_loop) sit on top of that; they do not replace it.
 - No secrets in the repo (`.env`, tokens, keys). No hardware-dependent scored metric. No
-  100 MB+ blobs in git.
+  100 MB+ blobs in git. Large agent-visible files live in the Hugging Face dataset named once
+  in `task-assets.toml`; tasks pin them in `image/assets.sha256` and vendor
+  `shared/task_assets/fetch_assets.py` byte-identically. Never hand-edit the `endpoint` /
+  `repo` lines: edit `task-assets.toml` and run `scripts/task_assets.py sync`
+  (`docs/task-assets.md`).
 - `tasks/space/fault_adaptive_spacecraft_docking` (contributed in #1, merged 2026-10-15 after
   a maintainer pass) is the worked example of a complete task. It is too easy as merged:
   on 2026-10-15 Opus 5.5 scored reward 1.0 twice (ratio 1.26 and 1.32 against the reference),

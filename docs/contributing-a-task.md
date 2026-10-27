@@ -103,6 +103,10 @@ every reward key (`oracle_not_full` otherwise).
 Nothing you print to stdout is a scoring input. The grader computes the metric under its own
 physics and writes the verdict through a channel your solution cannot pre-create or overwrite.
 
+Files too large for git (photo sets, document scans, meshes the agent receives) go to the
+benchmark's Hugging Face dataset and are fetched while the image builds, pinned by commit and
+sha256: [`task-assets.md`](task-assets.md). Hidden material never goes there.
+
 From the repository root, `uv run python scripts/lint_domain.py <task_dir>` runs the domain
 lint the pull request CI runs (section 5, plus placement once the folder sits under
 `tasks/`).

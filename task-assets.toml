@@ -1,0 +1,14 @@
+# Where every task's large agent-visible files (photo sets, document scans, meshes) are served from.
+#
+# This file is the one place that names the asset repository. A task's image cannot read it (the image's build
+# context is the task's image/ folder only), so `scripts/task_assets.py sync` writes these values into the header
+# of every task's image/assets.sha256, and CI (`scripts/task_assets.py check`) fails a pull request whose tasks
+# disagree with this file. To move the assets (a renamed dataset, a mirror): edit this file, run
+#     python3 scripts/task_assets.py sync
+# and commit the result. Details: docs/task-assets.md.
+
+[huggingface]
+# The Hugging Face dataset repository, "<owner>/<name>".
+dataset = "grounded-intelligence-initiative/agentic-robotics-last-exam"
+# The Hub endpoint the files are downloaded from (a mirror that serves the Hub's /resolve/ paths works too).
+endpoint = "https://huggingface.co"

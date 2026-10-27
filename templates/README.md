@@ -193,7 +193,9 @@ One template; the pattern is an authoring choice inside `verify.py`, not a manif
    dependency, final stage FROM an official ALE base; Python packages go in
    `image/requirements.txt`. Keep the py3.12 `/opt/venv` with a world-traversable
    interpreter and the agent-UID import self-check at the end. A prebuilt stack can instead
-   declare `image: {kind: container, ref: ...}` and delete the Dockerfile.
+   declare `image: {kind: container, ref: ...}` and delete the Dockerfile. Large agent-visible
+   files (photo sets, scans, meshes) are fetched at build time from the benchmark's Hugging
+   Face dataset, not committed: [`docs/task-assets.md`](../docs/task-assets.md).
 3. Environment. Replace `verify/env.py` with your simulator, imported from the image, and
    `setup/payload/template_env.py` with whatever dev material the agent gets. While both
    files exist they must stay byte-identical (`tests/test_template_task.py`). `setup/run.sh`
