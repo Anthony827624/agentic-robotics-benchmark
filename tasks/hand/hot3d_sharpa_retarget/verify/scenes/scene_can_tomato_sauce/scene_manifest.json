@@ -1,0 +1,321 @@
+{
+ "created_utc": "2026-10-25T21:52:51.948059+00:00",
+ "created_by": "scripts/prepare_hot3d_task_assets.py",
+ "clip": "P0002_2ea9af5b_seg013",
+ "local_motion_id": 0,
+ "source_motion_id": 184,
+ "frames": 206,
+ "object_uid": "183136364331389",
+ "object_category": "can_tomato_sauce",
+ "build": {
+  "fn": "retarget.build_motion_pt.build",
+  "clips_dir": "FlashDexRetarget/outputs/hot3d_full/sharpa/retargeted",
+  "dataset_dir": "verify/scenes/scene_can_tomato_sauce",
+  "fps": 60.0,
+  "pack_cfg": {
+   "contact_threshold": 0.015,
+   "vel_sigma": 2
+  },
+  "names": [
+   "P0002_2ea9af5b_seg013"
+  ]
+ },
+ "source": {
+  "motion_file": "FlashDexRetarget/outputs/hot3d_full/sharpa/motion.pt",
+  "motion_sha256": "3b2b2edda4e7dc4aa178f8bb6e73c9400e6bad089f9bea117c7074ca35c905a5",
+  "retargeted_npz": "FlashDexRetarget/outputs/hot3d_full/sharpa/retargeted/P0002_2ea9af5b_seg013.npz",
+  "retargeted_npz_sha256": "c58531e679797fef4f79a6268135e7377bfbff2f3556cc9fb93119e7a17c3775",
+  "object_dir": "objects/183136364331389",
+  "slice": {
+   "start": 69862,
+   "frames": 206
+  },
+  "source_object_slot_right": 7
+ },
+ "local": {
+  "motion_file": "verify/scenes/scene_can_tomato_sauce/motion.pt",
+  "motion_sha256": "7ae19fb6e217c53d4680059db0c08d2b25ba9dd26b3ff5dcb488f152b82f6f07",
+  "object_dir": "verify/scenes/scene_can_tomato_sauce/objects/183136364331389",
+  "object_files": [
+   {
+    "path": ".isaac_usd/.asset_hash",
+    "size": 32,
+    "sha256": "5493cbc0184326e85c60f9038f6b53cbfc2a5e7999386597e3589355bf4439c8"
+   },
+   {
+    "path": ".isaac_usd/config.yaml",
+    "size": 621,
+    "sha256": "90fe477f0d09f6851e83c24c287d9833eff7d9d826775b77b4e740ad8cbe549a"
+   },
+   {
+    "path": ".isaac_usd/configuration/materials/textures/material_0.png",
+    "size": 2478824,
+    "sha256": "f098178c2b87e31f91c294c126a50ea2dac6e8aa10fa5d21e1d793fe6957aa1e"
+   },
+   {
+    "path": ".isaac_usd/configuration/object_base.usd",
+    "size": 519495,
+    "sha256": "2021037e2b51513178e795e7ad21b168a5f0c02f850e0a746e14e5ac84453d1e"
+   },
+   {
+    "path": ".isaac_usd/configuration/object_physics.usd",
+    "size": 2106,
+    "sha256": "f3b559bc6080a98f8fd9461a04a00172165825933f8741543659c856a5a2f3a9"
+   },
+   {
+    "path": ".isaac_usd/configuration/object_robot.usd",
+    "size": 1121,
+    "sha256": "30ed39a60d834929642200de16f53e63a76e77c96cd5a967db9beb724930b0ae"
+   },
+   {
+    "path": ".isaac_usd/configuration/object_sensor.usd",
+    "size": 662,
+    "sha256": "32c4ee0c2ef9903b77e67dd6f5368767db8c4ba2b85f26c28e492c7f5ec24005"
+   },
+   {
+    "path": ".isaac_usd/object.urdf",
+    "size": 6281,
+    "sha256": "2a03d22b0fbc2468b409cf3cef1c3c6f3fff8d446b1c2f401fb2b719ff497c01"
+   },
+   {
+    "path": ".isaac_usd/object.usd",
+    "size": 1418,
+    "sha256": "e051a5fe6ca9c2c86d68789067a9f4d2d5945595a8325b8e122657f01e539864"
+   },
+   {
+    "path": ".sdf_cache/sdf_v2_e0.3_n128_s1.0_1274e43fd659.pt",
+    "size": 33556326,
+    "sha256": "91cdfc614fc5097ea64b3f7fb64b0c34fbf9c3f2eccf165783ba91a4b94b1947"
+   },
+   {
+    "path": "convex/0.obj",
+    "size": 11291,
+    "sha256": "79b34df0d3abe62d20aea375686d2c39fad64c09b2a575053136714ffd856070"
+   },
+   {
+    "path": "convex/1.obj",
+    "size": 7437,
+    "sha256": "f01996028c764e55393e621eb3a148a84be44c088a56ec46e7dc74356ae632cf"
+   },
+   {
+    "path": "convex/10.obj",
+    "size": 16399,
+    "sha256": "fd51bf771a81b8ee2b755682f2439563684d7b9be09f74edd9ee1e03fa39aadc"
+   },
+   {
+    "path": "convex/11.obj",
+    "size": 16515,
+    "sha256": "ce283c740a251c7130a8e36ab5c2386845f2de21a84f8aa959113700d8ce65ce"
+   },
+   {
+    "path": "convex/12.obj",
+    "size": 31065,
+    "sha256": "e23ef529fe7ffca749696061cea2ac61736739a4248f59532a3a881267995855"
+   },
+   {
+    "path": "convex/13.obj",
+    "size": 11739,
+    "sha256": "03dcd4447b01944f7f29214d4d51c454bf9a33759c982557647ec5c0ab4d41e9"
+   },
+   {
+    "path": "convex/14.obj",
+    "size": 27809,
+    "sha256": "a82ff2f6c977b52e4d696383bedfacfd3cdd7eb7b3055621433515f030e06f9f"
+   },
+   {
+    "path": "convex/15.obj",
+    "size": 7552,
+    "sha256": "08015b94408dc9d0868066314e0b318892442ffa09d84a2343dd080b7fef8e43"
+   },
+   {
+    "path": "convex/16.obj",
+    "size": 19754,
+    "sha256": "22b2c1fd31460d21c3edcfdb35b3e92c4c8ea9aadf2e8a57cb2d31f206ced4b8"
+   },
+   {
+    "path": "convex/17.obj",
+    "size": 21356,
+    "sha256": "41dbe1d64ec48d8c7dd76b9f7fc793cf059f8cf149c0f5fc2b232b4b47a710d8"
+   },
+   {
+    "path": "convex/18.obj",
+    "size": 14449,
+    "sha256": "d554ee292dd456ed105f6ac067c0975d1f131b48c9d7dbc66a5452b946e4929b"
+   },
+   {
+    "path": "convex/19.obj",
+    "size": 6010,
+    "sha256": "bddb5114989d88a8dfabc1c6815cc414c03b3317e6c1e8a59fe02287ec0dbbb1"
+   },
+   {
+    "path": "convex/2.obj",
+    "size": 11714,
+    "sha256": "0f8de6e7b4e52b9845716a0fda6ca4ba95bf3cd1463a6abe91db07aeff29c63b"
+   },
+   {
+    "path": "convex/20.obj",
+    "size": 16171,
+    "sha256": "f500080282cdfa8dd08de4fca95528a8d79b99d3833ff8a5c6761c7a685ff5d0"
+   },
+   {
+    "path": "convex/21.obj",
+    "size": 3064,
+    "sha256": "286d623b0c68be5aa19fd8b3c7b3f841fefdb8d51a8e32116f3f051c7a7f7864"
+   },
+   {
+    "path": "convex/22.obj",
+    "size": 16064,
+    "sha256": "8b058b9dd7f5d8ab50c6eb4aa08590d3da898d61089d66561c5da8a438a99642"
+   },
+   {
+    "path": "convex/23.obj",
+    "size": 2554,
+    "sha256": "ae3ee7c428ccfde1be037815d3da0cb69f5a96b1f4b994f190affc44ac5bc3bc"
+   },
+   {
+    "path": "convex/24.obj",
+    "size": 11468,
+    "sha256": "7dfe9b654f176ffb7585defb164e7176e463acaf05128cafac8672d888dcc98b"
+   },
+   {
+    "path": "convex/25.obj",
+    "size": 3729,
+    "sha256": "44c692fcdb36c2049fed2c0d79120a90d4336ae5a167b0d746755de441ede266"
+   },
+   {
+    "path": "convex/26.obj",
+    "size": 12342,
+    "sha256": "dbdbd31d89ea33650a7dd638bdbd93b8008b5a5eef10c15d80a5b0586c8f6432"
+   },
+   {
+    "path": "convex/27.obj",
+    "size": 2128,
+    "sha256": "ee6ca04b010ebe129b722adaf29945fb6b2fd5284235beb21f467673033a8464"
+   },
+   {
+    "path": "convex/28.obj",
+    "size": 6467,
+    "sha256": "d2c4051aa5d6cb859b72b76897707a79c36299fb9b03a6aa724d2e7f916d5abc"
+   },
+   {
+    "path": "convex/29.obj",
+    "size": 2595,
+    "sha256": "b51b200c9b7b4bed21248302e7f43969961357afdd88806494707145256f8879"
+   },
+   {
+    "path": "convex/3.obj",
+    "size": 16087,
+    "sha256": "474da0a23879e6b7c36ce0a215b2cd26146b10be728d219dc1a4e63a4f5ee325"
+   },
+   {
+    "path": "convex/30.obj",
+    "size": 16381,
+    "sha256": "2a9e2371ff073a436279f6fd1ee09504c21095b7ac727ddd007b9dd91b134018"
+   },
+   {
+    "path": "convex/4.obj",
+    "size": 13050,
+    "sha256": "f8e04ed28683777f2929a416fa5a3a907cb8fcf97cf24313b1e45782895a0dca"
+   },
+   {
+    "path": "convex/5.obj",
+    "size": 14357,
+    "sha256": "e7be1b9119251083ab5c61652dd5ef770c02ed8ae36c4981f85b107f3ece95bc"
+   },
+   {
+    "path": "convex/6.obj",
+    "size": 12591,
+    "sha256": "a341e0c46aa78dd78d1fea3c82623202cd2588b8ad5e40ce7bc3d12921c578d8"
+   },
+   {
+    "path": "convex/7.obj",
+    "size": 9110,
+    "sha256": "6ec7ee274f411c9a28cde56d089bfe549d22436b7cbda1b86333df333a4b0f6b"
+   },
+   {
+    "path": "convex/8.obj",
+    "size": 8231,
+    "sha256": "7c3abd00b6f2f6a80cf0e6796eb9f07e01828ada1ce02580b2ce6f037b24875e"
+   },
+   {
+    "path": "convex/9.obj",
+    "size": 8939,
+    "sha256": "00abae7e09698bc9987ccb39dee11a9b7f20d89a96bf62efc6d69ffa42cf6c6b"
+   },
+   {
+    "path": "material.mtl",
+    "size": 198,
+    "sha256": "0d90fe7d688a6da0b82b0f8053231a1c8986de34aa839f8113ed53a610c09227"
+   },
+   {
+    "path": "material_0.png",
+    "size": 2478824,
+    "sha256": "f098178c2b87e31f91c294c126a50ea2dac6e8aa10fa5d21e1d793fe6957aa1e"
+   },
+   {
+    "path": "visual.obj",
+    "size": 776542,
+    "sha256": "a50a41bbd5ee49841e264dad1e973694b13de96b879d981e670141c51f93acbf"
+   }
+  ]
+ },
+ "checks": {
+  "per_key_max_abs_diff": {
+   "joint_pos": 0.0,
+   "joint_vel": 0.0,
+   "mano_right_wrist_pos": 0.0,
+   "mano_right_wrist_rot": 0.0,
+   "mano_right_wrist_vel": 0.0,
+   "mano_right_wrist_angvel": 0.0,
+   "mano_right_joints": 0.0,
+   "mano_right_joints_vel": 0.0,
+   "obj_right_pos": 0.0,
+   "obj_right_rotmat": 0.0,
+   "obj_right_vel": 0.0,
+   "obj_right_angvel": 0.0,
+   "tips_distance_right": 0.0,
+   "contact_contact_right": 0.0,
+   "contact_contact_pos_full_right": 0.0,
+   "mano_left_wrist_pos": 0.0,
+   "mano_left_wrist_rot": 0.0,
+   "mano_left_wrist_vel": 0.0,
+   "mano_left_wrist_angvel": 0.0,
+   "mano_left_joints": 0.0,
+   "mano_left_joints_vel": 0.0,
+   "obj_left_pos": 0.0,
+   "obj_left_rotmat": 0.0,
+   "obj_left_vel": 0.0,
+   "obj_left_angvel": 0.0,
+   "tips_distance_left": 0.0,
+   "contact_contact_left": 0.0,
+   "contact_contact_pos_full_left": 0.0
+  },
+  "skipped_non_frame_keys": [
+   "motion_num_frames",
+   "length_starts",
+   "motion_object_slot_right",
+   "motion_object_slot_left",
+   "support_disks"
+  ],
+  "meta": {
+   "motion_filename": true,
+   "motion_num_frames": true,
+   "length_starts": true,
+   "slot_right": true,
+   "slot_left": true,
+   "source_slot_right": 7,
+   "source_slot_left": 7,
+   "support_disks_real_rows": 0.0,
+   "support_disks_source_padding_is_zero": true,
+   "support_disks_padding_width_note": "local K=2 vs source K=4; zero padding only, sd.count=4 entity grid makes it non-behavioral",
+   "mesh_dirs_right": true,
+   "mesh_dirs_left": true,
+   "scale_right": true,
+   "scales_all_unity": true,
+   "joint_names": true,
+   "masses_absent_both": true
+  }
+ },
+ "consistent": true,
+ "note": "local motion_id 0 is the bit-exact slice [69862:70068] of source motion_id 184"
+}

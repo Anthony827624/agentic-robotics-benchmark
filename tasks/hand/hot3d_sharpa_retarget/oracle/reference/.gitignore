@@ -1,0 +1,2 @@
+# The reference PD-target files; the repository ignores *.npz by default.
+!*.npz

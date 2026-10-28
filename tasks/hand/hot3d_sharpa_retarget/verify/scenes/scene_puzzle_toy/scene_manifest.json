@@ -1,0 +1,291 @@
+{
+ "created_utc": "2026-10-26T00:26:58.904809+00:00",
+ "created_by": "scripts/prepare_hot3d_task_assets.py",
+ "clip": "P0001_8d136980_seg005",
+ "local_motion_id": 0,
+ "source_motion_id": 59,
+ "frames": 252,
+ "object_uid": "106957734975303",
+ "object_category": "puzzle_toy",
+ "build": {
+  "fn": "retarget.build_motion_pt.build",
+  "clips_dir": "FlashDexRetarget/outputs/hot3d_full/sharpa/retargeted",
+  "dataset_dir": "verify/scenes/scene_puzzle_toy",
+  "fps": 60.0,
+  "pack_cfg": {
+   "contact_threshold": 0.015,
+   "vel_sigma": 2
+  },
+  "names": [
+   "P0001_8d136980_seg005"
+  ]
+ },
+ "source": {
+  "motion_file": "FlashDexRetarget/outputs/hot3d_full/sharpa/motion.pt",
+  "motion_sha256": "3b2b2edda4e7dc4aa178f8bb6e73c9400e6bad089f9bea117c7074ca35c905a5",
+  "retargeted_npz": "FlashDexRetarget/outputs/hot3d_full/sharpa/retargeted/P0001_8d136980_seg005.npz",
+  "retargeted_npz_sha256": "1554bd5e55df0edf91dfc4aa0b518a14e432c67e8f38291c4e34acaddb79ae5e",
+  "object_dir": "objects/106957734975303",
+  "slice": {
+   "start": 22958,
+   "frames": 252
+  },
+  "source_object_slot_right": 10
+ },
+ "local": {
+  "motion_file": "verify/scenes/scene_puzzle_toy/motion.pt",
+  "motion_sha256": "ac4f046395ccddf390135b01acd0427620d019a8c6dbe12fc97b088d2e9dd305",
+  "object_dir": "verify/scenes/scene_puzzle_toy/objects/106957734975303",
+  "object_files": [
+   {
+    "path": ".isaac_usd/.asset_hash",
+    "size": 32,
+    "sha256": "d9c4cc26eaafa3d47da74f080ac37fd8db0c7d156262294359e0a98ed3fc4772"
+   },
+   {
+    "path": ".isaac_usd/config.yaml",
+    "size": 621,
+    "sha256": "f5d250a8773aef2b9f971f317c74c318dcaabb180a78d1ac7d9c3f8c88b01d27"
+   },
+   {
+    "path": ".isaac_usd/configuration/materials/textures/material_0.png",
+    "size": 2093975,
+    "sha256": "d77642c56ff641e359b77acb24d93f1b6dd14e5f6a90d3c3f85b8a45c337f197"
+   },
+   {
+    "path": ".isaac_usd/configuration/object_base.usd",
+    "size": 1243224,
+    "sha256": "060f85b37dc9b1e8476484bcd46f37c4b44f32c6c6cfaea56477a3446efb31f6"
+   },
+   {
+    "path": ".isaac_usd/configuration/object_physics.usd",
+    "size": 2033,
+    "sha256": "bf3c133af684785f293316e9791152a7bfaf3e3a0e8a1c0ab42b4dbbf32f41b8"
+   },
+   {
+    "path": ".isaac_usd/configuration/object_robot.usd",
+    "size": 1121,
+    "sha256": "e4511c9775e714123bb142aeef5f1b0dde7bf502b6ab8ebc0ed42992950970ad"
+   },
+   {
+    "path": ".isaac_usd/configuration/object_sensor.usd",
+    "size": 662,
+    "sha256": "f72360f787b2945324ae3f7c752960c97f65a299f4f1a906ff3308b6f1a517a6"
+   },
+   {
+    "path": ".isaac_usd/object.urdf",
+    "size": 5225,
+    "sha256": "d22176ae9c33a62a89e40880d14c4f6563d78ed2eca19f0249681d785ea9cd51"
+   },
+   {
+    "path": ".isaac_usd/object.usd",
+    "size": 1418,
+    "sha256": "8a8b7708f9b65a18d1a7e73a8155465215011b263156382cda0b568cbd32b2f3"
+   },
+   {
+    "path": ".sdf_cache/sdf_v2_e0.3_n128_s1.0_1274e43fd659.pt",
+    "size": 33556326,
+    "sha256": "4540da97ff4407ab33b83a31dfc61f99b1426173c7084df95eb77f2a5fb34909"
+   },
+   {
+    "path": "convex/0.obj",
+    "size": 32704,
+    "sha256": "2d66501353999ee0ae035803a28e8ccf9a514e0eeea8cb28ae8d38f5d005b8b8"
+   },
+   {
+    "path": "convex/1.obj",
+    "size": 32271,
+    "sha256": "3925810bd22d8accd856a48d34d6e5498718f45f1749824850b463486fca6d8e"
+   },
+   {
+    "path": "convex/10.obj",
+    "size": 22154,
+    "sha256": "8b09908299632ce89034d43d4f01fb57ac827f512baeb4573f1e367afbb9f2bd"
+   },
+   {
+    "path": "convex/11.obj",
+    "size": 11391,
+    "sha256": "42862020b4e5d8661916caa33e7e69a724dddc51ff39f909d9b892f7aa1e1c13"
+   },
+   {
+    "path": "convex/12.obj",
+    "size": 31201,
+    "sha256": "be3a6aba0b9efdac90e257c82893d38bdcfbf6dd917fc4d85d648332ffdb86dd"
+   },
+   {
+    "path": "convex/13.obj",
+    "size": 19315,
+    "sha256": "d8cdacb828f23bbbb7ff27d02430ac9b15cd548d6b98dd36cfb092c14fd1212d"
+   },
+   {
+    "path": "convex/14.obj",
+    "size": 15159,
+    "sha256": "42610407addd7ec9b2d9eed7e5d503fbfec0a28d1de03229a63a21592103be4a"
+   },
+   {
+    "path": "convex/15.obj",
+    "size": 14759,
+    "sha256": "76ef35a8bdf9807819640e45ffe6d2708d97de4e0973970a7ebfbcd511e1be25"
+   },
+   {
+    "path": "convex/16.obj",
+    "size": 16632,
+    "sha256": "70cb6446fdb785553d26249191707b972aff548b2a218e84528bf1d6c4b62977"
+   },
+   {
+    "path": "convex/17.obj",
+    "size": 21008,
+    "sha256": "654ff8fa9c5fee81cabe97bd0fe69e74b3d9c3d004906796eda127c44775e863"
+   },
+   {
+    "path": "convex/18.obj",
+    "size": 33315,
+    "sha256": "addc7e40555279a75773472376689d8d90ae519e6946925c5945ec97d86dccb8"
+   },
+   {
+    "path": "convex/19.obj",
+    "size": 18317,
+    "sha256": "a768d508d14baee0b66f04f35ffde96317473b13260d57add80be0a6bdf8ac6e"
+   },
+   {
+    "path": "convex/2.obj",
+    "size": 24094,
+    "sha256": "a96f0d2110d9688ddf993c5e3cd2880011bdaf321ecde583c8f8bf9d942f967c"
+   },
+   {
+    "path": "convex/20.obj",
+    "size": 19306,
+    "sha256": "758effda5470c311e3442d0765d160b9f5ba27534409045a0822697f17435872"
+   },
+   {
+    "path": "convex/21.obj",
+    "size": 25985,
+    "sha256": "7c98e2eeb8f926cba69ff85b76b8901c009503e5bfe498004a0101018053aacb"
+   },
+   {
+    "path": "convex/22.obj",
+    "size": 33451,
+    "sha256": "5d585955672690c3e99450324f98b280d86ba1abdbb3b435854ca6581fe00252"
+   },
+   {
+    "path": "convex/23.obj",
+    "size": 18873,
+    "sha256": "9b09e1e252856f564729c276bf08a50d705299a78fcd32d445a35cb93d5ecf29"
+   },
+   {
+    "path": "convex/24.obj",
+    "size": 22853,
+    "sha256": "3d2034e4a7d0dabc1aaceada5304743500064d08460492c8165a4141ca3e9116"
+   },
+   {
+    "path": "convex/3.obj",
+    "size": 35095,
+    "sha256": "b2b5b50d3d3544fa63d1f4fb4d8bbaeff61510d83bc8f5bb5d0217e811c00e1c"
+   },
+   {
+    "path": "convex/4.obj",
+    "size": 21957,
+    "sha256": "7b70a504a966ee3f4850e11c8b3defb24678d88dc4a9cbc9b27bfac67df3b961"
+   },
+   {
+    "path": "convex/5.obj",
+    "size": 33236,
+    "sha256": "daaac677b0d02ebbdb8183d099e3ddfafd110acb27a85d9753cd57ec13441f88"
+   },
+   {
+    "path": "convex/6.obj",
+    "size": 19949,
+    "sha256": "84563cbeb6ee6cff62a90efc8b963ab2ed6930312f5f5592f672f53fdb522ff4"
+   },
+   {
+    "path": "convex/7.obj",
+    "size": 30396,
+    "sha256": "358797016d3188d28e7fe0a4f157059e044fc29656090e6d8ef2e4967c9b68e1"
+   },
+   {
+    "path": "convex/8.obj",
+    "size": 19150,
+    "sha256": "e360c82df953f85b4e497145ab98898f0cea873f46aa2cf4400e6277a6451328"
+   },
+   {
+    "path": "convex/9.obj",
+    "size": 10894,
+    "sha256": "68284a409f048961487da5f6fed8b14b638db3eff76f37e71f20d31755f05352"
+   },
+   {
+    "path": "material.mtl",
+    "size": 198,
+    "sha256": "0d90fe7d688a6da0b82b0f8053231a1c8986de34aa839f8113ed53a610c09227"
+   },
+   {
+    "path": "material_0.png",
+    "size": 2093975,
+    "sha256": "d77642c56ff641e359b77acb24d93f1b6dd14e5f6a90d3c3f85b8a45c337f197"
+   },
+   {
+    "path": "visual.obj",
+    "size": 2044672,
+    "sha256": "53693237e25b49b9d8b2a8f3cd37fc80c5abcd53035929b4e0f9a53016fcc66b"
+   }
+  ]
+ },
+ "checks": {
+  "per_key_max_abs_diff": {
+   "joint_pos": 0.0,
+   "joint_vel": 0.0,
+   "mano_right_wrist_pos": 0.0,
+   "mano_right_wrist_rot": 0.0,
+   "mano_right_wrist_vel": 0.0,
+   "mano_right_wrist_angvel": 0.0,
+   "mano_right_joints": 0.0,
+   "mano_right_joints_vel": 0.0,
+   "obj_right_pos": 0.0,
+   "obj_right_rotmat": 0.0,
+   "obj_right_vel": 0.0,
+   "obj_right_angvel": 0.0,
+   "tips_distance_right": 0.0,
+   "contact_contact_right": 0.0,
+   "contact_contact_pos_full_right": 0.0,
+   "mano_left_wrist_pos": 0.0,
+   "mano_left_wrist_rot": 0.0,
+   "mano_left_wrist_vel": 0.0,
+   "mano_left_wrist_angvel": 0.0,
+   "mano_left_joints": 0.0,
+   "mano_left_joints_vel": 0.0,
+   "obj_left_pos": 0.0,
+   "obj_left_rotmat": 0.0,
+   "obj_left_vel": 0.0,
+   "obj_left_angvel": 0.0,
+   "tips_distance_left": 0.0,
+   "contact_contact_left": 0.0,
+   "contact_contact_pos_full_left": 0.0
+  },
+  "skipped_non_frame_keys": [
+   "motion_num_frames",
+   "length_starts",
+   "motion_object_slot_right",
+   "motion_object_slot_left",
+   "support_disks"
+  ],
+  "meta": {
+   "motion_filename": true,
+   "motion_num_frames": true,
+   "length_starts": true,
+   "slot_right": true,
+   "slot_left": true,
+   "source_slot_right": 10,
+   "source_slot_left": 10,
+   "support_disks_real_rows": 0.0,
+   "support_disks_source_padding_is_zero": true,
+   "support_disks_padding_width_note": "local K=2 vs source K=4; zero padding only, sd.count=4 entity grid makes it non-behavioral",
+   "mesh_dirs_right": true,
+   "mesh_dirs_left": true,
+   "scale_right": true,
+   "scales_all_unity": true,
+   "joint_names": true,
+   "masses_absent_both": true
+  }
+ },
+ "consistent": true,
+ "note": "local motion_id 0 is the bit-exact slice [22958:23210] of source motion_id 59"
+}

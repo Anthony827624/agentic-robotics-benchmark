@@ -1,0 +1,171 @@
+{
+ "created_utc": "2026-10-25T23:44:52.548705+00:00",
+ "created_by": "scripts/prepare_hot3d_task_assets.py",
+ "clip": "P0001_9b6feab7_seg003",
+ "local_motion_id": 0,
+ "source_motion_id": 78,
+ "frames": 166,
+ "object_uid": "37787722328019",
+ "object_category": "keyboard",
+ "build": {
+  "fn": "retarget.build_motion_pt.build",
+  "clips_dir": "FlashDexRetarget/outputs/hot3d_full/sharpa/retargeted",
+  "dataset_dir": "verify/scenes/scene_keyboard",
+  "fps": 60.0,
+  "pack_cfg": {
+   "contact_threshold": 0.015,
+   "vel_sigma": 2
+  },
+  "names": [
+   "P0001_9b6feab7_seg003"
+  ]
+ },
+ "source": {
+  "motion_file": "FlashDexRetarget/outputs/hot3d_full/sharpa/motion.pt",
+  "motion_sha256": "3b2b2edda4e7dc4aa178f8bb6e73c9400e6bad089f9bea117c7074ca35c905a5",
+  "retargeted_npz": "FlashDexRetarget/outputs/hot3d_full/sharpa/retargeted/P0001_9b6feab7_seg003.npz",
+  "retargeted_npz_sha256": "4800afd267b07156b67d71b7af8293e9b878265df4344b9e97b1ec40f6792a90",
+  "object_dir": "objects/37787722328019",
+  "slice": {
+   "start": 29684,
+   "frames": 166
+  },
+  "source_object_slot_right": 1
+ },
+ "local": {
+  "motion_file": "verify/scenes/scene_keyboard/motion.pt",
+  "motion_sha256": "e3ae4ae667aceff86292974adbf99137efac2f973a9630f66b42ec223459fa05",
+  "object_dir": "verify/scenes/scene_keyboard/objects/37787722328019",
+  "object_files": [
+   {
+    "path": ".isaac_usd/.asset_hash",
+    "size": 32,
+    "sha256": "9732c039f724c257ed0089618723baef5cdd1bba9a0edaa58a30bdd8755c7322"
+   },
+   {
+    "path": ".isaac_usd/config.yaml",
+    "size": 619,
+    "sha256": "ecd2ce0e3af5e18f795d8aec8d2fcb666355000ea386208b14ade97a29df9bcb"
+   },
+   {
+    "path": ".isaac_usd/configuration/materials/textures/material_0.png",
+    "size": 470763,
+    "sha256": "e2e5db0788308ba15345f1f80126eef503e0a6b3b98376f59fea6950bc070912"
+   },
+   {
+    "path": ".isaac_usd/configuration/object_base.usd",
+    "size": 183439,
+    "sha256": "05d0376c51b75580ac605f0139b0969fbcb37f6fa3a1bfb4bcdac02800ddd25b"
+   },
+   {
+    "path": ".isaac_usd/configuration/object_physics.usd",
+    "size": 1686,
+    "sha256": "d148dd2b181f0028476830019fd81ccd7815b5145542b9e4e816e07c1a5ae4eb"
+   },
+   {
+    "path": ".isaac_usd/configuration/object_robot.usd",
+    "size": 1122,
+    "sha256": "171dcc1343b249aec782c41be06ff4b084546e47a8caeb866ab298ad21a29076"
+   },
+   {
+    "path": ".isaac_usd/configuration/object_sensor.usd",
+    "size": 661,
+    "sha256": "bcf01932c5bdf7b764d57c057df4f9dd111b713e45071b9e8d89c3e10ae2b13e"
+   },
+   {
+    "path": ".isaac_usd/object.urdf",
+    "size": 1006,
+    "sha256": "e3d52519654b66b7188e7d0bf6272f1681afe461d131b6996202c0d317065186"
+   },
+   {
+    "path": ".isaac_usd/object.usd",
+    "size": 1417,
+    "sha256": "adbec519b79619efe9462a2c2927fdd558400712e4f37d21354b3abe3e5f7d02"
+   },
+   {
+    "path": ".sdf_cache/sdf_v2_e0.3_n128_s1.0_1274e43fd659.pt",
+    "size": 33556326,
+    "sha256": "30cbac1fc4d6124298c41c60b9784dbf23c9e3baf56dacad39a9888099f2c118"
+   },
+   {
+    "path": "convex/0.obj",
+    "size": 16256,
+    "sha256": "3f7f0f1f5db15b1794ca2dbc015c8f64d864305d0fe1e04c7cff59bd17ae6443"
+   },
+   {
+    "path": "material.mtl",
+    "size": 198,
+    "sha256": "0d90fe7d688a6da0b82b0f8053231a1c8986de34aa839f8113ed53a610c09227"
+   },
+   {
+    "path": "material_0.png",
+    "size": 470763,
+    "sha256": "e2e5db0788308ba15345f1f80126eef503e0a6b3b98376f59fea6950bc070912"
+   },
+   {
+    "path": "visual.obj",
+    "size": 479713,
+    "sha256": "1fa30c079d5449987dfa08a2d782ed30709eff3eb84ef78c46dcce1a20af4291"
+   }
+  ]
+ },
+ "checks": {
+  "per_key_max_abs_diff": {
+   "joint_pos": 0.0,
+   "joint_vel": 0.0,
+   "mano_right_wrist_pos": 0.0,
+   "mano_right_wrist_rot": 0.0,
+   "mano_right_wrist_vel": 0.0,
+   "mano_right_wrist_angvel": 0.0,
+   "mano_right_joints": 0.0,
+   "mano_right_joints_vel": 0.0,
+   "obj_right_pos": 0.0,
+   "obj_right_rotmat": 0.0,
+   "obj_right_vel": 0.0,
+   "obj_right_angvel": 0.0,
+   "tips_distance_right": 0.0,
+   "contact_contact_right": 0.0,
+   "contact_contact_pos_full_right": 0.0,
+   "mano_left_wrist_pos": 0.0,
+   "mano_left_wrist_rot": 0.0,
+   "mano_left_wrist_vel": 0.0,
+   "mano_left_wrist_angvel": 0.0,
+   "mano_left_joints": 0.0,
+   "mano_left_joints_vel": 0.0,
+   "obj_left_pos": 0.0,
+   "obj_left_rotmat": 0.0,
+   "obj_left_vel": 0.0,
+   "obj_left_angvel": 0.0,
+   "tips_distance_left": 0.0,
+   "contact_contact_left": 0.0,
+   "contact_contact_pos_full_left": 0.0
+  },
+  "skipped_non_frame_keys": [
+   "motion_num_frames",
+   "length_starts",
+   "motion_object_slot_right",
+   "motion_object_slot_left",
+   "support_disks"
+  ],
+  "meta": {
+   "motion_filename": true,
+   "motion_num_frames": true,
+   "length_starts": true,
+   "slot_right": true,
+   "slot_left": true,
+   "source_slot_right": 1,
+   "source_slot_left": 1,
+   "support_disks_real_rows": 0.0,
+   "support_disks_source_padding_is_zero": true,
+   "support_disks_padding_width_note": "local K=1 vs source K=4; zero padding only, sd.count=4 entity grid makes it non-behavioral",
+   "mesh_dirs_right": true,
+   "mesh_dirs_left": true,
+   "scale_right": true,
+   "scales_all_unity": true,
+   "joint_names": true,
+   "masses_absent_both": true
+  }
+ },
+ "consistent": true,
+ "note": "local motion_id 0 is the bit-exact slice [29684:29850] of source motion_id 78"
+}

@@ -1,0 +1,2 @@
+# Each scene's motion.pt holds the grader's references; the repository ignores *.pt by default.
+!*.pt

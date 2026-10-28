@@ -16,7 +16,7 @@
     "obj_rot_deg": 30.0,
     "joint_trans": 0.08
   },
-  "protocol": "assets/control_bounds.json",
+  "protocol": "control_bounds.json",
   "isaac_python": "/opt/isaac-venv/bin/python",
   "replay_timeout_s": 900,
   "replay_workers": 4,
@@ -27,7 +27,7 @@
       "source_motion_id": 147,
       "local_motion_id": 0,
       "frames": 164,
-      "scene": "assets/scene_plate_bamboo/motion.pt",
+      "scene": "scenes/scene_plate_bamboo/motion.pt",
       "static_obj_trans": 0.256665
     },
     {
@@ -35,7 +35,7 @@
       "source_motion_id": 150,
       "local_motion_id": 0,
       "frames": 182,
-      "scene": "assets/scene_can_parmesan/motion.pt",
+      "scene": "scenes/scene_can_parmesan/motion.pt",
       "static_obj_trans": 0.789068
     },
     {
@@ -43,7 +43,7 @@
       "source_motion_id": 78,
       "local_motion_id": 0,
       "frames": 166,
-      "scene": "assets/scene_keyboard/motion.pt",
+      "scene": "scenes/scene_keyboard/motion.pt",
       "static_obj_trans": 0.30311
     },
     {
@@ -51,7 +51,7 @@
       "source_motion_id": 184,
       "local_motion_id": 0,
       "frames": 206,
-      "scene": "assets/scene_can_tomato_sauce/motion.pt",
+      "scene": "scenes/scene_can_tomato_sauce/motion.pt",
       "static_obj_trans": 0.562923
     },
     {
@@ -59,7 +59,7 @@
       "source_motion_id": 43,
       "local_motion_id": 0,
       "frames": 174,
-      "scene": "assets/scene_bowl/motion.pt",
+      "scene": "scenes/scene_bowl/motion.pt",
       "static_obj_trans": 0.40834
     },
     {
@@ -67,7 +67,7 @@
       "source_motion_id": 59,
       "local_motion_id": 0,
       "frames": 252,
-      "scene": "assets/scene_puzzle_toy/motion.pt",
+      "scene": "scenes/scene_puzzle_toy/motion.pt",
       "static_obj_trans": 0.406801
     },
     {
@@ -75,7 +75,7 @@
       "source_motion_id": 47,
       "local_motion_id": 0,
       "frames": 310,
-      "scene": "assets/scene_food_vegetables/motion.pt",
+      "scene": "scenes/scene_food_vegetables/motion.pt",
       "static_obj_trans": 0.333235
     },
     {
@@ -83,7 +83,7 @@
       "source_motion_id": 149,
       "local_motion_id": 0,
       "frames": 196,
-      "scene": "assets/scene_bottle_ranch/motion.pt",
+      "scene": "scenes/scene_bottle_ranch/motion.pt",
       "static_obj_trans": 0.684581
     },
     {
@@ -91,7 +91,7 @@
       "source_motion_id": 606,
       "local_motion_id": 0,
       "frames": 214,
-      "scene": "assets/scene_vase/motion.pt",
+      "scene": "scenes/scene_vase/motion.pt",
       "static_obj_trans": 0.584111
     }
   ],

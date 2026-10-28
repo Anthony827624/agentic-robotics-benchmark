@@ -41,9 +41,15 @@ RUN uv venv --seed /opt/perception-venv --python 3.12 \
     && echo "${HAND_LANDMARKER_SHA256}  /opt/models/hand_landmarker.task" | sha256sum -c - \
     && chmod -R a+rX /opt/perception-venv /opt/models /opt/uv-python
 
+# Task assets: the nine clips (frames, calibration, headset pose) live in the benchmark's Hugging Face dataset
+# (tasks/hand/hot3d_sharpa_retarget/payload/ there). They are fetched at the commit pinned in assets.sha256 and checked
+# file by file; setup/run.sh stages them into the agent home. fetch_assets.py is the benchmark's canonical copy
+# (shared/task_assets/) and the repository named in assets.sha256 is written from task-assets.toml (docs/task-assets.md).
+COPY fetch_assets.py assets.sha256 /opt/task-assets/
+RUN python3 /opt/task-assets/fetch_assets.py /opt/task-assets/assets.sha256 /opt/task-assets/payload \
+    && chmod -R a+rX /opt/task-assets
+
 COPY flashdex /opt/flashdex
-# The clips (frames, calibration, headset pose), restored into image/assets/ by `ale assets pull`.
-COPY --chown=user:user assets/clips /home/user/clips
 RUN install -d -o user -g user /home/user/submission /home/user/.cache/ov \
     && chmod -R a+rX /opt/flashdex /opt/venv /opt/isaac-venv /opt/python /opt/uv-python \
     && for name in cache data logs; do \
@@ -55,4 +61,4 @@ RUN runuser -u user -- /opt/venv/bin/python3 -c "import sys, numpy; assert sys.v
     && runuser -u user -- /opt/isaac-venv/bin/python3 -c "import isaacsim, torch, hydra, tensordict; print('[image] agent-UID Isaac imports OK')" \
     && runuser -u user -- /opt/perception-venv/bin/python3 -c "import mediapipe, cv2, projectaria_tools, scipy, mujoco, skimage, open3d; print('[image] agent-UID perception imports OK')" \
     && runuser -u user -- /opt/isaac-venv/bin/python3 -c "import coacd; print('[image] agent-UID coacd OK')" \
-    && runuser -u user -- test -r /home/user/clips/P0002_016222d1_seg016/frames.jsonl
+    && runuser -u user -- test -r /opt/task-assets/payload/clips/P0002_016222d1_seg016/frames.jsonl

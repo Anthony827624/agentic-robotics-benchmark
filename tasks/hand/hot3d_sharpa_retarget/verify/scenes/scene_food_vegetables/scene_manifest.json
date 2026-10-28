@@ -1,0 +1,171 @@
+{
+ "created_utc": "2026-10-26T19:18:11.223011+00:00",
+ "created_by": "scripts/prepare_hot3d_task_assets.py",
+ "clip": "P0001_624f2ba9_seg013",
+ "local_motion_id": 0,
+ "source_motion_id": 47,
+ "frames": 310,
+ "object_uid": "96945373046044",
+ "object_category": "food_vegetables",
+ "build": {
+  "fn": "retarget.build_motion_pt.build",
+  "clips_dir": "FlashDexRetarget/outputs/hot3d_full/sharpa/retargeted",
+  "dataset_dir": "verify/scenes/scene_food_vegetables",
+  "fps": 60.0,
+  "pack_cfg": {
+   "contact_threshold": 0.015,
+   "vel_sigma": 2
+  },
+  "names": [
+   "P0001_624f2ba9_seg013"
+  ]
+ },
+ "source": {
+  "motion_file": "FlashDexRetarget/outputs/hot3d_full/sharpa/motion.pt",
+  "motion_sha256": "3b2b2edda4e7dc4aa178f8bb6e73c9400e6bad089f9bea117c7074ca35c905a5",
+  "retargeted_npz": "FlashDexRetarget/outputs/hot3d_full/sharpa/retargeted/P0001_624f2ba9_seg013.npz",
+  "retargeted_npz_sha256": "02fc0b2bfc25911123a7856bce18091c3cdd41c17293efee6cfced56844309dc",
+  "object_dir": "objects/96945373046044",
+  "slice": {
+   "start": 17876,
+   "frames": 310
+  },
+  "source_object_slot_right": 12
+ },
+ "local": {
+  "motion_file": "verify/scenes/scene_food_vegetables/motion.pt",
+  "motion_sha256": "89404ec77054ad0f9e1e6a30a046da739a02d57c8fc31272881e5fe719181b53",
+  "object_dir": "verify/scenes/scene_food_vegetables/objects/96945373046044",
+  "object_files": [
+   {
+    "path": ".isaac_usd/.asset_hash",
+    "size": 32,
+    "sha256": "0b380cb1c5072c6395320ae5585186b8adf044edb37fa9945ac6b5f3d2155609"
+   },
+   {
+    "path": ".isaac_usd/config.yaml",
+    "size": 619,
+    "sha256": "82cb8bdc4c54117ea97f6c16e2d021a8eca2ead1737065d1118d3f1e17b7f58f"
+   },
+   {
+    "path": ".isaac_usd/configuration/materials/textures/material_0.png",
+    "size": 1955424,
+    "sha256": "2a244f89ffd9cffdd8a4bcc29b451830eecd3f2613af13c6d59778d78073fc63"
+   },
+   {
+    "path": ".isaac_usd/configuration/object_base.usd",
+    "size": 795624,
+    "sha256": "8b54b49ba5926bd433e2fa6e2353d7c778b40e935d328e3959b1f3d6667bfe56"
+   },
+   {
+    "path": ".isaac_usd/configuration/object_physics.usd",
+    "size": 1686,
+    "sha256": "65d6abef0b4fe9b8dd4940f27ebb04bc372d4d16a4836c1137f5fce026e4c8e1"
+   },
+   {
+    "path": ".isaac_usd/configuration/object_robot.usd",
+    "size": 1122,
+    "sha256": "ccff9ee814a86ea4eae782dcc8e8914dec267c3e6778459d7d5460050d1763fc"
+   },
+   {
+    "path": ".isaac_usd/configuration/object_sensor.usd",
+    "size": 661,
+    "sha256": "8c64261254657734a4460b86a4149b44bc1edb3d5f77039cf090ab8a38d88e5c"
+   },
+   {
+    "path": ".isaac_usd/object.urdf",
+    "size": 1015,
+    "sha256": "d6332340bbdc5f008ff43a1e72dac278f974e3ff7143d582112db0bc0a3e256c"
+   },
+   {
+    "path": ".isaac_usd/object.usd",
+    "size": 1417,
+    "sha256": "17707772980288f9aaa7cac4021e875fe865b1f7e3a2f6595be9201718431bfd"
+   },
+   {
+    "path": ".sdf_cache/sdf_v2_e0.3_n128_s1.0_1274e43fd659.pt",
+    "size": 33556326,
+    "sha256": "804f2f4d99cfbab56f4934f655a966985fc6f73845a4e8935b420d28c780a475"
+   },
+   {
+    "path": "convex/0.obj",
+    "size": 88630,
+    "sha256": "fd7769e5b3ee456d62ab4cb4aed3b76c54d0ca8a732694efb45e663681ee3ff5"
+   },
+   {
+    "path": "material.mtl",
+    "size": 198,
+    "sha256": "0d90fe7d688a6da0b82b0f8053231a1c8986de34aa839f8113ed53a610c09227"
+   },
+   {
+    "path": "material_0.png",
+    "size": 1955424,
+    "sha256": "2a244f89ffd9cffdd8a4bcc29b451830eecd3f2613af13c6d59778d78073fc63"
+   },
+   {
+    "path": "visual.obj",
+    "size": 1420482,
+    "sha256": "978149337f610378b009f2294454457c88c355422b9a4726c006ed7aa4b1cee8"
+   }
+  ]
+ },
+ "checks": {
+  "per_key_max_abs_diff": {
+   "joint_pos": 0.0,
+   "joint_vel": 0.0,
+   "mano_right_wrist_pos": 0.0,
+   "mano_right_wrist_rot": 0.0,
+   "mano_right_wrist_vel": 0.0,
+   "mano_right_wrist_angvel": 0.0,
+   "mano_right_joints": 0.0,
+   "mano_right_joints_vel": 0.0,
+   "obj_right_pos": 0.0,
+   "obj_right_rotmat": 0.0,
+   "obj_right_vel": 0.0,
+   "obj_right_angvel": 0.0,
+   "tips_distance_right": 0.0,
+   "contact_contact_right": 0.0,
+   "contact_contact_pos_full_right": 0.0,
+   "mano_left_wrist_pos": 0.0,
+   "mano_left_wrist_rot": 0.0,
+   "mano_left_wrist_vel": 0.0,
+   "mano_left_wrist_angvel": 0.0,
+   "mano_left_joints": 0.0,
+   "mano_left_joints_vel": 0.0,
+   "obj_left_pos": 0.0,
+   "obj_left_rotmat": 0.0,
+   "obj_left_vel": 0.0,
+   "obj_left_angvel": 0.0,
+   "tips_distance_left": 0.0,
+   "contact_contact_left": 0.0,
+   "contact_contact_pos_full_left": 0.0
+  },
+  "skipped_non_frame_keys": [
+   "motion_num_frames",
+   "length_starts",
+   "motion_object_slot_right",
+   "motion_object_slot_left",
+   "support_disks"
+  ],
+  "meta": {
+   "motion_filename": true,
+   "motion_num_frames": true,
+   "length_starts": true,
+   "slot_right": true,
+   "slot_left": true,
+   "source_slot_right": 12,
+   "source_slot_left": 12,
+   "support_disks_real_rows": 0.0,
+   "support_disks_source_padding_is_zero": true,
+   "support_disks_padding_width_note": "local K=1 vs source K=4; zero padding only, sd.count=4 entity grid makes it non-behavioral",
+   "mesh_dirs_right": true,
+   "mesh_dirs_left": true,
+   "scale_right": true,
+   "scales_all_unity": true,
+   "joint_names": true,
+   "masses_absent_both": true
+  }
+ },
+ "consistent": true,
+ "note": "local motion_id 0 is the bit-exact slice [17876:18186] of source motion_id 47"
+}
