@@ -1,8 +1,8 @@
 {
   "metric": "mean_clip_score",
   "direction": "higher",
-  "value": 1.0,
+  "value": 0.9781538421235181,
   "full_at": 0.95,
-  "source": "Measured by ale validate on the nine-clip task: validate-5894a231, validate-277fea36, validate-7ff7879f and validate-a581fa34 (clips replayed one after another), and validate-e19240e5 (the same per-clip replays, four at a time), oracle result.json: mean_clip_score=1.0 in all five runs, every clip 1.0 over 4 perturbed replays each (36 replays per run). The fixed-seed replay is deterministic and each clip keeps its own scene, so the runs agree exactly; full_at 0.95 leaves margin for one replay drifting on other hardware.",
+  "source": "Re-measured by the maintainers after the 2026-11-01 changes, which replay each of a clip's four copies in its own Isaac process with a scene of its own: the reference PD targets (oracle/reference/) graded by verify/ in the task image, offline (--network none), twice: mean_clip_score=0.9781538421235181 both times, the 36 copies' errors bitwise identical. 34 of the 36 copies score 1.0; P0001_624f2ba9_seg009 copy 2 scores 0.82 and P0001_624f2ba9_seg013 copy 3 0.40. The contributor's runs (validate-5894a231, validate-277fea36, validate-7ff7879f, validate-a581fa34, validate-e19240e5: 1.0 each) replayed a clip's four copies in one shared PhysX scene, where they changed each other's results. full_at 0.95 leaves margin for about two more copies drifting on other hardware.",
   "reference_commit": "68728b5cf5f0c10fa298a53fad70bfb21e38a419"
 }
