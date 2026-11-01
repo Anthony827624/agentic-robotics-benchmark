@@ -3,13 +3,21 @@
 import json
 import os
 from pathlib import Path
+import stat
 import sys
 
 import numpy as np
 
+MAX_FILE_BYTES = 10_000_000  # the grader's limit
+
 
 def check_file(path, clip, protocol):
     try:
+        info = os.lstat(path)
+        if not stat.S_ISREG(info.st_mode):
+            return False, {"reason": "not a regular file (the grader refuses symbolic links)"}
+        if info.st_size > MAX_FILE_BYTES:
+            return False, {"reason": "larger than 10 MB"}
         with np.load(path, allow_pickle=False) as data:
             target = data["pd_targets"]
             names = data["joint_names"].tolist()
@@ -26,9 +34,9 @@ def check_file(path, clip, protocol):
             and motion_id == clip["source_motion_id"]
         )
         detail = {"shape": list(target.shape), "dtype": str(target.dtype)}
-    except (OSError, ValueError, KeyError, TypeError, EOFError) as exc:
+    except Exception as exc:  # noqa: BLE001 -- any unreadable file is an invalid file, as in the grader
         valid = False
-        detail = {"reason": str(exc)}
+        detail = {"reason": "{}: {}".format(type(exc).__name__, exc)}
     return valid, detail
 
 

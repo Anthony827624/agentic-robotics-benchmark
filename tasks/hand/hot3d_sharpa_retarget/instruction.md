@@ -42,8 +42,9 @@ fingertip surface of the person's hands (the fingertip vertices of HOT3D's MANO 
 annotations).
 
 The verifier replays submissions with `/opt/flashdex/scripts/replay_hot3d_pd.py`
-(run with `/opt/isaac-venv/bin/python`); its source and the rest of the simulator stack
-are readable under `/opt/flashdex`.
+(run with `/opt/isaac-venv/bin/python`, one replay per process, the scoring window and
+thresholds passed in its spec); it builds its scene offline. Its source and the rest
+of the simulator stack are readable under `/opt/flashdex`.
 
 One GPU is available. Object meshes, per-clip MANO parameters, object-pose references, support
 geometry derived from those references, and reference control trajectories are
@@ -87,27 +88,42 @@ verifier under Isaac Sim / PhysX, without object-assist forces. The score is
 computed from the resulting physical state, not from self-reported trajectories,
 using time averages over the replay after a 15-step grace period.
 
-Hand quality: the fingertip error to the MANO reference is divided by 0.06 m and the
-finger-link error to the retargeted reference by 0.08 m; the larger of the two ratios,
-for the worse hand, is `w`, and hand quality is `clamp((4 - w) / 3, 0, 1)`: full
-when both limits hold (`w <= 1`), falling linearly to zero at four times the limits.
+Hand quality compares the robot's hands with the person's hands of the HOT3D
+annotation (MANO), each hand separately, as distances in the world frame:
+
+- the fingertip error, from each robot fingertip to the person's fingertip point
+  (above), divided by 0.06 m;
+- the finger-link error, from the robot's knuckle and distal finger links to the
+  person's MANO proximal and distal finger joints, divided by 0.08 m.
+
+The larger of the two ratios, for the worse hand, is `w`, and hand quality is
+`clamp((4 - w) / 3, 0, 1)`: full when both limits hold (`w <= 1`), falling linearly
+to zero at four times the limits.
 
 Object progress: let `e_static` be the object translation error of an object that
 never leaves its initial pose, and `e` the replay's object translation error. The
 progress is `1 - e / e_static`, and the progress factor is `clamp(progress / 0.85, 0, 1)`:
 an object left where it started gives zero, reproducing at least 85% of the object's
-motion gives one.
+motion gives one. The object's orientation is reported but not scored.
 
 A replay scores `hand quality * (0.2 + 0.8 * progress factor)`: following the
 person's hands without moving the object earns at most 0.2, and the rest requires
-reproducing the object's motion. Each clip is replayed
-four times in parallel and its score is the mean of those replays; the task score
-is the mean of the clip scores. One replay starts exactly from the clip's initial
-state; each of the other three starts from a small fixed
-perturbation of it: the wrist translation joints move by up to 1 mm, every other
-joint by up to 0.005 rad, and the object's start position by up to 1 mm
-horizontally. The same submission is replayed in all four. An invalid or missing clip
-scores zero; it does not hide the other clips' results.
+reproducing the object's motion. Each clip is replayed four times, each replay in its
+own Isaac process with a scene of its own (replays never share a physics scene), and
+its score is the mean of those replays; the task score is the mean of the clip scores.
+One replay starts exactly from the clip's initial state; each of the other three
+starts from a small fixed perturbation of it: the wrist translation joints move by up
+to 1 mm, every other joint by up to 0.005 rad, and the object's start position by up to
+1 mm horizontally. These perturbations probe numerical robustness only; they are far
+smaller than the uncertainty of anything estimated from the video. The same submission
+is replayed in all four.
+
+Each file must be a regular file (not a symbolic link) of at most 10 MB. A missing,
+unreadable or invalid file scores zero for its clip; it does not hide the other clips'
+results. A replay that fails is run once more. If it fails again, the verifier replays
+the same scene with a control submission that holds the clip's initial pose: if the
+control replays, the failed replays score zero; if the control fails too, the simulator
+itself is not working, and the run is reported as an infrastructure failure, not scored.
 The initial robot state for each clip is public in the control protocol, while the
 hidden scenes supply the objects and physical environment.
 

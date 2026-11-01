@@ -14,6 +14,8 @@ Usage: replay_hot3d_pd.py --spec spec.json --out-dir <dir>
 from __future__ import annotations
 
 import argparse
+import hashlib
+import io
 import json
 import os
 import sys
@@ -36,8 +38,9 @@ def _utc() -> str:
 def apply_initial_perturbation(raw_env, cmd, env_ids, pert: dict) -> list[dict]:
     """Seeded, uniform perturbation of the reset state, one draw per replay copy.
 
-    Copy k (the k-th entry of ``env_ids``) draws from ``seed + k``; copy 0 stays
-    unperturbed when ``unperturbed_first``. Wrist translation joints (prismatic, m)
+    Copy k (the k-th entry of ``env_ids``, plus ``copy_index`` when each copy replays in its
+    own process) draws from ``seed + k``; copy 0 stays unperturbed when
+    ``unperturbed_first``. Wrist translation joints (prismatic, m)
     move by up to ``wrist_trans_m``, every other joint by up to ``joint_rad``, and the
     object start position by up to ``obj_xy_m`` in x and y. References are untouched.
     """
@@ -64,7 +67,8 @@ def apply_initial_perturbation(raw_env, cmd, env_ids, pert: dict) -> list[dict]:
             dim=-1,
         ).clone()
     draws = []
-    for k, env in enumerate(env_ids.tolist()):
+    first = int(pert.get("copy_index", 0))
+    for k, env in enumerate(env_ids.tolist(), start=first):
         if k == 0 and pert.get("unperturbed_first", True):
             draws.append({"copy": k, "env": env, "perturbed": False})
             continue
@@ -120,6 +124,19 @@ def run(args: argparse.Namespace) -> dict:
         ]
         cfg = hydra.compose(config_name="flashdexretarget", overrides=overrides)
     OmegaConf.resolve(cfg)
+    # The scoring window and thresholds come from the spec (the grader's config), not from the
+    # eval config's defaults: one source for both.
+    from omegaconf import open_dict
+
+    with open_dict(cfg):
+        for cb in cfg.eval.callbacks:
+            target = str(cb.get("_target_", ""))
+            if target.endswith(".TrackingPerformance"):
+                cb.grace_steps = int(spec["eval"]["grace_steps"])
+                cb.threshold_ks = [float(k) for k in spec["eval"]["threshold_ks"]]
+                cb.thresholds = {k: float(v) for k, v in spec["eval"]["thresholds"].items()}
+            elif target.endswith(".ContactPerformance"):
+                cb.grace_steps = int(spec["eval"]["grace_steps"])
 
     os.environ.setdefault("OMNI_KIT_ACCEPT_EULA", "1")
     from isaaclab.app import AppLauncher
@@ -198,11 +215,15 @@ def run(args: argparse.Namespace) -> dict:
                 entry = spec["pd_targets"][str(mid)]
                 pd_path = Path(entry["path"])
                 assert pd_path.exists(), pd_path
-                arr = np.load(pd_path)["pd_targets"]
+                data = pd_path.read_bytes()
+                # the bytes the grader validated (it copies them to a root-only folder first)
+                if entry.get("sha256") and hashlib.sha256(data).hexdigest() != entry["sha256"]:
+                    raise ValueError(f"{pd_path}: sha256 differs from the validated submission")
+                with np.load(io.BytesIO(data), allow_pickle=False) as npz:
+                    arr = npz["pd_targets"]
                 pds.append(torch.from_numpy(np.ascontiguousarray(arr)))
                 print(
-                    f"[replay] env{env_idx} <= m{mid} pd targets {arr.shape} "
-                    f"sha_ok={pd_path.stat().st_size > 0}",
+                    f"[replay] env{env_idx} <= m{mid} pd targets {arr.shape} sha_ok=True",
                     flush=True,
                 )
             targets = torch.stack(pds, dim=1).to(device)  # (T, n_sel, 56)

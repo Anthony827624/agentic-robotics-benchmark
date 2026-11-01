@@ -40,6 +40,29 @@ def _abl(name: str) -> bool:
     return os.environ.get(f"FDR_ABL_{name}", "0") == "1"
 
 
+def _local_ground_plane(prim_path: str) -> None:
+    """The ground: an infinite PhysX collision plane at z = 0 (+z up) bound to Isaac Lab's default rigid-body material
+    (static and dynamic friction 0.5, restitution 0), authored in the stage.
+
+    Isaac Lab's ``GroundPlaneCfg`` references the grid USD on NVIDIA's Nucleus server (or an on-disk mirror named by
+    ISAAC_ASSET_ROOT), which needs the network: without it every scene build failed. Its physics is this same
+    collision plane with that material; the grid mesh it adds is visual only."""
+    import isaacsim.core.utils.stage as stage_utils
+    from isaaclab.sim.utils import bind_physics_material
+    from pxr import UsdGeom, UsdPhysics
+
+    stage = stage_utils.get_current_stage()
+    UsdGeom.Xform.Define(stage, prim_path)
+    plane = UsdGeom.Plane.Define(stage, f"{prim_path}/CollisionPlane")
+    plane.CreateAxisAttr(UsdGeom.Tokens.z)
+    plane.CreateWidthAttr(100.0)
+    plane.CreateLengthAttr(100.0)
+    UsdPhysics.CollisionAPI.Apply(plane.GetPrim())
+    material = sim_utils.RigidBodyMaterialCfg()
+    material.func(f"{prim_path}/physicsMaterial", material)
+    bind_physics_material(f"{prim_path}/CollisionPlane", f"{prim_path}/physicsMaterial")
+
+
 def _alllink_bodies_by_side(cfg) -> dict[str, list[str]]:
     """{side: all-link contact bodies} from the scene's {r,l}_alllink_contact sensors (the mujoco
     source of truth, so other hands work); the xhand constant is the fallback."""
@@ -367,16 +390,9 @@ def build_isaac_scene(
     )
 
     # ── static scene ──────────────────────────────────────────────────────
-    # A second Kit process on the node loses the shared kvdb asset cache, so the nucleus
-    # ground plane stops resolving; ISAAC_ASSET_ROOT points at an on-disk mirror instead
-    # (the cfg default is baked at import, hence the explicit override here).
+    # The ground is authored locally (no Nucleus asset): the scene builds offline.
     if not _abl("NOGROUND"):
-        ground = sim_utils.GroundPlaneCfg()
-        if os.environ.get("ISAAC_ASSET_ROOT"):
-            ground.usd_path = (
-                f"{os.environ['ISAAC_ASSET_ROOT']}/Isaac/Environments/Grid/default_environment.usd"
-            )
-        ground.func("/World/ground", ground)
+        _local_ground_plane("/World/ground")
     sim_utils.DomeLightCfg(intensity=2000.0).func(
         "/World/Light", sim_utils.DomeLightCfg(intensity=2000.0)
     )

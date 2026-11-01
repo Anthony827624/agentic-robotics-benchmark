@@ -5,5 +5,11 @@ resources: {cpus: 8, memory_mb: 65536, gpus: 1}
 network: {mode: block}
 timeouts: {setup: 120, agent: 10800, verify: 2700}
 artifacts: [/home/user/submission]
+
+# A fresh verifier sandbox from the image, with only the submission restored: nothing the agent left in the solver's
+# file system (programs earlier on PATH, Isaac Sim's kit settings and caches) reaches the grader, which runs as root.
+verify:
+  environment_mode: separate
+  resources: {cpus: 8, memory_mb: 65536, storage_mb: null, gpus: 1}
 metadata:
   platform: hand
