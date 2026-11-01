@@ -1,0 +1,9 @@
+{
+  "metric": "mean_opening_progress",
+  "direction": "higher",
+  "value": 1.0,
+  "full_at": 1.0,
+  "source": "Mean of 24 fresh privileged-oracle runs (8 hidden-box episodes each) through the real engine on the alebench podman dev runner, runs R/tM/runs/r6-oracle-1 and r6-oracle-2 (engine 90a7c1c, task digest excluding anchor sha256:71ca4b4a853c62dc), 2026-10-23; re-measured by a maintainer after the 2026-10-28 credit-rule fix in 3 ale validate runs on Docker 29.7 with the official base image (engine 90a7c1c)",
+  "reference_commit": "local-uncommitted (alebench fork, task digest sha256:71ca4b4a853c62dc)",
+  "note": "All 24 author runs measured 1.0 (192 of 192 episodes fully opened; sd 0); the 3 maintainer validate runs on the fixed rule measured 1.0 as well (24 of 24 episodes). In-process batch with image-based pose on the r6 boxes: 120 of 120 episodes fully opened (R/tM/fix_r1/r6/gt). full_at 1.0 (maintainer, 2026-10-28): the measured worst oracle ratio, per docs/architecture.md section 5 (the author had pre-registered 0.85)."
+}

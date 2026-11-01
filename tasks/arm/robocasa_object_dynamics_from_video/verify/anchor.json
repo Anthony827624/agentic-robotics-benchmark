@@ -1,0 +1,8 @@
+{
+  "metric": "object_dynamics_score",
+  "direction": "higher",
+  "value": 1.0,
+  "full_at": 0.95,
+  "source": "privileged oracle (GT parameters): raw 1.0 in 10/10 devrun episodes on digests r4 and r5 (docs/evidence/R/full_build.md); full_at 0.95 pre-registered before the first probe (docs/evidence/R/preregistration.md, 2026-10-21)",
+  "note": "test list frozen at r4: sha256 of json.dumps(tests, sort_keys=True) = 5a3e231d8972e4d8543ecfb34080859385ed266a991cde7f59befc2687862eb1 (R/tR/dev/tests_r4_final.json); any test change requires a full P3 re-run"
+}

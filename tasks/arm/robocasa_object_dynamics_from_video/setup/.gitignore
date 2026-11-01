@@ -1,0 +1,3 @@
+# the recordings come from the task-assets dataset (image/assets.sha256); keep them out of git
+payload/data/objects/*/clip*/*.mp4
+payload/data/objects/*/clip*/*.npy

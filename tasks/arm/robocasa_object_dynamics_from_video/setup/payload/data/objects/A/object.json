@@ -1,0 +1,6 @@
+{
+ "id": "A",
+ "mass_kg": 1.15,
+ "n_clips": 10,
+ "reference_pose": "the object's rest pose in frame 0 of clip00"
+}

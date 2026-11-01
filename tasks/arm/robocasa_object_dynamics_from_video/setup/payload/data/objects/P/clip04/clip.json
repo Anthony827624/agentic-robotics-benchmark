@@ -1,0 +1,20 @@
+{
+ "kind": "rock",
+ "fps": 30,
+ "n_frames": 150,
+ "probe_dt": 0.002,
+ "probe_samples": 2500,
+ "frame_k_time_s": "k / fps (frame 0 = probe sample 0)",
+ "stop_bar": {
+  "center_xy": [
+   -0.07334867682433802,
+   0.06127510783774958
+  ],
+  "long_axis_yaw": 4.0142483089489405,
+  "size_m": [
+   0.24,
+   0.01,
+   0.01
+  ]
+ }
+}

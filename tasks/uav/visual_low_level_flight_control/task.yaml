@@ -1,0 +1,21 @@
+spec_type: core/v1
+name: visual_low_level_flight_control
+image:
+  kind: container
+resources:
+  cpus: 2
+  memory_mb: 4096
+  gpus: 0
+network:
+  mode: block
+timeouts:
+  setup: 120
+  agent: 3600
+  verify: 5400
+artifacts:
+- /home/user/submission
+tools:
+  mcp_servers:
+  - path: tools/mcp/robot.toml
+metadata:
+  platform: uav

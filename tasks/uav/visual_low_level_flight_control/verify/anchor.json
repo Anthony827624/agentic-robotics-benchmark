@@ -1,0 +1,7 @@
+{
+  "metric": "success_rate",
+  "direction": "higher",
+  "value": 1.0,
+  "full_at": 0.85,
+  "source": "Measured by a maintainer after the 2026-10-29 changes (gates 0.7 m, the course turned by a random multiple of 90 degrees, larger gate / start jitter, eight scenes, small-viewpoint probes) in 3 ale validate runs on the official base image (engine 90a7c1c): validate-436d2732, validate-5af2582e, validate-c4384314, the oracle completed 8/8, 8/8 and 8/8 fresh private scenes (success_rate 1.0 each), zero collisions and aborts, probes 137/179, 141/189 and 135/186, controller time 175-202 s. An offline check of the same oracle with the same probes on 64 development scenes completed 63 (one collision while settling into the final hover), so one failed scene in eight is within the reference's spread: full_at 0.85. After the move into the warehouse hall with the Filament onboard renderer (2026-10-31): validate-aeacedc0, the oracle completed 7 of 8 fresh private scenes (success_rate 0.875, ratio 0.875 at or above full_at 0.85: reward 1.0), zero collisions and aborts, probes 143/184, controller time 232 s, verify 22.9 min."
+}

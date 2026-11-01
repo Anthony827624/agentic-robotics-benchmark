@@ -1,0 +1,116 @@
+{
+ "id": "practice",
+ "xml": "<body name=\"box\">\n<geom name=\"sh_bottom\" type=\"box\" pos=\"0 0 0.006\" size=\"0.09 0.14 0.006\" rgba=\"0.55 0.38 0.22 1\" contype=\"1\" conaffinity=\"2\" group=\"1\"/>\n<geom name=\"sh_back\" type=\"box\" pos=\"0.084 0 0.065\" size=\"0.006 0.14 0.065\" rgba=\"0.55 0.38 0.22 1\" contype=\"1\" conaffinity=\"2\" group=\"1\"/>\n<geom name=\"sh_left\" type=\"box\" pos=\"0 0.134 0.065\" size=\"0.078 0.006 0.065\" rgba=\"0.55 0.38 0.22 1\" contype=\"1\" conaffinity=\"2\" group=\"1\"/>\n<geom name=\"sh_right\" type=\"box\" pos=\"0 -0.134 0.065\" size=\"0.078 0.006 0.065\" rgba=\"0.55 0.38 0.22 1\" contype=\"1\" conaffinity=\"2\" group=\"1\"/>\n<geom name=\"sh_front\" type=\"box\" pos=\"-0.084 0 0.065\" size=\"0.006 0.14 0.065\" rgba=\"0.55 0.38 0.22 1\" contype=\"1\" conaffinity=\"2\" group=\"1\"/>\n<geom name=\"e0_bezel\" type=\"cylinder\" pos=\"-0.0908 -0.07 0.055\" quat=\"0.707107 0 -0.707107 0\" size=\"0.0135 0.0008\" rgba=\"0.08 0.08 0.08 1\" contype=\"0\" conaffinity=\"0\" group=\"1\"/>\n<geom name=\"e1_track\" type=\"box\" pos=\"-0.0906 0.075 0.098\" size=\"0.0006 0.055 0.005\" rgba=\"0.08 0.08 0.08 1\" contype=\"0\" conaffinity=\"0\" group=\"1\"/>\n<geom name=\"e1_keep0\" type=\"box\" pos=\"-0.094 0.075 0.0825\" size=\"0.004 0.055 0.0025\" rgba=\"0.75 0.72 0.65 1\" contype=\"1\" conaffinity=\"2\" group=\"1\"/>\n<geom name=\"e1_keep1\" type=\"box\" pos=\"-0.094 0.075 0.1135\" size=\"0.004 0.055 0.0025\" rgba=\"0.75 0.72 0.65 1\" contype=\"1\" conaffinity=\"2\" group=\"1\"/>\n<body name=\"e0\" pos=\"-0.09 -0.07 0.055\" gravcomp=\"1\">\n<joint name=\"e0_j\" type=\"slide\" axis=\"1 -0 -0\" range=\"0 0.01\" frictionloss=\"3.0\" damping=\"15\" armature=\"1.0\" solreflimit=\"0.004 1\" solimplimit=\"0.95 0.99 0.0005\" solreffriction=\"0.004 1\" solimpfriction=\"0.99 0.999 0.001\"/>\n<inertial pos=\"0 0 0\" mass=\"0.02\" diaginertia=\"1e-6 1e-6 1e-6\"/>\n<geom name=\"e0_cap\" type=\"cylinder\" pos=\"-0.006 0 0\" quat=\"0.707107 0 -0.707107 0\" size=\"0.009 0.010\" rgba=\"0.75 0.72 0.65 1\" contype=\"1\" conaffinity=\"2\" group=\"1\" friction=\"1 0.01 0.001\"/>\n<geom name=\"ib0_0\" type=\"box\" pos=\"0.022 0 0\" quat=\"0 0.707107 0.707107 0\" size=\"0.005 0.003 0.01\" contype=\"4\" conaffinity=\"4\" condim=\"1\" group=\"4\" rgba=\"1 0 0 0\" mass=\"0\" solref=\"0.004 1\" solimp=\"0.99 0.999 0.0005\"/>\n</body>\n<body name=\"e1\" pos=\"-0.09 0.075 0.098\" gravcomp=\"1\">\n<joint name=\"e1_j\" type=\"slide\" axis=\"0 1 0\" range=\"0 0.03\" frictionloss=\"2.5\" damping=\"15\" armature=\"1.0\" solreflimit=\"0.004 1\" solimplimit=\"0.95 0.99 0.0005\" solreffriction=\"0.004 1\" solimpfriction=\"0.99 0.999 0.001\"/>\n<inertial pos=\"0 0 0\" mass=\"0.05\" diaginertia=\"1e-5 1e-5 1e-5\"/>\n<geom name=\"e1_plate\" type=\"box\" pos=\"-0.0035 0 0\" size=\"0.003 0.025 0.012\" rgba=\"0.75 0.72 0.65 1\" contype=\"1\" conaffinity=\"2\" group=\"1\"/>\n<geom name=\"e1_knob\" type=\"cylinder\" pos=\"-0.0175 0 0\" quat=\"0.707107 0 -0.707107 0\" size=\"0.0075 0.011\" rgba=\"0.75 0.72 0.65 1\" contype=\"1\" conaffinity=\"2\" group=\"1\"/>\n<geom name=\"if0\" type=\"box\" pos=\"0.022 -0.1575 -0.043\" quat=\"0 0.707107 0.707107 0\" size=\"0.005 0.003 0.01\" contype=\"4\" conaffinity=\"4\" condim=\"1\" group=\"4\" rgba=\"1 0 0 0\" mass=\"0\" solref=\"0.004 1\" solimp=\"0.99 0.999 0.0005\"/>\n<geom name=\"ib1_0\" type=\"box\" pos=\"0.022 0 0.027\" quat=\"0.666871 0 -0.745173 0\" size=\"0.005 0.006 0.01\" contype=\"8\" conaffinity=\"8\" condim=\"1\" group=\"4\" rgba=\"1 0 0 0\" mass=\"0\" solref=\"0.004 1\" solimp=\"0.99 0.999 0.0005\"/>\n</body>\n<body name=\"e2\" pos=\"-0.09 0 0.05\" gravcomp=\"1\">\n<joint name=\"e2_j\" type=\"hinge\" axis=\"1 -0 -0\" range=\"0 1.5707963267948966\" frictionloss=\"0.15\" damping=\"0.05\" armature=\"0.05\" solreflimit=\"0.004 1\" solimplimit=\"0.95 0.99 0.0005\" solreffriction=\"0.004 1\" solimpfriction=\"0.99 0.999 0.001\"/>\n<inertial pos=\"0 0 0\" mass=\"0.03\" diaginertia=\"2e-6 2e-6 2e-6\"/>\n<geom name=\"e2_base\" type=\"cylinder\" pos=\"-0.006 0 0\" quat=\"0.707107 0 -0.707107 0\" size=\"0.016 0.006\" rgba=\"0.75 0.72 0.65 1\" contype=\"1\" conaffinity=\"2\" group=\"1\"/>\n<geom name=\"e2_fin\" type=\"box\" pos=\"-0.019 0 0\" size=\"0.007 0.004 0.03\" rgba=\"0.75 0.72 0.65 1\" contype=\"1\" conaffinity=\"2\" group=\"1\" friction=\"1.2 0.02 0.002\"/>\n</body>\n<body name=\"lid\" pos=\"0.09 0 0.13\">\n<joint name=\"lid_j\" type=\"hinge\" axis=\"0 1 0\" range=\"0 1.9198621771937625\" frictionloss=\"0.05\" damping=\"0.3\" armature=\"0.01\" solreflimit=\"0.004 1\" solimplimit=\"0.95 0.99 0.0005\" solreffriction=\"0.004 1\" solimpfriction=\"0.99 0.999 0.001\"/>\n<inertial pos=\"-0.09 0 0.006\" mass=\"0.35\" diaginertia=\"0.002 0.003 0.004\"/>\n<geom name=\"lid_plate\" type=\"box\" pos=\"-0.09 0 0.006\" size=\"0.092 0.142 0.006\" rgba=\"0.5 0.34 0.2 1\" contype=\"1\" conaffinity=\"2\" group=\"1\"/>\n<geom name=\"lid_lip\" type=\"box\" pos=\"-0.194 0 0.004\" size=\"0.014 0.045 0.004\" rgba=\"0.5 0.34 0.2 1\" contype=\"1\" conaffinity=\"2\" group=\"1\"/>\n<geom name=\"if1\" type=\"box\" pos=\"-0.156618 0.075 -0.0174234\" quat=\"0.666871 0 -0.745173 0\" size=\"0.005 0.006 0.01\" contype=\"8\" conaffinity=\"8\" condim=\"1\" group=\"4\" rgba=\"1 0 0 0\" mass=\"0\" solref=\"0.004 1\" solimp=\"0.99 0.999 0.0005\"/>\n</body>\n</body>",
+ "meta": {
+  "stages": [
+   {
+    "id": "e0",
+    "joint": "e0_j",
+    "threshold": 0.008,
+    "kind": "button",
+    "blockers": []
+   },
+   {
+    "id": "e1",
+    "joint": "e1_j",
+    "threshold": 0.024,
+    "kind": "bolt",
+    "blockers": [
+     "e0"
+    ]
+   },
+   {
+    "id": "final",
+    "joint": "lid_j",
+    "threshold": 1.0471975511965976,
+    "kind": "lid",
+    "blockers": [
+     "e1"
+    ]
+   }
+  ],
+  "joints": [
+   "e0_j",
+   "e1_j",
+   "e2_j",
+   "lid_j"
+  ],
+  "footprint": [
+   0.18,
+   0.28,
+   0.13
+  ]
+ },
+ "config": {
+  "shell": {
+   "D": 0.18,
+   "W": 0.28,
+   "H": 0.13,
+   "rgba": [
+    0.55,
+    0.38,
+    0.22,
+    1
+   ],
+   "trim_rgba": [
+    0.75,
+    0.72,
+    0.65,
+    1
+   ],
+   "lid_rgba": [
+    0.5,
+    0.34,
+    0.2,
+    1
+   ],
+   "lip_w": 0.09,
+   "lip_u": 0.0
+  },
+  "final": "lid",
+  "elements": [
+   {
+    "id": "e0",
+    "type": "button",
+    "face": "front",
+    "u": -0.07,
+    "v": 0.055,
+    "friction": 3.0
+   },
+   {
+    "id": "e1",
+    "type": "bolt",
+    "face": "front",
+    "u": 0.075,
+    "v": 0.098,
+    "dir": 1,
+    "travel": 0.03,
+    "friction": 2.5
+   },
+   {
+    "id": "e2",
+    "type": "knob",
+    "face": "front",
+    "u": 0.0,
+    "v": 0.05,
+    "sense": 1,
+    "friction": 0.15
+   }
+  ],
+  "locks": [
+   [
+    "e0",
+    "e1"
+   ],
+   [
+    "e1",
+    "final"
+   ]
+  ],
+  "required": [
+   "e0",
+   "e1",
+   "final"
+  ]
+ }
+}

@@ -1,0 +1,6 @@
+schema_version = 1
+name = "robot"
+transport = "stdio"
+command = "/opt/venv/bin/python3"
+args = ["/opt/visual_robotics/client/mcp_stdio.py"]
+cwd = "/home/user"

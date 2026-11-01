@@ -1,0 +1,20 @@
+{
+ "kind": "tip",
+ "fps": 30,
+ "n_frames": 211,
+ "probe_dt": 0.002,
+ "probe_samples": 3502,
+ "frame_k_time_s": "k / fps (frame 0 = probe sample 0)",
+ "stop_bar": {
+  "center_xy": [
+   -0.019311004386036064,
+   0.06929226317280829
+  ],
+  "long_axis_yaw": 2.9498752360621117,
+  "size_m": [
+   0.24,
+   0.01,
+   0.01
+  ]
+ }
+}

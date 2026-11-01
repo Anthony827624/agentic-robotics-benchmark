@@ -6,15 +6,39 @@
     "spec_hash": "sha256:81cc7d0d26fbb49b34a7db7ef108961fd788433cf63d2646a1368aa9b986e18b"
   },
   {
+    "content_digest": "sha256:9eafe38d6e68e53ba75674757d6e5d0255a60990f7dfc1b5f54b07fb1372874c",
+    "since": "2026-10-29T17:32:38Z",
+    "slug": "arm_hidden_mechanism_box",
+    "spec_hash": "sha256:472d0e693dc5010a5d406716d9f5158cd1bcacc1493d3bad88e468e72ac6a5d5"
+  },
+  {
     "content_digest": "sha256:cd46084918fc5abc3e64c8a67e7f73722a4297f03f9923f5109c96519c32417e",
     "since": "2026-10-15T15:24:22Z",
     "slug": "fault_adaptive_spacecraft_docking",
     "spec_hash": "sha256:95b824570ebf68cda4aa08382f7d95b3e4ee0110eefc03191a9cccd1eda8dc7e"
   },
   {
+    "content_digest": "sha256:e7641ba44f5a53e77c9e1dedcb78d944dc8ebc5c7da6828d21636717faaf6e38",
+    "since": "2026-10-30T11:55:32Z",
+    "slug": "robocasa_object_dynamics_from_video",
+    "spec_hash": "sha256:731d35a62337ae85950a7f5d4af15848626bd52cb6692d1a878b6f502f51dbbe"
+  },
+  {
     "content_digest": "sha256:3bd3dea0795c7e65940ae07822500e6e74cbaadcf2b772142d05863b1e3a55c8",
     "since": "2026-10-27T17:31:33Z",
     "slug": "robotic_arm_cad_design_from_photos",
     "spec_hash": "sha256:10b7f2f5c18dabb35baf33d00b0a851c5d55253e35db11f705d28bd4fa1585d7"
+  },
+  {
+    "content_digest": "sha256:515acf5c9a41e09bf7702de62579df115734b46f9eb8ce10f808f333f9f13c89",
+    "since": "2026-10-27T19:49:28Z",
+    "slug": "robotic_arm_full_assembly_so101_panda",
+    "spec_hash": "sha256:d86b078a68c6455a35bb80ff3f80a622ab08e85391aadf161eb44517f7bc9e41"
+  },
+  {
+    "content_digest": "sha256:c01165f1221c9c7de191cfa6234bb53121ac6c6a1a53db24c02b795008deb1d6",
+    "since": "2026-10-27T19:49:28Z",
+    "slug": "robotic_arm_requirements_replica_from_photos",
+    "spec_hash": "sha256:58d88f2534d367fe47af9c59fae8dc46e1fa52d56a5bed83dedc828b5e33ae89"
   }
 ]

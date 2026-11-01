@@ -1,0 +1,14 @@
+spec_type: core/v1
+
+name: arm_hidden_mechanism_box
+
+image: {kind: container}
+
+resources: {cpus: 4, memory_mb: 12288}
+network: {mode: block}
+timeouts: {setup: 300, agent: 28800, verify: 7200}
+artifacts: [/home/user/submission]
+verify: {environment_mode: separate, resources: {cpus: 4, memory_mb: 12288, storage_mb: null, gpus: 0}}
+
+metadata:
+  platform: arm

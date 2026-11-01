@@ -1,0 +1,18 @@
+{
+ "plugin": "box_plugin.py",
+ "instances": "../ref/boxes.json",
+ "budget": 16,
+ "trial_step_cap": 2600,
+ "trial_wall_s": 3600.0,
+ "idle_timeout_s": 900,
+ "max_connections": 2,
+ "call_timeout_s": 120.0,
+ "env": {
+  "OMP_NUM_THREADS": "1",
+  "MUJOCO_GL": "egl",
+  "PYOPENGL_PLATFORM": "egl",
+  "LIBERO_ASSETS": "/opt/libero-assets",
+  "LP_NUM_THREADS": "2",
+  "MESA_SHADER_CACHE_DISABLE": "true"
+ }
+}

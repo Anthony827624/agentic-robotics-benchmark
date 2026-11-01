@@ -1,0 +1,19 @@
+spec_type: core/v1
+
+name: robocasa_object_dynamics_from_video
+
+image: {kind: container}
+
+resources: {cpus: 4, memory_mb: 8192}
+network: {mode: block}
+timeouts: {setup: 600, agent: 28800, verify: 2400}
+artifacts: [/home/user/submission]
+
+# Fixed hidden instances: the grader reads its ground truth from verify/ref (staged only at verify) in a fresh
+# verifier sandbox; it never trusts anything the agent left besides params.json.
+verify:
+  environment_mode: separate
+  resources: {cpus: 4, memory_mb: 8192, storage_mb: null, gpus: 0}
+
+metadata:
+  platform: arm
