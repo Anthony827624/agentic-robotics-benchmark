@@ -10,6 +10,7 @@ from pathlib import Path
 import stat
 import sys
 import tempfile
+import time
 import zipfile
 
 import numpy as np
@@ -27,7 +28,8 @@ from robotics_grader import (  # noqa: E402
 )
 
 MAX_FILE_BYTES = 10_000_000
-MAX_MEMBER_BYTES = 16_000_000  # uncompressed, per array in the NPZ
+MAX_MEMBER_BYTES = 16_000_000  # inflated size of each required array; other members are never read
+REQUIRED = ("pd_targets", "control_dt", "joint_names", "motion_id")
 
 
 class SubmissionError(ValueError):
@@ -41,21 +43,31 @@ def _scalar(data, key):
     return value.reshape(()).item()
 
 
+def _member(names, key):
+    """The ZIP member numpy.load reads for `key` (NpzFile: "<key>.npy", else a member named exactly `key`)."""
+    for name in (key + ".npy", key):
+        if name in names:
+            return name
+    return None
+
+
 def _check_container(raw, config):
-    """The NPZ as a ZIP: every member small enough once inflated, and the header of pd_targets declaring the expected
-    shape and dtype before any array is read (a few bytes can otherwise declare terabytes)."""
+    """The NPZ as a ZIP, as numpy.load will read it: each required array small enough once inflated, and the header of
+    pd_targets declaring the expected shape and dtype before any array is read (a few bytes can otherwise declare
+    terabytes). Members that are not required are never read."""
     with zipfile.ZipFile(io.BytesIO(raw)) as archive:
-        members = {info.filename: info for info in archive.infolist()}
-        for info in members.values():
-            if info.file_size > MAX_MEMBER_BYTES:
-                raise SubmissionError("NPZ member {} is too large".format(info.filename))
-        if "pd_targets.npy" not in members:
-            raise SubmissionError("missing NPZ key: pd_targets")
-        with archive.open("pd_targets.npy") as handle:
+        infos = {info.filename: info for info in archive.infolist()}
+        for key in REQUIRED:
+            name = _member(infos, key)
+            if name is None:
+                raise SubmissionError("missing NPZ key: {}".format(key))
+            if infos[name].file_size > MAX_MEMBER_BYTES:
+                raise SubmissionError("NPZ array {} is larger than 16 MB".format(key))
+        with archive.open(_member(infos, "pd_targets")) as handle:
             version = np.lib.format.read_magic(handle)
             if version == (1, 0):
                 shape, fortran, dtype = np.lib.format.read_array_header_1_0(handle)
-            elif version == (2, 0):
+            elif version in ((2, 0), (3, 0)):  # 3.0 is 2.0 with a UTF-8 header; a float32 array's header is ASCII
                 shape, fortran, dtype = np.lib.format.read_array_header_2_0(handle)
             else:
                 raise SubmissionError("unsupported .npy version {}".format(version))
@@ -172,10 +184,10 @@ def progress_gate(errors, config):
 def clip_score(copies, config):
     """Mean over the physics copies of hand quality times object credit.
 
-    Hand quality is the linear score on the worse hand's worst hand ratio (fingertips, finger links, finger motion in
-    the wrist frame). Object credit is hand_only_credit plus the rest scaled by the progress gate: tracking the hands
-    without moving the object earns at most hand_only_credit, and everything above it requires reproducing the
-    object's motion. A copy that failed to replay, was not scored, or reports a non-finite error scores 0.
+    Hand quality is the linear score on the worse hand's worst hand ratio (fingertips, finger links). Object credit is
+    hand_only_credit plus the rest scaled by the progress gate: tracking the hands without moving the object earns at
+    most hand_only_credit, and everything above it requires reproducing the object's motion. A copy that failed to
+    replay, was not scored, or reports a non-finite error scores 0.
     """
     zero_at = float(config["score_zero_at_ratio"])
     floor = float(config["hand_only_credit"])
@@ -195,75 +207,85 @@ def clip_score(copies, config):
     return sum(scores) / len(scores), sum(passes) / len(passes), sum(ratios) / len(ratios)
 
 
-def replay_all(configs, submissions, workers, bounds, scratch):
+def replay_all(configs, submissions, workers, bounds, scratch, deadline):
     """Replay every copy of every valid clip, each in its own Isaac process, `workers` at a time.
 
-    A copy whose replay fails is replayed once more. If it fails again, the clip's control (the same scene with a
-    submission that holds the initial pose) is replayed: if the control replays, the failure is the submission's and
-    that copy scores 0; if the control fails too, the simulator itself does not work here, which is an infrastructure
-    failure and ends the verification as a task error (the run is repeated, not scored).
+    The copies whose replay failed are replayed again after all the others, in a second pool together with one control
+    replay per affected clip (the same scene with a submission that holds the clip's initial pose), so the retry and
+    its control run under the same conditions. If a clip's control fails too, the simulator itself does not work
+    here: that is an infrastructure failure and ends the verification as a task error (the run is repeated, not
+    scored). If the control replays, the copies that failed twice are the submission's failure and score 0. No replay
+    is started that could not finish before `deadline` (time.monotonic()); running out of time is reported as an
+    infrastructure failure too, not left to the engine's verify timeout.
     Returns {clip: [copy report or None]} and the counts of retried and failed copies.
     """
-    jobs = [(cfg, k) for cfg in configs if cfg["clip"] in submissions for k in range(int(cfg["replay_copies"]))]
-
-    def one(job):
-        cfg, k = job
-        path, sha = submissions[cfg["clip"]]
-        errors = []
-        for _ in range(2):
-            try:
-                return job, run_copy(cfg, path, sha, k)["clips"][0], len(errors)
-            except ReplayError as exc:
-                errors.append(str(exc))
-        return job, errors, len(errors)
-
-    results, retried, last_error = {}, 0, {}
-    with ThreadPoolExecutor(max_workers=max(1, workers)) as pool:
-        for (cfg, k), outcome, attempts in pool.map(one, jobs):
-            results[(cfg["clip"], k)] = outcome
-            retried += int(attempts > 0)
-            if isinstance(outcome, list):
-                last_error.setdefault(cfg["clip"], outcome[-1])
-    failed_clips = sorted(last_error)
+    timeout = int(configs[0]["replay_timeout_s"])
     by_clip = {cfg["clip"]: cfg for cfg in configs}
+    no_time = "no time left for this replay"
 
-    def control(clip):
+    def attempt(job):
+        kind, clip, k = job
+        if time.monotonic() + timeout + 60 >= deadline:
+            return no_time
         cfg = by_clip[clip]
-        raw = hold_control(cfg, bounds)
-        path = scratch / ("control_" + clip + ".npz")
-        path.write_bytes(raw)
+        if kind == "control":
+            raw = hold_control(cfg, bounds)
+            path = scratch / ("control_" + clip + ".npz")
+            path.write_bytes(raw)
+            sha = hashlib.sha256(raw).hexdigest()
+        else:
+            path, sha = submissions[clip]
         try:
-            run_copy(cfg, path, hashlib.sha256(raw).hexdigest(), 0)
-            return clip, None
+            return run_copy(cfg, path, sha, k)["clips"][0]
         except ReplayError as exc:
-            return clip, str(exc)
+            return str(exc)
 
-    if failed_clips:
+    def pool_run(jobs):
         with ThreadPoolExecutor(max_workers=max(1, workers)) as pool:
-            for clip, problem in pool.map(control, failed_clips):
-                require(problem is None, "{}: the replay failed twice and so did its control replay (an "
-                        "infrastructure failure): {}\ncontrol: {}".format(clip, last_error[clip], problem))
+            return dict(zip(jobs, pool.map(attempt, jobs)))
+
+    first = pool_run([("copy", cfg["clip"], k) for cfg in configs if cfg["clip"] in submissions
+                      for k in range(int(cfg["replay_copies"]))])
+    results = {(clip, k): outcome for (_, clip, k), outcome in first.items()}
+    failed = sorted(key for key, outcome in results.items() if isinstance(outcome, str))
+    if failed:
+        clips = sorted({clip for clip, _ in failed})
+        second = pool_run([("copy", clip, k) for clip, k in failed] + [("control", clip, 0) for clip in clips])
+        require(no_time not in second.values() and no_time not in [results[key] for key in failed],
+                "the verify budget does not leave time to replay the failed copies again (an infrastructure failure: "
+                "replays are far slower than they should be)")
+        for clip in clips:
+            control = second[("control", clip, 0)]
+            again = [second[("copy", c, k)] for c, k in failed if c == clip]
+            first_error = next(results[key] for key in failed if key[0] == clip)
+            require(not isinstance(control, str), "{}: a replay failed and so did its control replay (an "
+                    "infrastructure failure): {}\ncontrol: {}".format(clip, first_error, control))
+            if any(isinstance(o, str) for o in again):
                 print("[grader] {}: replays failed twice while the control replays: those copies score 0\n{}".format(
-                    clip, last_error[clip]), file=sys.stderr, flush=True)
+                    clip, next(o for o in again if isinstance(o, str))), file=sys.stderr, flush=True)
+        for clip, k in failed:
+            results[(clip, k)] = second[("copy", clip, k)]
     reports = {}
-    failed = 0
+    count = 0
     for cfg in configs:
         if cfg["clip"] not in submissions:
             continue
         copies = []
         for k in range(int(cfg["replay_copies"])):
             outcome = results[(cfg["clip"], k)]
-            if isinstance(outcome, list):
-                failed += 1
+            if isinstance(outcome, str):
+                count += 1
                 copies.append(None)
             else:
                 copies.append(outcome)
         reports[cfg["clip"]] = copies
-    return reports, retried, failed
+    return reports, len(failed), count
 
 
 def main():
+    started = time.monotonic()
     config = stage_config()
+    deadline = started + float(config["verify_budget_s"])
     anchor, anchor_meta = read_anchor()
     home = Path(os.environ.get("ALE_HOME", "/home/user"))
     bounds = json.loads((Path(__file__).resolve().parent / config["protocol"]).read_text())
@@ -288,7 +310,7 @@ def main():
         copy = scratch / (cfg["clip"] + ".npz")
         copy.write_bytes(raw)
         valid[cfg["clip"]] = (copy, sha)
-    reports, retried, failed = replay_all(configs, valid, int(config.get("replay_workers", 1)), bounds, scratch)
+    reports, retried, failed = replay_all(configs, valid, int(config.get("replay_workers", 1)), bounds, scratch, deadline)
     for cfg in configs:
         copies = reports.get(cfg["clip"])
         if copies is None:

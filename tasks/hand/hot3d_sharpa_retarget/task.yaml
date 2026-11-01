@@ -3,7 +3,7 @@ name: hot3d_sharpa_retarget
 image: {kind: container}
 resources: {cpus: 8, memory_mb: 65536, gpus: 1}
 network: {mode: block}
-timeouts: {setup: 120, agent: 10800, verify: 2700}
+timeouts: {setup: 120, agent: 10800, verify: 4500}
 artifacts: [/home/user/submission]
 
 # A fresh verifier sandbox from the image, with only the submission restored: nothing the agent left in the solver's

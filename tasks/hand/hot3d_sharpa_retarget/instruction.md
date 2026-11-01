@@ -91,10 +91,11 @@ using time averages over the replay after a 15-step grace period.
 Hand quality compares the robot's hands with the person's hands of the HOT3D
 annotation (MANO), each hand separately, as distances in the world frame:
 
-- the fingertip error, from each robot fingertip to the person's fingertip point
-  (above), divided by 0.06 m;
-- the finger-link error, from the robot's knuckle and distal finger links to the
-  person's MANO proximal and distal finger joints, divided by 0.08 m.
+- the fingertip error, the mean over the five fingers of the distance from the robot's
+  fingertip to the person's fingertip point (above), divided by 0.06 m;
+- the finger-link error, the mean over the five fingers of the distances from the
+  robot's knuckle and distal finger links to the person's MANO proximal and distal
+  finger joints, divided by 0.08 m.
 
 The larger of the two ratios, for the worse hand, is `w`, and hand quality is
 `clamp((4 - w) / 3, 0, 1)`: full when both limits hold (`w <= 1`), falling linearly
@@ -106,24 +107,29 @@ progress is `1 - e / e_static`, and the progress factor is `clamp(progress / 0.8
 an object left where it started gives zero, reproducing at least 85% of the object's
 motion gives one. The object's orientation is reported but not scored.
 
-A replay scores `hand quality * (0.2 + 0.8 * progress factor)`: following the
-person's hands without moving the object earns at most 0.2, and the rest requires
-reproducing the object's motion. Each clip is replayed four times, each replay in its
-own Isaac process with a scene of its own (replays never share a physics scene), and
-its score is the mean of those replays; the task score is the mean of the clip scores.
-One replay starts exactly from the clip's initial state; each of the other three
-starts from a small fixed perturbation of it: the wrist translation joints move by up
-to 1 mm, every other joint by up to 0.005 rad, and the object's start position by up to
-1 mm horizontally. These perturbations probe numerical robustness only; they are far
-smaller than the uncertainty of anything estimated from the video. The same submission
-is replayed in all four.
+A replay scores `hand quality * (0.2 + 0.8 * progress factor)`: following the person's
+hands without moving the object earns at most 0.2, and the rest requires reproducing the
+object's motion. Each clip is replayed four times, each replay in its own Isaac process
+with a scene of its own (replays never share a physics scene), and its score is the mean
+of those replays; the task score is the mean of the clip scores. One replay starts
+exactly from the clip's initial state; each of the other three starts from a small fixed
+perturbation of it: the wrist translation joints move by up to 1 mm, every other joint
+by up to 0.005 rad, and the object's start position by up to 1 mm along each horizontal
+axis. These perturbations probe numerical robustness only; they are far smaller than the
+uncertainty of anything estimated from the video. The same submission is replayed in all
+four.
 
-Each file must be a regular file (not a symbolic link) of at most 10 MB. A missing,
+Keep `/home/user/submission` a plain directory that holds only regular files with
+UTF-8 names: a symbolic link or a special file anywhere in it, or the directory missing
+or replaced by a link, makes the whole run fail before any grading, and it is not
+scored. Write each file with `numpy.savez` or `numpy.savez_compressed`; a file may be at
+most 10 MB, and each of the four arrays at most 16 MB uncompressed. A missing,
 unreadable or invalid file scores zero for its clip; it does not hide the other clips'
-results. A replay that fails is run once more. If it fails again, the verifier replays
-the same scene with a control submission that holds the clip's initial pose: if the
-control replays, the failed replays score zero; if the control fails too, the simulator
-itself is not working, and the run is reported as an infrastructure failure, not scored.
+results. A replay that fails is run again after all the others, next to a control
+replay of the same scene with a submission that holds the clip's initial pose: if the
+control replays and the replay fails again, that replay scores zero; if the control
+fails too, the simulator itself is not working, and the run is reported as an
+infrastructure failure, not scored.
 The initial robot state for each clip is public in the control protocol, while the
 hidden scenes supply the objects and physical environment.
 
@@ -135,5 +141,6 @@ Use the ALE Python 3.12 environment explicitly:
 /opt/venv/bin/python3 /home/user/practice_grader/grade.py
 ```
 
-This checks every file against the public format and control constraints. It does
-not need an object model and does not perform the hidden physical evaluation.
+This checks the submission folder and every file against the grader's file rules and
+the public control constraints, and lists anything that would make the whole run fail.
+It does not need an object model and does not perform the hidden physical evaluation.
